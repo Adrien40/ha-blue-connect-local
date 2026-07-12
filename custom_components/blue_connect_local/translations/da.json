@@ -1,0 +1,287 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "⚙️ Blue Connect-konfiguration",
+        "description": "Hvis Blue Connect ikke registreres automatisk, skal du tilføje dens Bluetooth MAC-adresse.\n\n**Adgangskoden er ikke obligatorisk.** Hvis du vil aktivere analyser efter behov, skal du indtaste de 9 alfanumeriske tegn (f.eks. B93XXXXXX). Den findes under enhedens USB-portdæksel eller på sondernes beskyttelsesdæksel!\n\n⚠️ Uden kode fungerer enheden kun i passiv tilstand: 1 analyse pr. time.",
+        "data": {
+          "mac_address": "🔎 Fundet enhed",
+          "manual_mac_address": "✍️ Eller indtast MAC-adressen direkte (f.eks. AA:BB:CC:DD:EE:FF)",
+          "access_code": "🔑 Adgangskode (lad stå tom for passiv tilstand: 1 analyse pr. time)"
+        },
+        "sections": {
+          "general": {
+            "name": "⚙️ Generelt",
+            "data": {
+              "chlorine_model": "🧪 Vandbehandling",
+              "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synkronisering",
+            "data": {
+              "scan_interval": "🔄 Analyseinterval (minutter)",
+              "reference_time": "🕒 Referencetid (planlægning)",
+              "passive_measures": "📡 Blue Connect interne analyser (passiv)",
+              "ignore_echoes": "🚫 Ignorer analyseekkoer (passiv)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibrering af sonder",
+            "data": {
+              "ph_calib_7": "🟢 Målt værdi pH 7 (f.eks. 7.10)",
+              "ph_ref_7": "🎯 Målopløsning pH 7 (f.eks. 7.02)",
+              "ph_calib_4": "🔴 Målt værdi pH 4 (f.eks. 4.10)",
+              "ph_ref_4": "🎯 Målopløsning pH 4 (f.eks. 4.00)",
+              "orp_calib": "📏 Målt værdi ORP (f.eks. 650)",
+              "orp_ref": "🎯 Målopløsning ORP (f.eks. 650)",
+              "temp_offset": "🌡️ Temperaturforskydning (°C) (+/-)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "already_configured": "⚠️ Denne enhed er allerede konfigureret",
+      "unknown": "❓ Ukendt fejl",
+      "invalid_mac": "❌ MAC-adressen er ugyldig. Den skal have formatet AA:BB:CC:DD:EE:FF.",
+      "no_mac_provided": "❌ Ingen enhed valgt, og ingen MAC-adresse indtastet.",
+      "mac_conflict": "❌ Den valgte enhed og den manuelt indtastede adresse er forskellige. Udfyld kun ét felt.",
+      "ph_calibration_equal": "❌ pH-kalibreringsværdierne skal være forskellige",
+      "ph_reference_equal": "❌ pH-referenceværdierne skal være forskellige",
+      "ph_slope_mismatch": "❌ Logisk fejl: Kalibreringshældningen er inkonsekvent",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "ph_threshold_error": "❌ Minimum pH skal være lavere end maksimum pH",
+      "orp_threshold_error": "❌ Minimum ORP skal være lavere end maksimum ORP",
+      "temp_threshold_error": "❌ Minimumtemperaturen skal være lavere end maksimumtemperaturen",
+      "invalid_access_code": "❌ Ugyldig adgangskode (9 alfanumeriske tegn)."
+    },
+    "abort": {
+      "already_configured": "⚠️ Denne enhed er allerede konfigureret."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "🛠️ Blue Connect-indstillinger",
+        "description": "Juster kalibrering, funktionsmåde og dine personlige alarmgrænser.",
+        "data": {},
+        "sections": {
+          "general": {
+            "name": "⚙️ Generelt",
+            "data": {
+              "access_code": "🔑 Adgangskode (lad stå tom for passiv tilstand: 1 analyse pr. time)",
+              "chlorine_model": "🧪 Vandbehandling",
+              "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synkronisering",
+            "data": {
+              "scan_interval": "🔄 Analyseinterval (minutter)",
+              "reference_time": "🕒 Referencetid (planlægning)",
+              "passive_measures": "📡 Blue Connect interne analyser (passiv)",
+              "ignore_echoes": "🚫 Ignorer analyseekkoer (passiv)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibrering af sonder",
+            "data": {
+              "ph_calib_7": "🟢 Målt værdi pH 7 (f.eks. 7.10)",
+              "ph_ref_7": "🎯 Målopløsning pH 7 (f.eks. 7.02)",
+              "ph_calib_4": "🔴 Målt værdi pH 4 (f.eks. 4.10)",
+              "ph_ref_4": "🎯 Målopløsning pH 4 (f.eks. 4.00)",
+              "orp_calib": "📏 Målt værdi ORP (f.eks. 650)",
+              "orp_ref": "🎯 Målopløsning ORP (f.eks. 650)",
+              "temp_offset": "🌡️ Temperaturforskydning (°C) (+/-)"
+            }
+          },
+          "alert_thresholds": {
+            "name": "📊 Alarmgrænser",
+            "data": {
+              "ph_min": "📉 Grænse: Minimum pH (f.eks. 6.90)",
+              "ph_max": "📈 Grænse: Maksimum pH (f.eks. 7.50)",
+              "orp_min": "📉 Grænse: Minimum ORP (mV)",
+              "orp_max": "📈 Grænse: Maksimum ORP (mV)",
+              "temp_min": "❄️ Grænse: Minimumtemperatur (°C)",
+              "temp_max": "🌡️ Grænse: Maksimumtemperatur (°C)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "unknown": "❓ Ukendt fejl",
+      "ph_threshold_error": "❌ Minimum pH skal være lavere end maksimum pH",
+      "orp_threshold_error": "❌ Minimum ORP skal være lavere end maksimum ORP",
+      "temp_threshold_error": "❌ Minimumtemperaturen skal være lavere end maksimumtemperaturen",
+      "invalid_access_code": "❌ Ugyldig adgangskode (9 alfanumeriske tegn).",
+      "ph_calibration_equal": "❌ pH-kalibreringsværdierne skal være forskellige",
+      "ph_reference_equal": "❌ pH-referenceværdierne skal være forskellige",
+      "ph_slope_mismatch": "❌ Logisk fejl: Kalibreringshældningen er inkonsekvent",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+    }
+  },
+  "selector": {
+    "chlorine_model": {
+      "options": {
+        "chlorine": "🧂 Klor / Salt",
+        "bromine": "🟤 Brom"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "ph_status": {
+        "name": "pH-status"
+      },
+      "orp_status": {
+        "name": "ORP-status (Redox)"
+      },
+      "temperature_status": {
+        "name": "Temperaturstatus"
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "name": "Ny analyse (~60s)"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "name": "Analyseinterval"
+      },
+      "tac": {
+        "name": "TAC (Alkalitet)"
+      },
+      "th": {
+        "name": "TH (Hårdhed)"
+      },
+      "tds": {
+        "name": "TDS (Opløste stoffer)"
+      },
+      "cya": {
+        "name": "CyA (Stabilisator)"
+      }
+    },
+    "sensor": {
+      "bluetooth_status": {
+        "name": "Bluetooth-status",
+        "state": {
+          "waiting": "💤 Afbrudt",
+          "connecting": "⏳ Forbinder til Blue Connect...",
+          "authenticating": "🔐 Godkender...",
+          "requesting": "🗣️ Anmoder om analyse...",
+          "reading": "📡 Lytter efter frame...",
+          "success": "✅ Analyse fuldført (afbrudt)",
+          "error": "❌ Forbindelsesfejl",
+          "error_retry": "⏳ Fejl (prøver igen om 60s)",
+          "write_failed": "⚠️ Skrivning mislykkedes",
+          "paused": "⏸️ Analyser sat på pause",
+          "out_of_range": "📵 Signal tabt",
+          "passive_mode": "Passiv tilstand"
+        }
+      },
+      "next_analysis": {
+        "name": "Næste analyse"
+      },
+      "temperature": {
+        "name": "Temperatur"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "orp": {
+        "name": "ORP (Redox)"
+      },
+      "conductivity": {
+        "name": "Ledningsevne"
+      },
+      "salinity": {
+        "name": "Salinitet"
+      },
+      "battery": {
+        "name": "Batteri (spænding)"
+      },
+      "battery_level": {
+        "name": "Batteri"
+      },
+      "battery_adc": {
+        "name": "Batteri ADC"
+      },
+      "ph_raw": {
+        "name": "Rå pH"
+      },
+      "lsi": {
+        "name": "Langelier-indeks"
+      },
+      "lsi_status": {
+        "name": "Langelier-indeksstatus",
+        "state": {
+          "corrosive": "🔴 Ætsende vand (surt)",
+          "balanced": "🟢 Perfekt afbalanceret vand",
+          "scaling": "🟠 Kalkdannende vand (basisk)",
+          "unknown": "⚪ Ukendt"
+        }
+      },
+      "target_equilibrium_ph": {
+        "name": "Ligevægts-pH (Taylor)"
+      },
+      "float_status": {
+        "name": "Flydestatus",
+        "state": {
+          "vertical": "⬆️ Lodret",
+          "tilted": "↗️ Skævt",
+          "horizontal": "➡️ Vandret (problem)",
+          "upside_down": "⬇️ På hovedet (problem)"
+        }
+      },
+      "accelerometer": {
+        "name": "Accelerometer"
+      },
+      "last_received": {
+        "name": "Sidste analyse"
+      },
+      "raw_frame": {
+        "name": "Beregnet frame"
+      },
+      "raw_frame_0005": {
+        "name": "Elektrisk frame"
+      },
+      "serial_number": {
+        "name": "Serienummer"
+      },
+      "hw_version": {
+        "name": "Modelnummer (SKU)"
+      },
+      "sw_version": {
+        "name": "Cloud ID / SN"
+      },
+      "rssi": {
+        "name": "Bluetooth-signal"
+      },
+      "receive_method": {
+        "name": "Beregnet frame-type",
+        "state": {
+          "passive": "Passiv",
+          "active": "Aktiv",
+          "unknown": "Ukendt"
+        }
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "name": "Automatiske analyser"
+      },
+      "passive_measures": {
+        "name": "Blue Connect interne analyser (passiv)"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "name": "Referencetid"
+      }
+    }
+  }
+}

@@ -1,0 +1,287 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "⚙️ Blue Connect 設定",
+        "description": "如果未自動偵測到 Blue Connect，請新增其藍牙 MAC 位址。\n\n**存取碼並非必填。** 如果您想啟用隨選分析，請輸入 9 位英數字元（例如 B93XXXXXX）。它位於裝置 USB 連接埠蓋下方，或探頭保護蓋上！\n\n⚠️ 若沒有存取碼，裝置將僅以被動模式運作：每小時 1 次分析。",
+        "data": {
+          "mac_address": "🔎 已發現的裝置",
+          "manual_mac_address": "✍️ 或直接輸入 MAC 位址（例如 AA:BB:CC:DD:EE:FF）",
+          "access_code": "🔑 存取碼（留空以使用被動模式：每小時 1 次分析）"
+        },
+        "sections": {
+          "general": {
+            "name": "⚙️ 一般",
+            "data": {
+              "chlorine_model": "🧪 水質處理方式",
+              "cya": "💧 穩定劑濃度 / CyA（毫克/公升）"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ 同步",
+            "data": {
+              "scan_interval": "🔄 分析間隔（分鐘）",
+              "reference_time": "🕒 參考時間（排程）",
+              "passive_measures": "📡 Blue Connect 內部分析（被動）",
+              "ignore_echoes": "🚫 忽略分析回音（被動）"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 探頭校準",
+            "data": {
+              "ph_calib_7": "🟢 測量值 pH 7（例如 7.10）",
+              "ph_ref_7": "🎯 目標溶液 pH 7（例如 7.02）",
+              "ph_calib_4": "🔴 測量值 pH 4（例如 4.10）",
+              "ph_ref_4": "🎯 目標溶液 pH 4（例如 4.00）",
+              "orp_calib": "📏 測量值 ORP（例如 650）",
+              "orp_ref": "🎯 目標溶液 ORP（例如 650）",
+              "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "already_configured": "⚠️ 此裝置已完成設定",
+      "unknown": "❓ 未知錯誤",
+      "invalid_mac": "❌ MAC 位址無效。格式必須為 AA:BB:CC:DD:EE:FF。",
+      "no_mac_provided": "❌ 未選擇裝置，也未輸入 MAC 位址。",
+      "mac_conflict": "❌ 所選裝置與手動輸入的位址不同。請僅填寫其中一項。",
+      "ph_calibration_equal": "❌ pH 校準值必須不同",
+      "ph_reference_equal": "❌ pH 參考值必須不同",
+      "ph_slope_mismatch": "❌ 邏輯錯誤：校準斜率不一致",
+      "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5",
+      "ph_threshold_error": "❌ 最小 pH 必須小於最大 pH",
+      "orp_threshold_error": "❌ 最小 ORP 必須小於最大 ORP",
+      "temp_threshold_error": "❌ 最低溫度必須低於最高溫度",
+      "invalid_access_code": "❌ 存取碼無效（9 位英數字元）。"
+    },
+    "abort": {
+      "already_configured": "⚠️ 此裝置已完成設定。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "🛠️ Blue Connect 選項",
+        "description": "調整校準、行為以及您的個人警報閾值。",
+        "data": {},
+        "sections": {
+          "general": {
+            "name": "⚙️ 一般",
+            "data": {
+              "access_code": "🔑 存取碼（留空以使用被動模式：每小時 1 次分析）",
+              "chlorine_model": "🧪 水質處理方式",
+              "cya": "💧 穩定劑濃度 / CyA（毫克/公升）"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ 同步",
+            "data": {
+              "scan_interval": "🔄 分析間隔（分鐘）",
+              "reference_time": "🕒 參考時間（排程）",
+              "passive_measures": "📡 Blue Connect 內部分析（被動）",
+              "ignore_echoes": "🚫 忽略分析回音（被動）"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 探頭校準",
+            "data": {
+              "ph_calib_7": "🟢 測量值 pH 7（例如 7.10）",
+              "ph_ref_7": "🎯 目標溶液 pH 7（例如 7.02）",
+              "ph_calib_4": "🔴 測量值 pH 4（例如 4.10）",
+              "ph_ref_4": "🎯 目標溶液 pH 4（例如 4.00）",
+              "orp_calib": "📏 測量值 ORP（例如 650）",
+              "orp_ref": "🎯 目標溶液 ORP（例如 650）",
+              "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+            }
+          },
+          "alert_thresholds": {
+            "name": "📊 警報閾值",
+            "data": {
+              "ph_min": "📉 閾值：最小 pH（例如 6.90）",
+              "ph_max": "📈 閾值：最大 pH（例如 7.50）",
+              "orp_min": "📉 閾值：最小 ORP（mV）",
+              "orp_max": "📈 閾值：最大 ORP（mV）",
+              "temp_min": "❄️ 閾值：最低溫度（°C）",
+              "temp_max": "🌡️ 閾值：最高溫度（°C）"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "unknown": "❓ 未知錯誤",
+      "ph_threshold_error": "❌ 最小 pH 必須小於最大 pH",
+      "orp_threshold_error": "❌ 最小 ORP 必須小於最大 ORP",
+      "temp_threshold_error": "❌ 最低溫度必須低於最高溫度",
+      "invalid_access_code": "❌ 存取碼無效（9 位英數字元）。",
+      "ph_calibration_equal": "❌ pH 校準值必須不同",
+      "ph_reference_equal": "❌ pH 參考值必須不同",
+      "ph_slope_mismatch": "❌ 邏輯錯誤：校準斜率不一致",
+      "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5"
+    }
+  },
+  "selector": {
+    "chlorine_model": {
+      "options": {
+        "chlorine": "🧂 氯 / 鹽",
+        "bromine": "🟤 溴"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "ph_status": {
+        "name": "pH 狀態"
+      },
+      "orp_status": {
+        "name": "ORP（氧化還原電位）狀態"
+      },
+      "temperature_status": {
+        "name": "溫度狀態"
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "name": "新分析（約 60 秒）"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "name": "分析間隔"
+      },
+      "tac": {
+        "name": "TAC（總鹼度）"
+      },
+      "th": {
+        "name": "TH（硬度）"
+      },
+      "tds": {
+        "name": "TDS（總溶解固體）"
+      },
+      "cya": {
+        "name": "CyA（穩定劑）"
+      }
+    },
+    "sensor": {
+      "bluetooth_status": {
+        "name": "藍牙狀態",
+        "state": {
+          "waiting": "💤 已中斷連線",
+          "connecting": "⏳ 正在連接 Blue Connect...",
+          "authenticating": "🔐 正在驗證...",
+          "requesting": "🗣️ 正在請求分析...",
+          "reading": "📡 正在監聽資料訊框...",
+          "success": "✅ 分析完成（已中斷連線）",
+          "error": "❌ 連線錯誤",
+          "error_retry": "⏳ 錯誤（60 秒後重試）",
+          "write_failed": "⚠️ 寫入失敗",
+          "paused": "⏸️ 分析已暫停",
+          "out_of_range": "📵 訊號遺失",
+          "passive_mode": "被動模式"
+        }
+      },
+      "next_analysis": {
+        "name": "下次分析"
+      },
+      "temperature": {
+        "name": "溫度"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "orp": {
+        "name": "ORP（氧化還原電位）"
+      },
+      "conductivity": {
+        "name": "電導率"
+      },
+      "salinity": {
+        "name": "鹽度"
+      },
+      "battery": {
+        "name": "電池（電壓）"
+      },
+      "battery_level": {
+        "name": "電池"
+      },
+      "battery_adc": {
+        "name": "電池 ADC"
+      },
+      "ph_raw": {
+        "name": "原始 pH"
+      },
+      "lsi": {
+        "name": "朗格利爾指數"
+      },
+      "lsi_status": {
+        "name": "朗格利爾指數狀態",
+        "state": {
+          "corrosive": "🔴 腐蝕性水質（酸性）",
+          "balanced": "🟢 完美平衡水質",
+          "scaling": "🟠 結垢水質（鹼性）",
+          "unknown": "⚪ 未知"
+        }
+      },
+      "target_equilibrium_ph": {
+        "name": "平衡 pH（Taylor）"
+      },
+      "float_status": {
+        "name": "浮標狀態",
+        "state": {
+          "vertical": "⬆️ 直立",
+          "tilted": "↗️ 傾斜",
+          "horizontal": "➡️ 水平（異常）",
+          "upside_down": "⬇️ 倒置（異常）"
+        }
+      },
+      "accelerometer": {
+        "name": "加速度計"
+      },
+      "last_received": {
+        "name": "上次分析"
+      },
+      "raw_frame": {
+        "name": "計算資料訊框"
+      },
+      "raw_frame_0005": {
+        "name": "電氣資料訊框"
+      },
+      "serial_number": {
+        "name": "序號"
+      },
+      "hw_version": {
+        "name": "型號編號（SKU）"
+      },
+      "sw_version": {
+        "name": "雲端 ID / SN"
+      },
+      "rssi": {
+        "name": "藍牙訊號"
+      },
+      "receive_method": {
+        "name": "計算資料訊框類型",
+        "state": {
+          "passive": "被動",
+          "active": "主動",
+          "unknown": "未知"
+        }
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "name": "自動分析"
+      },
+      "passive_measures": {
+        "name": "Blue Connect 內部分析（被動）"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "name": "參考時間"
+      }
+    }
+  }
+}

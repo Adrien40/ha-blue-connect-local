@@ -1,0 +1,287 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "⚙️ Blue Connect-configuratie",
+        "description": "Als de Blue Connect niet automatisch wordt gedetecteerd, voeg dan het Bluetooth MAC-adres toe.\n\n**De toegangscode is niet verplicht.** Als u analyses op aanvraag wilt inschakelen, voer dan de 9 alfanumerieke tekens in (bijv. B93XXXXXX). Deze bevindt zich onder het klepje van de USB-poort van het apparaat, of op de beschermkap van de sondes!\n\n⚠️ Zonder code werkt het apparaat alleen in de passieve modus: 1 analyse per uur.",
+        "data": {
+          "mac_address": "🔎 Gevonden apparaat",
+          "manual_mac_address": "✍️ Of voer het MAC-adres rechtstreeks in (bijv. AA:BB:CC:DD:EE:FF)",
+          "access_code": "🔑 Toegangscode (leeg laten voor passieve modus: 1 analyse per uur)"
+        },
+        "sections": {
+          "general": {
+            "name": "⚙️ Algemeen",
+            "data": {
+              "chlorine_model": "🧪 Waterbehandeling",
+              "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synchronisatie",
+            "data": {
+              "scan_interval": "🔄 Analyse-interval (minuten)",
+              "reference_time": "🕒 Referentietijd (planning)",
+              "passive_measures": "📡 Interne analyses van Blue Connect (passief)",
+              "ignore_echoes": "🚫 Analyse-echo's negeren (passief)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibratie van sondes",
+            "data": {
+              "ph_calib_7": "🟢 Gemeten waarde pH 7 (bijv. 7.10)",
+              "ph_ref_7": "🎯 Referentieoplossing pH 7 (bijv. 7.02)",
+              "ph_calib_4": "🔴 Gemeten waarde pH 4 (bijv. 4.10)",
+              "ph_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)",
+              "orp_calib": "📏 Gemeten waarde ORP (bijv. 650)",
+              "orp_ref": "🎯 Referentieoplossing ORP (bijv. 650)",
+              "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "already_configured": "⚠️ Dit apparaat is al geconfigureerd",
+      "unknown": "❓ Onbekende fout",
+      "invalid_mac": "❌ Het MAC-adres is ongeldig. Het moet de indeling AA:BB:CC:DD:EE:FF hebben.",
+      "no_mac_provided": "❌ Geen apparaat geselecteerd en geen MAC-adres ingevoerd.",
+      "mac_conflict": "❌ Het geselecteerde apparaat en het handmatig ingevoerde adres verschillen. Vul slechts één van beide in.",
+      "ph_calibration_equal": "❌ De pH-kalibratiewaarden moeten verschillend zijn",
+      "ph_reference_equal": "❌ De pH-referentiewaarden moeten verschillend zijn",
+      "ph_slope_mismatch": "❌ Logische fout: De kalibratiehelling is inconsistent",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "ph_threshold_error": "❌ Minimum pH moet lager zijn dan maximum pH",
+      "orp_threshold_error": "❌ Minimum ORP moet lager zijn dan maximum ORP",
+      "temp_threshold_error": "❌ De minimumtemperatuur moet lager zijn dan de maximumtemperatuur",
+      "invalid_access_code": "❌ Ongeldige toegangscode (9 alfanumerieke tekens)."
+    },
+    "abort": {
+      "already_configured": "⚠️ Dit apparaat is al geconfigureerd."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "🛠️ Blue Connect-opties",
+        "description": "Pas de kalibratie, het gedrag en uw persoonlijke alarmdrempels aan.",
+        "data": {},
+        "sections": {
+          "general": {
+            "name": "⚙️ Algemeen",
+            "data": {
+              "access_code": "🔑 Toegangscode (leeg laten voor passieve modus: 1 analyse per uur)",
+              "chlorine_model": "🧪 Waterbehandeling",
+              "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synchronisatie",
+            "data": {
+              "scan_interval": "🔄 Analyse-interval (minuten)",
+              "reference_time": "🕒 Referentietijd (planning)",
+              "passive_measures": "📡 Interne analyses van Blue Connect (passief)",
+              "ignore_echoes": "🚫 Analyse-echo's negeren (passief)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibratie van sondes",
+            "data": {
+              "ph_calib_7": "🟢 Gemeten waarde pH 7 (bijv. 7.10)",
+              "ph_ref_7": "🎯 Referentieoplossing pH 7 (bijv. 7.02)",
+              "ph_calib_4": "🔴 Gemeten waarde pH 4 (bijv. 4.10)",
+              "ph_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)",
+              "orp_calib": "📏 Gemeten waarde ORP (bijv. 650)",
+              "orp_ref": "🎯 Referentieoplossing ORP (bijv. 650)",
+              "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+            }
+          },
+          "alert_thresholds": {
+            "name": "📊 Alarmdrempels",
+            "data": {
+              "ph_min": "📉 Drempel: Minimum pH (bijv. 6.90)",
+              "ph_max": "📈 Drempel: Maximum pH (bijv. 7.50)",
+              "orp_min": "📉 Drempel: Minimum ORP (mV)",
+              "orp_max": "📈 Drempel: Maximum ORP (mV)",
+              "temp_min": "❄️ Drempel: Minimumtemperatuur (°C)",
+              "temp_max": "🌡️ Drempel: Maximumtemperatuur (°C)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "unknown": "❓ Onbekende fout",
+      "ph_threshold_error": "❌ Minimum pH moet lager zijn dan maximum pH",
+      "orp_threshold_error": "❌ Minimum ORP moet lager zijn dan maximum ORP",
+      "temp_threshold_error": "❌ De minimumtemperatuur moet lager zijn dan de maximumtemperatuur",
+      "invalid_access_code": "❌ Ongeldige toegangscode (9 alfanumerieke tekens).",
+      "ph_calibration_equal": "❌ De pH-kalibratiewaarden moeten verschillend zijn",
+      "ph_reference_equal": "❌ De pH-referentiewaarden moeten verschillend zijn",
+      "ph_slope_mismatch": "❌ Logische fout: De kalibratiehelling is inconsistent",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+    }
+  },
+  "selector": {
+    "chlorine_model": {
+      "options": {
+        "chlorine": "🧂 Chloor / Zout",
+        "bromine": "🟤 Broom"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "ph_status": {
+        "name": "pH-status"
+      },
+      "orp_status": {
+        "name": "ORP-status (Redox)"
+      },
+      "temperature_status": {
+        "name": "Temperatuurstatus"
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "name": "Nieuwe analyse (~60s)"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "name": "Analyse-interval"
+      },
+      "tac": {
+        "name": "TAC (Alkaliniteit)"
+      },
+      "th": {
+        "name": "TH (Hardheid)"
+      },
+      "tds": {
+        "name": "TDS (Opgeloste stoffen)"
+      },
+      "cya": {
+        "name": "CyA (Stabilisator)"
+      }
+    },
+    "sensor": {
+      "bluetooth_status": {
+        "name": "Bluetooth-status",
+        "state": {
+          "waiting": "💤 Niet verbonden",
+          "connecting": "⏳ Verbinden met Blue Connect...",
+          "authenticating": "🔐 Authenticeren...",
+          "requesting": "🗣️ Analyse aanvragen...",
+          "reading": "📡 Wachten op frame...",
+          "success": "✅ Analyse voltooid (niet verbonden)",
+          "error": "❌ Verbindingsfout",
+          "error_retry": "⏳ Fout (nieuwe poging over 60s)",
+          "write_failed": "⚠️ Schrijven mislukt",
+          "paused": "⏸️ Analyses gepauzeerd",
+          "out_of_range": "📵 Signaal verloren",
+          "passive_mode": "Passieve modus"
+        }
+      },
+      "next_analysis": {
+        "name": "Volgende analyse"
+      },
+      "temperature": {
+        "name": "Temperatuur"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "orp": {
+        "name": "ORP (Redox)"
+      },
+      "conductivity": {
+        "name": "Geleidbaarheid"
+      },
+      "salinity": {
+        "name": "Zoutgehalte"
+      },
+      "battery": {
+        "name": "Batterij (spanning)"
+      },
+      "battery_level": {
+        "name": "Batterij"
+      },
+      "battery_adc": {
+        "name": "Batterij ADC"
+      },
+      "ph_raw": {
+        "name": "Ruwe pH"
+      },
+      "lsi": {
+        "name": "Langelier-index"
+      },
+      "lsi_status": {
+        "name": "Status Langelier-index",
+        "state": {
+          "corrosive": "🔴 Corrosief water (zuur)",
+          "balanced": "🟢 Perfect uitgebalanceerd water",
+          "scaling": "🟠 Kalkvormend water (basisch)",
+          "unknown": "⚪ Onbekend"
+        }
+      },
+      "target_equilibrium_ph": {
+        "name": "Evenwichts-pH (Taylor)"
+      },
+      "float_status": {
+        "name": "Vlotterstatus",
+        "state": {
+          "vertical": "⬆️ Verticaal",
+          "tilted": "↗️ Gekanteld",
+          "horizontal": "➡️ Horizontaal (probleem)",
+          "upside_down": "⬇️ Ondersteboven (probleem)"
+        }
+      },
+      "accelerometer": {
+        "name": "Accelerometer"
+      },
+      "last_received": {
+        "name": "Laatste analyse"
+      },
+      "raw_frame": {
+        "name": "Berekend frame"
+      },
+      "raw_frame_0005": {
+        "name": "Elektrisch frame"
+      },
+      "serial_number": {
+        "name": "Serienummer"
+      },
+      "hw_version": {
+        "name": "Modelnummer (SKU)"
+      },
+      "sw_version": {
+        "name": "Cloud-ID / SN"
+      },
+      "rssi": {
+        "name": "Bluetooth-signaal"
+      },
+      "receive_method": {
+        "name": "Type berekend frame",
+        "state": {
+          "passive": "Passief",
+          "active": "Actief",
+          "unknown": "Onbekend"
+        }
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "name": "Automatische analyses"
+      },
+      "passive_measures": {
+        "name": "Interne analyses van Blue Connect (passief)"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "name": "Referentietijd"
+      }
+    }
+  }
+}

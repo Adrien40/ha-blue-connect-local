@@ -1,0 +1,25 @@
+{
+  "domain": "blue_connect_local",
+  "name": "Blue Connect Local",
+  "bluetooth": [
+    {
+      "local_name": "BC3*"
+    }
+  ],
+  "codeowners": [
+    "@Adrien40"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "bluetooth"
+  ],
+  "documentation": "https://github.com/Adrien40/ha-blue-connect-local",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Adrien40/ha-blue-connect-local/issues",
+  "requirements": [
+    "bleak>=0.21.1",
+    "bleak-retry-connector>=4.0.0"
+  ],
+  "version": "1.0.0"
+}
