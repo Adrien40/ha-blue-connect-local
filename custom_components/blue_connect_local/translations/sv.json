@@ -1,0 +1,287 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "⚙️ Blue Connect-konfiguration",
+        "description": "Om Blue Connect inte upptäcks automatiskt, lägg till dess Bluetooth MAC-adress.\n\n**Åtkomstkoden är inte obligatorisk.** Om du vill aktivera analyser på begäran, ange de 9 alfanumeriska tecknen (t.ex. B93XXXXXX). Den finns under enhetens USB-portlucka, eller på sondernas skyddslock!\n\n⚠️ Utan kod fungerar enheten endast i passivt läge: 1 analys i timmen.",
+        "data": {
+          "mac_address": "🔎 Upptäckt enhet",
+          "manual_mac_address": "✍️ Eller ange MAC-adressen direkt (t.ex. AA:BB:CC:DD:EE:FF)",
+          "access_code": "🔑 Åtkomstkod (lämna tomt för passivt läge: 1 analys i timmen)"
+        },
+        "sections": {
+          "general": {
+            "name": "⚙️ Allmänt",
+            "data": {
+              "chlorine_model": "🧪 Vattenbehandling",
+              "cya": "💧 Stabilisatornivå / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synkronisering",
+            "data": {
+              "scan_interval": "🔄 Analysintervall (minuter)",
+              "reference_time": "🕒 Referenstid (schemaläggning)",
+              "passive_measures": "📡 Blue Connects interna analyser (passiv)",
+              "ignore_echoes": "🚫 Ignorera analysekon (passiv)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibrering av sonder",
+            "data": {
+              "ph_calib_7": "🟢 Uppmätt värde pH 7 (t.ex. 7.10)",
+              "ph_ref_7": "🎯 Referenslösning pH 7 (t.ex. 7.02)",
+              "ph_calib_4": "🔴 Uppmätt värde pH 4 (t.ex. 4.10)",
+              "ph_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)",
+              "orp_calib": "📏 Uppmätt värde ORP (t.ex. 650)",
+              "orp_ref": "🎯 Referenslösning ORP (t.ex. 650)",
+              "temp_offset": "🌡️ Temperaturavvikelse (°C) (+/-)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "already_configured": "⚠️ Den här enheten är redan konfigurerad",
+      "unknown": "❓ Okänt fel",
+      "invalid_mac": "❌ MAC-adressen är ogiltig. Den måste ha formatet AA:BB:CC:DD:EE:FF.",
+      "no_mac_provided": "❌ Ingen enhet vald och ingen MAC-adress angiven.",
+      "mac_conflict": "❌ Den valda enheten och den manuellt angivna adressen skiljer sig åt. Fyll endast i ett av fälten.",
+      "ph_calibration_equal": "❌ pH-kalibreringsvärdena måste vara olika",
+      "ph_reference_equal": "❌ pH-referensvärdena måste vara olika",
+      "ph_slope_mismatch": "❌ Logiskt fel: Kalibreringslutningen är inkonsekvent",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "ph_threshold_error": "❌ Minsta pH måste vara lägre än högsta pH",
+      "orp_threshold_error": "❌ Minsta ORP måste vara lägre än högsta ORP",
+      "temp_threshold_error": "❌ Minimitemperaturen måste vara lägre än maximitemperaturen",
+      "invalid_access_code": "❌ Ogiltig åtkomstkod (9 alfanumeriska tecken)."
+    },
+    "abort": {
+      "already_configured": "⚠️ Den här enheten är redan konfigurerad."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "🛠️ Blue Connect-alternativ",
+        "description": "Justera kalibrering, beteende och dina personliga larmgränser.",
+        "data": {},
+        "sections": {
+          "general": {
+            "name": "⚙️ Allmänt",
+            "data": {
+              "access_code": "🔑 Åtkomstkod (lämna tomt för passivt läge: 1 analys i timmen)",
+              "chlorine_model": "🧪 Vattenbehandling",
+              "cya": "💧 Stabilisatornivå / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synkronisering",
+            "data": {
+              "scan_interval": "🔄 Analysintervall (minuter)",
+              "reference_time": "🕒 Referenstid (schemaläggning)",
+              "passive_measures": "📡 Blue Connects interna analyser (passiv)",
+              "ignore_echoes": "🚫 Ignorera analysekon (passiv)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibrering av sonder",
+            "data": {
+              "ph_calib_7": "🟢 Uppmätt värde pH 7 (t.ex. 7.10)",
+              "ph_ref_7": "🎯 Referenslösning pH 7 (t.ex. 7.02)",
+              "ph_calib_4": "🔴 Uppmätt värde pH 4 (t.ex. 4.10)",
+              "ph_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)",
+              "orp_calib": "📏 Uppmätt värde ORP (t.ex. 650)",
+              "orp_ref": "🎯 Referenslösning ORP (t.ex. 650)",
+              "temp_offset": "🌡️ Temperaturavvikelse (°C) (+/-)"
+            }
+          },
+          "alert_thresholds": {
+            "name": "📊 Larmgränser",
+            "data": {
+              "ph_min": "📉 Gräns: Lägsta pH (t.ex. 6.90)",
+              "ph_max": "📈 Gräns: Högsta pH (t.ex. 7.50)",
+              "orp_min": "📉 Gräns: Lägsta ORP (mV)",
+              "orp_max": "📈 Gräns: Högsta ORP (mV)",
+              "temp_min": "❄️ Gräns: Lägsta temperatur (°C)",
+              "temp_max": "🌡️ Gräns: Högsta temperatur (°C)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "unknown": "❓ Okänt fel",
+      "ph_threshold_error": "❌ Minsta pH måste vara lägre än högsta pH",
+      "orp_threshold_error": "❌ Minsta ORP måste vara lägre än högsta ORP",
+      "temp_threshold_error": "❌ Minimitemperaturen måste vara lägre än maximitemperaturen",
+      "invalid_access_code": "❌ Ogiltig åtkomstkod (9 alfanumeriska tecken).",
+      "ph_calibration_equal": "❌ pH-kalibreringsvärdena måste vara olika",
+      "ph_reference_equal": "❌ pH-referensvärdena måste vara olika",
+      "ph_slope_mismatch": "❌ Logiskt fel: Kalibreringslutningen är inkonsekvent",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+    }
+  },
+  "selector": {
+    "chlorine_model": {
+      "options": {
+        "chlorine": "🧂 Klor / Salt",
+        "bromine": "🟤 Brom"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "ph_status": {
+        "name": "pH-status"
+      },
+      "orp_status": {
+        "name": "ORP-status (Redox)"
+      },
+      "temperature_status": {
+        "name": "Temperaturstatus"
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "name": "Ny analys (~60s)"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "name": "Analysintervall"
+      },
+      "tac": {
+        "name": "TAC (Alkalinitet)"
+      },
+      "th": {
+        "name": "TH (Hårdhet)"
+      },
+      "tds": {
+        "name": "TDS (Lösta ämnen)"
+      },
+      "cya": {
+        "name": "CyA (Stabilisator)"
+      }
+    },
+    "sensor": {
+      "bluetooth_status": {
+        "name": "Bluetooth-status",
+        "state": {
+          "waiting": "💤 Frånkopplad",
+          "connecting": "⏳ Ansluter till Blue Connect...",
+          "authenticating": "🔐 Autentiserar...",
+          "requesting": "🗣️ Begär analys...",
+          "reading": "📡 Väntar på ram...",
+          "success": "✅ Analys klar (frånkopplad)",
+          "error": "❌ Anslutningsfel",
+          "error_retry": "⏳ Fel (försöker igen om 60s)",
+          "write_failed": "⚠️ Skrivning misslyckades",
+          "paused": "⏸️ Analyser pausade",
+          "out_of_range": "📵 Signal förlorad",
+          "passive_mode": "Passivt läge"
+        }
+      },
+      "next_analysis": {
+        "name": "Nästa analys"
+      },
+      "temperature": {
+        "name": "Temperatur"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "orp": {
+        "name": "ORP (Redox)"
+      },
+      "conductivity": {
+        "name": "Konduktivitet"
+      },
+      "salinity": {
+        "name": "Salinitet"
+      },
+      "battery": {
+        "name": "Batteri (spänning)"
+      },
+      "battery_level": {
+        "name": "Batteri"
+      },
+      "battery_adc": {
+        "name": "Batteri ADC"
+      },
+      "ph_raw": {
+        "name": "Rått pH"
+      },
+      "lsi": {
+        "name": "Langelier-index"
+      },
+      "lsi_status": {
+        "name": "Langelier-indexstatus",
+        "state": {
+          "corrosive": "🔴 Frätande vatten (surt)",
+          "balanced": "🟢 Perfekt balanserat vatten",
+          "scaling": "🟠 Kalkbildande vatten (basiskt)",
+          "unknown": "⚪ Okänt"
+        }
+      },
+      "target_equilibrium_ph": {
+        "name": "Jämvikts-pH (Taylor)"
+      },
+      "float_status": {
+        "name": "Flytstatus",
+        "state": {
+          "vertical": "⬆️ Vertikal",
+          "tilted": "↗️ Lutande",
+          "horizontal": "➡️ Horisontell (problem)",
+          "upside_down": "⬇️ Upp och ned (problem)"
+        }
+      },
+      "accelerometer": {
+        "name": "Accelerometer"
+      },
+      "last_received": {
+        "name": "Senaste analys"
+      },
+      "raw_frame": {
+        "name": "Beräknad ram"
+      },
+      "raw_frame_0005": {
+        "name": "Elektrisk ram"
+      },
+      "serial_number": {
+        "name": "Serienummer"
+      },
+      "hw_version": {
+        "name": "Modellnummer (SKU)"
+      },
+      "sw_version": {
+        "name": "Cloud-ID / SN"
+      },
+      "rssi": {
+        "name": "Bluetooth-signal"
+      },
+      "receive_method": {
+        "name": "Typ av beräknad ram",
+        "state": {
+          "passive": "Passiv",
+          "active": "Aktiv",
+          "unknown": "Okänt"
+        }
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "name": "Automatiska analyser"
+      },
+      "passive_measures": {
+        "name": "Blue Connects interna analyser (passiv)"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "name": "Referenstid"
+      }
+    }
+  }
+}

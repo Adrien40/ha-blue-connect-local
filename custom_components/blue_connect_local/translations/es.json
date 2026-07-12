@@ -1,0 +1,287 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "⚙️ Configuración de Blue Connect",
+        "description": "Si el Blue Connect no se detecta automáticamente, añada su dirección MAC Bluetooth.\n\n**El Código de Acceso no es obligatorio.** Si desea habilitar los análisis a demanda, introduzca los 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX). Se encuentra bajo la tapa del puerto USB del dispositivo, o en la tapa de protección de las sondas.\n\n⚠️ Sin código, el dispositivo funcionará únicamente en Modo Pasivo: 1 análisis por hora.",
+        "data": {
+          "mac_address": "🔎 Dispositivo Detectado",
+          "manual_mac_address": "✍️ O introduzca la dirección MAC directamente (por ejemplo, AA:BB:CC:DD:EE:FF)",
+          "access_code": "🔑 Código de Acceso (Déjelo vacío para el Modo Pasivo: 1 análisis por hora)"
+        },
+        "sections": {
+          "general": {
+            "name": "⚙️ General",
+            "data": {
+              "chlorine_model": "🧪 Tratamiento del Agua",
+              "cya": "💧 Nivel de Estabilizante / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Sincronización",
+            "data": {
+              "scan_interval": "🔄 Intervalo de Análisis (minutos)",
+              "reference_time": "🕒 Hora de Referencia (Programación)",
+              "passive_measures": "📡 Análisis Internos de Blue Connect (Pasivos)",
+              "ignore_echoes": "🚫 Ignorar Ecos de Análisis (Pasivos)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Calibración de Sondas",
+            "data": {
+              "ph_calib_7": "🟢 Valor Medido pH 7 (ej., 7.10)",
+              "ph_ref_7": "🎯 Solución de Referencia pH 7 (ej., 7.02)",
+              "ph_calib_4": "🔴 Valor Medido pH 4 (ej., 4.10)",
+              "ph_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)",
+              "orp_calib": "📏 Valor Medido ORP (ej., 650)",
+              "orp_ref": "🎯 Solución de Referencia ORP (ej., 650)",
+              "temp_offset": "🌡️ Desviación de Temperatura (°C) (+/-)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "already_configured": "⚠️ Este dispositivo ya está configurado",
+      "unknown": "❓ Error desconocido",
+      "invalid_mac": "❌ La dirección MAC no es válida. Debe tener el formato AA:BB:CC:DD:EE:FF.",
+      "no_mac_provided": "❌ No se ha seleccionado ningún dispositivo ni se ha introducido una dirección MAC.",
+      "mac_conflict": "❌ El dispositivo seleccionado y la dirección introducida manualmente son diferentes. Complete solo uno de los dos.",
+      "ph_calibration_equal": "❌ Los valores de calibración de pH deben ser diferentes",
+      "ph_reference_equal": "❌ Los valores de referencia de pH deben ser diferentes",
+      "ph_slope_mismatch": "❌ Error lógico: La pendiente de calibración es incoherente",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "ph_threshold_error": "❌ El pH mínimo debe ser inferior al pH máximo",
+      "orp_threshold_error": "❌ El ORP mínimo debe ser inferior al ORP máximo",
+      "temp_threshold_error": "❌ La temperatura mínima debe ser inferior a la temperatura máxima",
+      "invalid_access_code": "❌ Código de Acceso no válido (9 caracteres alfanuméricos)."
+    },
+    "abort": {
+      "already_configured": "⚠️ Este dispositivo ya está configurado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "🛠️ Opciones de Blue Connect",
+        "description": "Ajuste la Calibración, el comportamiento y sus umbrales de Alerta personales.",
+        "data": {},
+        "sections": {
+          "general": {
+            "name": "⚙️ General",
+            "data": {
+              "access_code": "🔑 Código de Acceso (Déjelo vacío para el Modo Pasivo: 1 análisis por hora)",
+              "chlorine_model": "🧪 Tratamiento del Agua",
+              "cya": "💧 Nivel de Estabilizante / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Sincronización",
+            "data": {
+              "scan_interval": "🔄 Intervalo de Análisis (minutos)",
+              "reference_time": "🕒 Hora de Referencia (Programación)",
+              "passive_measures": "📡 Análisis Internos de Blue Connect (Pasivos)",
+              "ignore_echoes": "🚫 Ignorar Ecos de Análisis (Pasivos)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Calibración de Sondas",
+            "data": {
+              "ph_calib_7": "🟢 Valor Medido pH 7 (ej., 7.10)",
+              "ph_ref_7": "🎯 Solución de Referencia pH 7 (ej., 7.02)",
+              "ph_calib_4": "🔴 Valor Medido pH 4 (ej., 4.10)",
+              "ph_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)",
+              "orp_calib": "📏 Valor Medido ORP (ej., 650)",
+              "orp_ref": "🎯 Solución de Referencia ORP (ej., 650)",
+              "temp_offset": "🌡️ Desviación de Temperatura (°C) (+/-)"
+            }
+          },
+          "alert_thresholds": {
+            "name": "📊 Umbrales de Alerta",
+            "data": {
+              "ph_min": "📉 Umbral: pH Mínimo (ej., 6.90)",
+              "ph_max": "📈 Umbral: pH Máximo (ej., 7.50)",
+              "orp_min": "📉 Umbral: ORP Mínimo (mV)",
+              "orp_max": "📈 Umbral: ORP Máximo (mV)",
+              "temp_min": "❄️ Umbral: Temperatura Mínima (°C)",
+              "temp_max": "🌡️ Umbral: Temperatura Máxima (°C)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "unknown": "❓ Error desconocido",
+      "ph_threshold_error": "❌ El pH mínimo debe ser inferior al pH máximo",
+      "orp_threshold_error": "❌ El ORP mínimo debe ser inferior al ORP máximo",
+      "temp_threshold_error": "❌ La temperatura mínima debe ser inferior a la temperatura máxima",
+      "invalid_access_code": "❌ Código de Acceso no válido (9 caracteres alfanuméricos).",
+      "ph_calibration_equal": "❌ Los valores de calibración de pH deben ser diferentes",
+      "ph_reference_equal": "❌ Los valores de referencia de pH deben ser diferentes",
+      "ph_slope_mismatch": "❌ Error lógico: La pendiente de calibración es incoherente",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+    }
+  },
+  "selector": {
+    "chlorine_model": {
+      "options": {
+        "chlorine": "🧂 Cloro / Sal",
+        "bromine": "🟤 Bromo"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "ph_status": {
+        "name": "Estado del pH"
+      },
+      "orp_status": {
+        "name": "Estado del ORP (Redox)"
+      },
+      "temperature_status": {
+        "name": "Estado de la Temperatura"
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "name": "Nuevo Análisis (~60s)"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "name": "Intervalo de Análisis"
+      },
+      "tac": {
+        "name": "TAC (Alcalinidad)"
+      },
+      "th": {
+        "name": "TH (Dureza)"
+      },
+      "tds": {
+        "name": "TDS (Sólidos Disueltos)"
+      },
+      "cya": {
+        "name": "CyA (Estabilizante)"
+      }
+    },
+    "sensor": {
+      "bluetooth_status": {
+        "name": "Estado del Bluetooth",
+        "state": {
+          "waiting": "💤 Desconectado",
+          "connecting": "⏳ Conectando con Blue Connect...",
+          "authenticating": "🔐 Autenticando...",
+          "requesting": "🗣️ Solicitando Análisis...",
+          "reading": "📡 Esperando Trama...",
+          "success": "✅ Análisis Completado (Desconectado)",
+          "error": "❌ Error de conexión",
+          "error_retry": "⏳ Error (Reintentando en 60s)",
+          "write_failed": "⚠️ Fallo de escritura",
+          "paused": "⏸️ Análisis en pausa",
+          "out_of_range": "📵 Señal Perdida",
+          "passive_mode": "Modo Pasivo"
+        }
+      },
+      "next_analysis": {
+        "name": "Próximo Análisis"
+      },
+      "temperature": {
+        "name": "Temperatura"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "orp": {
+        "name": "ORP (Redox)"
+      },
+      "conductivity": {
+        "name": "Conductividad"
+      },
+      "salinity": {
+        "name": "Salinidad"
+      },
+      "battery": {
+        "name": "Batería (Voltaje)"
+      },
+      "battery_level": {
+        "name": "Batería"
+      },
+      "battery_adc": {
+        "name": "Batería ADC"
+      },
+      "ph_raw": {
+        "name": "pH Bruto"
+      },
+      "lsi": {
+        "name": "Índice de Langelier"
+      },
+      "lsi_status": {
+        "name": "Estado del Índice de Langelier",
+        "state": {
+          "corrosive": "🔴 Agua Corrosiva (Ácida)",
+          "balanced": "🟢 Agua Perfectamente Equilibrada",
+          "scaling": "🟠 Agua Incrustante (Básica)",
+          "unknown": "⚪ Desconocido"
+        }
+      },
+      "target_equilibrium_ph": {
+        "name": "pH de Equilibrio (Taylor)"
+      },
+      "float_status": {
+        "name": "Estado del Flotador",
+        "state": {
+          "vertical": "⬆️ Vertical",
+          "tilted": "↗️ Inclinado",
+          "horizontal": "➡️ Horizontal (Problema)",
+          "upside_down": "⬇️ Boca abajo (Problema)"
+        }
+      },
+      "accelerometer": {
+        "name": "Acelerómetro"
+      },
+      "last_received": {
+        "name": "Último Análisis"
+      },
+      "raw_frame": {
+        "name": "Trama Calculada"
+      },
+      "raw_frame_0005": {
+        "name": "Trama Eléctrica"
+      },
+      "serial_number": {
+        "name": "Número de Serie"
+      },
+      "hw_version": {
+        "name": "Número de Modelo (SKU)"
+      },
+      "sw_version": {
+        "name": "ID de la Nube / SN"
+      },
+      "rssi": {
+        "name": "Señal Bluetooth"
+      },
+      "receive_method": {
+        "name": "Tipo de Trama Calculada",
+        "state": {
+          "passive": "Pasiva",
+          "active": "Activa",
+          "unknown": "Desconocido"
+        }
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "name": "Análisis Automáticos"
+      },
+      "passive_measures": {
+        "name": "Análisis Internos de Blue Connect (Pasivos)"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "name": "Hora de Referencia"
+      }
+    }
+  }
+}

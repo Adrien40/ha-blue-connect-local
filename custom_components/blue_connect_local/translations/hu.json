@@ -1,0 +1,287 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "⚙️ Blue Connect konfiguráció",
+        "description": "Ha a Blue Connect nem érzékelhető automatikusan, adja meg a Bluetooth MAC-címét.\n\n**A hozzáférési kód nem kötelező.** Ha szeretné engedélyezni az igény szerinti elemzéseket, adja meg a 9 alfanumerikus karaktert (pl. B93XXXXXX). Az eszköz USB-portjának fedele alatt, vagy a szondák védőkupakján található!\n\n⚠️ Kód nélkül az eszköz csak passzív módban működik: óránként 1 elemzés.",
+        "data": {
+          "mac_address": "🔎 Felfedezett eszköz",
+          "manual_mac_address": "✍️ Vagy adja meg közvetlenül a MAC-címet (pl. AA:BB:CC:DD:EE:FF)",
+          "access_code": "🔑 Hozzáférési kód (hagyja üresen a passzív módhoz: óránként 1 elemzés)"
+        },
+        "sections": {
+          "general": {
+            "name": "⚙️ Általános",
+            "data": {
+              "chlorine_model": "🧪 Vízkezelés",
+              "cya": "💧 Stabilizátor szint / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Szinkronizálás",
+            "data": {
+              "scan_interval": "🔄 Elemzési időköz (perc)",
+              "reference_time": "🕒 Referenciaidő (ütemezés)",
+              "passive_measures": "📡 Blue Connect belső elemzései (passzív)",
+              "ignore_echoes": "🚫 Elemzési visszhangok figyelmen kívül hagyása (passzív)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Szondák kalibrálása",
+            "data": {
+              "ph_calib_7": "🟢 Mért érték pH 7 (pl. 7.10)",
+              "ph_ref_7": "🎯 Célértékű oldat pH 7 (pl. 7.02)",
+              "ph_calib_4": "🔴 Mért érték pH 4 (pl. 4.10)",
+              "ph_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)",
+              "orp_calib": "📏 Mért érték ORP (pl. 650)",
+              "orp_ref": "🎯 Célértékű oldat ORP (pl. 650)",
+              "temp_offset": "🌡️ Hőmérséklet-eltolás (°C) (+/-)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "already_configured": "⚠️ Ez az eszköz már konfigurálva van",
+      "unknown": "❓ Ismeretlen hiba",
+      "invalid_mac": "❌ A MAC-cím érvénytelen. A formátumnak AA:BB:CC:DD:EE:FF-nek kell lennie.",
+      "no_mac_provided": "❌ Nincs kiválasztott eszköz, és nincs megadva MAC-cím.",
+      "mac_conflict": "❌ A kiválasztott eszköz és a manuálisan megadott cím eltér egymástól. Csak az egyiket töltse ki.",
+      "ph_calibration_equal": "❌ A pH kalibrációs értékeinek különbözniük kell",
+      "ph_reference_equal": "❌ A pH referenciaértékeinek különbözniük kell",
+      "ph_slope_mismatch": "❌ Logikai hiba: A kalibrációs meredekség nem konzisztens",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "ph_threshold_error": "❌ A minimum pH-nak kisebbnek kell lennie, mint a maximum pH",
+      "orp_threshold_error": "❌ A minimum ORP-nek kisebbnek kell lennie, mint a maximum ORP",
+      "temp_threshold_error": "❌ A minimum hőmérsékletnek alacsonyabbnak kell lennie, mint a maximum hőmérséklet",
+      "invalid_access_code": "❌ Érvénytelen hozzáférési kód (9 alfanumerikus karakter)."
+    },
+    "abort": {
+      "already_configured": "⚠️ Ez az eszköz már konfigurálva van."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "🛠️ Blue Connect beállítások",
+        "description": "Állítsa be a kalibrációt, a viselkedést és a személyes riasztási küszöbértékeket.",
+        "data": {},
+        "sections": {
+          "general": {
+            "name": "⚙️ Általános",
+            "data": {
+              "access_code": "🔑 Hozzáférési kód (hagyja üresen a passzív módhoz: óránként 1 elemzés)",
+              "chlorine_model": "🧪 Vízkezelés",
+              "cya": "💧 Stabilizátor szint / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Szinkronizálás",
+            "data": {
+              "scan_interval": "🔄 Elemzési időköz (perc)",
+              "reference_time": "🕒 Referenciaidő (ütemezés)",
+              "passive_measures": "📡 Blue Connect belső elemzései (passzív)",
+              "ignore_echoes": "🚫 Elemzési visszhangok figyelmen kívül hagyása (passzív)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Szondák kalibrálása",
+            "data": {
+              "ph_calib_7": "🟢 Mért érték pH 7 (pl. 7.10)",
+              "ph_ref_7": "🎯 Célértékű oldat pH 7 (pl. 7.02)",
+              "ph_calib_4": "🔴 Mért érték pH 4 (pl. 4.10)",
+              "ph_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)",
+              "orp_calib": "📏 Mért érték ORP (pl. 650)",
+              "orp_ref": "🎯 Célértékű oldat ORP (pl. 650)",
+              "temp_offset": "🌡️ Hőmérséklet-eltolás (°C) (+/-)"
+            }
+          },
+          "alert_thresholds": {
+            "name": "📊 Riasztási küszöbértékek",
+            "data": {
+              "ph_min": "📉 Küszöbérték: Minimum pH (pl. 6.90)",
+              "ph_max": "📈 Küszöbérték: Maximum pH (pl. 7.50)",
+              "orp_min": "📉 Küszöbérték: Minimum ORP (mV)",
+              "orp_max": "📈 Küszöbérték: Maximum ORP (mV)",
+              "temp_min": "❄️ Küszöbérték: Minimum hőmérséklet (°C)",
+              "temp_max": "🌡️ Küszöbérték: Maximum hőmérséklet (°C)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "unknown": "❓ Ismeretlen hiba",
+      "ph_threshold_error": "❌ A minimum pH-nak kisebbnek kell lennie, mint a maximum pH",
+      "orp_threshold_error": "❌ A minimum ORP-nek kisebbnek kell lennie, mint a maximum ORP",
+      "temp_threshold_error": "❌ A minimum hőmérsékletnek alacsonyabbnak kell lennie, mint a maximum hőmérséklet",
+      "invalid_access_code": "❌ Érvénytelen hozzáférési kód (9 alfanumerikus karakter).",
+      "ph_calibration_equal": "❌ A pH kalibrációs értékeinek különbözniük kell",
+      "ph_reference_equal": "❌ A pH referenciaértékeinek különbözniük kell",
+      "ph_slope_mismatch": "❌ Logikai hiba: A kalibrációs meredekség nem konzisztens",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+    }
+  },
+  "selector": {
+    "chlorine_model": {
+      "options": {
+        "chlorine": "🧂 Klór / Só",
+        "bromine": "🟤 Bróm"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "ph_status": {
+        "name": "pH állapot"
+      },
+      "orp_status": {
+        "name": "ORP (Redox) állapot"
+      },
+      "temperature_status": {
+        "name": "Hőmérséklet állapot"
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "name": "Új elemzés (~60s)"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "name": "Elemzési időköz"
+      },
+      "tac": {
+        "name": "TAC (Lúgosság)"
+      },
+      "th": {
+        "name": "TH (Keménység)"
+      },
+      "tds": {
+        "name": "TDS (Oldott szilárd anyagok)"
+      },
+      "cya": {
+        "name": "CyA (Stabilizátor)"
+      }
+    },
+    "sensor": {
+      "bluetooth_status": {
+        "name": "Bluetooth állapot",
+        "state": {
+          "waiting": "💤 Nincs kapcsolat",
+          "connecting": "⏳ Csatlakozás a Blue Connect-hez...",
+          "authenticating": "🔐 Hitelesítés...",
+          "requesting": "🗣️ Elemzés kérése...",
+          "reading": "📡 Várakozás a keretre...",
+          "success": "✅ Elemzés befejezve (nincs kapcsolat)",
+          "error": "❌ Kapcsolódási hiba",
+          "error_retry": "⏳ Hiba (újrapróbálkozás 60s múlva)",
+          "write_failed": "⚠️ Az írás sikertelen",
+          "paused": "⏸️ Elemzések szüneteltetve",
+          "out_of_range": "📵 Jel elveszett",
+          "passive_mode": "Passzív mód"
+        }
+      },
+      "next_analysis": {
+        "name": "Következő elemzés"
+      },
+      "temperature": {
+        "name": "Hőmérséklet"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "orp": {
+        "name": "ORP (Redox)"
+      },
+      "conductivity": {
+        "name": "Vezetőképesség"
+      },
+      "salinity": {
+        "name": "Sótartalom"
+      },
+      "battery": {
+        "name": "Akkumulátor (feszültség)"
+      },
+      "battery_level": {
+        "name": "Akkumulátor"
+      },
+      "battery_adc": {
+        "name": "Akkumulátor ADC"
+      },
+      "ph_raw": {
+        "name": "Nyers pH"
+      },
+      "lsi": {
+        "name": "Langelier-index"
+      },
+      "lsi_status": {
+        "name": "Langelier-index állapota",
+        "state": {
+          "corrosive": "🔴 Korrozív víz (savas)",
+          "balanced": "🟢 Tökéletesen kiegyensúlyozott víz",
+          "scaling": "🟠 Vízkövesedő víz (lúgos)",
+          "unknown": "⚪ Ismeretlen"
+        }
+      },
+      "target_equilibrium_ph": {
+        "name": "Egyensúlyi pH (Taylor)"
+      },
+      "float_status": {
+        "name": "Úszó állapota",
+        "state": {
+          "vertical": "⬆️ Függőleges",
+          "tilted": "↗️ Megdőlt",
+          "horizontal": "➡️ Vízszintes (probléma)",
+          "upside_down": "⬇️ Fejjel lefelé (probléma)"
+        }
+      },
+      "accelerometer": {
+        "name": "Gyorsulásmérő"
+      },
+      "last_received": {
+        "name": "Utolsó elemzés"
+      },
+      "raw_frame": {
+        "name": "Számított keret"
+      },
+      "raw_frame_0005": {
+        "name": "Elektromos keret"
+      },
+      "serial_number": {
+        "name": "Sorozatszám"
+      },
+      "hw_version": {
+        "name": "Modellszám (SKU)"
+      },
+      "sw_version": {
+        "name": "Cloud ID / SN"
+      },
+      "rssi": {
+        "name": "Bluetooth jel"
+      },
+      "receive_method": {
+        "name": "Számított keret típusa",
+        "state": {
+          "passive": "Passzív",
+          "active": "Aktív",
+          "unknown": "Ismeretlen"
+        }
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "name": "Automatikus elemzések"
+      },
+      "passive_measures": {
+        "name": "Blue Connect belső elemzései (passzív)"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "name": "Referenciaidő"
+      }
+    }
+  }
+}

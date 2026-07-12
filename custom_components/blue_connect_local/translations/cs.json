@@ -1,0 +1,287 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "⚙️ Konfigurace Blue Connect",
+        "description": "Pokud není Blue Connect zjištěn automaticky, přidejte jeho MAC adresu Bluetooth.\n\n**Přístupový kód není povinný.** Pokud chcete povolit analýzy na vyžádání, zadejte 9 alfanumerických znaků (např. B93XXXXXX). Najdete jej pod krytkou USB portu zařízení nebo na ochranném krytu sond!\n\n⚠️ Bez kódu bude zařízení fungovat pouze v pasivním režimu: 1 analýza za hodinu.",
+        "data": {
+          "mac_address": "🔎 Nalezené zařízení",
+          "manual_mac_address": "✍️ Nebo zadejte MAC adresu přímo (např. AA:BB:CC:DD:EE:FF)",
+          "access_code": "🔑 Přístupový kód (ponechte prázdné pro pasivní režim: 1 analýza za hodinu)"
+        },
+        "sections": {
+          "general": {
+            "name": "⚙️ Obecné",
+            "data": {
+              "chlorine_model": "🧪 Úprava vody",
+              "cya": "💧 Úroveň stabilizátoru / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synchronizace",
+            "data": {
+              "scan_interval": "🔄 Interval analýzy (minuty)",
+              "reference_time": "🕒 Referenční čas (plánování)",
+              "passive_measures": "📡 Interní analýzy Blue Connect (pasivní)",
+              "ignore_echoes": "🚫 Ignorovat ozvěny analýz (pasivní)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibrace sond",
+            "data": {
+              "ph_calib_7": "🟢 Naměřená hodnota pH 7 (např. 7.10)",
+              "ph_ref_7": "🎯 Cílový roztok pH 7 (např. 7.02)",
+              "ph_calib_4": "🔴 Naměřená hodnota pH 4 (např. 4.10)",
+              "ph_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)",
+              "orp_calib": "📏 Naměřená hodnota ORP (např. 650)",
+              "orp_ref": "🎯 Cílový roztok ORP (např. 650)",
+              "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "already_configured": "⚠️ Toto zařízení je již nakonfigurováno",
+      "unknown": "❓ Neznámá chyba",
+      "invalid_mac": "❌ MAC adresa je neplatná. Musí být ve formátu AA:BB:CC:DD:EE:FF.",
+      "no_mac_provided": "❌ Nebylo vybráno žádné zařízení a nebyla zadána žádná MAC adresa.",
+      "mac_conflict": "❌ Vybrané zařízení a ručně zadaná adresa se liší. Vyplňte pouze jedno.",
+      "ph_calibration_equal": "❌ Kalibrační hodnoty pH musí být odlišné",
+      "ph_reference_equal": "❌ Referenční hodnoty pH musí být odlišné",
+      "ph_slope_mismatch": "❌ Logická chyba: Kalibrační sklon je nekonzistentní",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "ph_threshold_error": "❌ Minimální pH musí být nižší než maximální pH",
+      "orp_threshold_error": "❌ Minimální ORP musí být nižší než maximální ORP",
+      "temp_threshold_error": "❌ Minimální teplota musí být nižší než maximální teplota",
+      "invalid_access_code": "❌ Neplatný přístupový kód (9 alfanumerických znaků)."
+    },
+    "abort": {
+      "already_configured": "⚠️ Toto zařízení je již nakonfigurováno."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "🛠️ Možnosti Blue Connect",
+        "description": "Upravte kalibraci, chování a vaše osobní prahové hodnoty upozornění.",
+        "data": {},
+        "sections": {
+          "general": {
+            "name": "⚙️ Obecné",
+            "data": {
+              "access_code": "🔑 Přístupový kód (ponechte prázdné pro pasivní režim: 1 analýza za hodinu)",
+              "chlorine_model": "🧪 Úprava vody",
+              "cya": "💧 Úroveň stabilizátoru / CyA (mg/l)"
+            }
+          },
+          "synchronization": {
+            "name": "⏱️ Synchronizace",
+            "data": {
+              "scan_interval": "🔄 Interval analýzy (minuty)",
+              "reference_time": "🕒 Referenční čas (plánování)",
+              "passive_measures": "📡 Interní analýzy Blue Connect (pasivní)",
+              "ignore_echoes": "🚫 Ignorovat ozvěny analýz (pasivní)"
+            }
+          },
+          "probes_calibration": {
+            "name": "🧪 Kalibrace sond",
+            "data": {
+              "ph_calib_7": "🟢 Naměřená hodnota pH 7 (např. 7.10)",
+              "ph_ref_7": "🎯 Cílový roztok pH 7 (např. 7.02)",
+              "ph_calib_4": "🔴 Naměřená hodnota pH 4 (např. 4.10)",
+              "ph_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)",
+              "orp_calib": "📏 Naměřená hodnota ORP (např. 650)",
+              "orp_ref": "🎯 Cílový roztok ORP (např. 650)",
+              "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+            }
+          },
+          "alert_thresholds": {
+            "name": "📊 Prahové hodnoty upozornění",
+            "data": {
+              "ph_min": "📉 Práh: Minimální pH (např. 6.90)",
+              "ph_max": "📈 Práh: Maximální pH (např. 7.50)",
+              "orp_min": "📉 Práh: Minimální ORP (mV)",
+              "orp_max": "📈 Práh: Maximální ORP (mV)",
+              "temp_min": "❄️ Práh: Minimální teplota (°C)",
+              "temp_max": "🌡️ Práh: Maximální teplota (°C)"
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "unknown": "❓ Neznámá chyba",
+      "ph_threshold_error": "❌ Minimální pH musí být nižší než maximální pH",
+      "orp_threshold_error": "❌ Minimální ORP musí být nižší než maximální ORP",
+      "temp_threshold_error": "❌ Minimální teplota musí být nižší než maximální teplota",
+      "invalid_access_code": "❌ Neplatný přístupový kód (9 alfanumerických znaků).",
+      "ph_calibration_equal": "❌ Kalibrační hodnoty pH musí být odlišné",
+      "ph_reference_equal": "❌ Referenční hodnoty pH musí být odlišné",
+      "ph_slope_mismatch": "❌ Logická chyba: Kalibrační sklon je nekonzistentní",
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+    }
+  },
+  "selector": {
+    "chlorine_model": {
+      "options": {
+        "chlorine": "🧂 Chlor / Sůl",
+        "bromine": "🟤 Brom"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "ph_status": {
+        "name": "Stav pH"
+      },
+      "orp_status": {
+        "name": "Stav ORP (Redox)"
+      },
+      "temperature_status": {
+        "name": "Stav teploty"
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "name": "Nová analýza (~60s)"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "name": "Interval analýzy"
+      },
+      "tac": {
+        "name": "TAC (Alkalita)"
+      },
+      "th": {
+        "name": "TH (Tvrdost)"
+      },
+      "tds": {
+        "name": "TDS (Rozpuštěné látky)"
+      },
+      "cya": {
+        "name": "CyA (Stabilizátor)"
+      }
+    },
+    "sensor": {
+      "bluetooth_status": {
+        "name": "Stav Bluetooth",
+        "state": {
+          "waiting": "💤 Odpojeno",
+          "connecting": "⏳ Připojování k Blue Connect...",
+          "authenticating": "🔐 Ověřování...",
+          "requesting": "🗣️ Požadavek na analýzu...",
+          "reading": "📡 Naslouchání rámci...",
+          "success": "✅ Analýza dokončena (odpojeno)",
+          "error": "❌ Chyba připojení",
+          "error_retry": "⏳ Chyba (opakování za 60s)",
+          "write_failed": "⚠️ Zápis selhal",
+          "paused": "⏸️ Analýzy pozastaveny",
+          "out_of_range": "📵 Signál ztracen",
+          "passive_mode": "Pasivní režim"
+        }
+      },
+      "next_analysis": {
+        "name": "Další analýza"
+      },
+      "temperature": {
+        "name": "Teplota"
+      },
+      "ph": {
+        "name": "pH"
+      },
+      "orp": {
+        "name": "ORP (Redox)"
+      },
+      "conductivity": {
+        "name": "Vodivost"
+      },
+      "salinity": {
+        "name": "Salinita"
+      },
+      "battery": {
+        "name": "Baterie (napětí)"
+      },
+      "battery_level": {
+        "name": "Baterie"
+      },
+      "battery_adc": {
+        "name": "Baterie ADC"
+      },
+      "ph_raw": {
+        "name": "Surové pH"
+      },
+      "lsi": {
+        "name": "Langelierův index"
+      },
+      "lsi_status": {
+        "name": "Stav Langelierova indexu",
+        "state": {
+          "corrosive": "🔴 Korozivní voda (kyselá)",
+          "balanced": "🟢 Dokonale vyvážená voda",
+          "scaling": "🟠 Voda tvořící usazeniny (zásaditá)",
+          "unknown": "⚪ Neznámý"
+        }
+      },
+      "target_equilibrium_ph": {
+        "name": "Rovnovážné pH (Taylor)"
+      },
+      "float_status": {
+        "name": "Stav plováku",
+        "state": {
+          "vertical": "⬆️ Svisle",
+          "tilted": "↗️ Nakloněno",
+          "horizontal": "➡️ Vodorovně (problém)",
+          "upside_down": "⬇️ Vzhůru nohama (problém)"
+        }
+      },
+      "accelerometer": {
+        "name": "Akcelerometr"
+      },
+      "last_received": {
+        "name": "Poslední analýza"
+      },
+      "raw_frame": {
+        "name": "Vypočtený rámec"
+      },
+      "raw_frame_0005": {
+        "name": "Elektrický rámec"
+      },
+      "serial_number": {
+        "name": "Sériové číslo"
+      },
+      "hw_version": {
+        "name": "Číslo modelu (SKU)"
+      },
+      "sw_version": {
+        "name": "Cloud ID / SN"
+      },
+      "rssi": {
+        "name": "Signál Bluetooth"
+      },
+      "receive_method": {
+        "name": "Typ vypočteného rámce",
+        "state": {
+          "passive": "Pasivní",
+          "active": "Aktivní",
+          "unknown": "Neznámý"
+        }
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "name": "Automatické analýzy"
+      },
+      "passive_measures": {
+        "name": "Interní analýzy Blue Connect (pasivní)"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "name": "Referenční čas"
+      }
+    }
+  }
+}
