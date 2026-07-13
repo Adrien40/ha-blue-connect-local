@@ -49,7 +49,6 @@
       "no_mac_provided": "❌ 未选择设备，也未输入 MAC 地址。",
       "mac_conflict": "❌ 所选设备与手动输入的地址不同。请只填写其中一项。",
       "ph_calibration_equal": "❌ pH 校准值必须不同",
-      "ph_reference_equal": "❌ pH 参考值必须不同",
       "ph_slope_mismatch": "❌ 逻辑错误：校准斜率不一致",
       "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5",
       "ph_threshold_error": "❌ 最小 pH 必须小于最大 pH",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "❌ 最低温度必须低于最高温度",
       "invalid_access_code": "❌ 访问代码无效（9 位字母数字字符）。",
       "ph_calibration_equal": "❌ pH 校准值必须不同",
-      "ph_reference_equal": "❌ pH 参考值必须不同",
       "ph_slope_mismatch": "❌ 逻辑错误：校准斜率不一致",
       "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5"
     }

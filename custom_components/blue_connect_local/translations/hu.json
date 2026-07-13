@@ -49,7 +49,6 @@
       "no_mac_provided": "❌ Nincs kiválasztott eszköz, és nincs megadva MAC-cím.",
       "mac_conflict": "❌ A kiválasztott eszköz és a manuálisan megadott cím eltér egymástól. Csak az egyiket töltse ki.",
       "ph_calibration_equal": "❌ A pH kalibrációs értékeinek különbözniük kell",
-      "ph_reference_equal": "❌ A pH referenciaértékeinek különbözniük kell",
       "ph_slope_mismatch": "❌ Logikai hiba: A kalibrációs meredekség nem konzisztens",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
       "ph_threshold_error": "❌ A minimum pH-nak kisebbnek kell lennie, mint a maximum pH",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "❌ A minimum hőmérsékletnek alacsonyabbnak kell lennie, mint a maximum hőmérséklet",
       "invalid_access_code": "❌ Érvénytelen hozzáférési kód (9 alfanumerikus karakter).",
       "ph_calibration_equal": "❌ A pH kalibrációs értékeinek különbözniük kell",
-      "ph_reference_equal": "❌ A pH referenciaértékeinek különbözniük kell",
       "ph_slope_mismatch": "❌ Logikai hiba: A kalibrációs meredekség nem konzisztens",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
     }

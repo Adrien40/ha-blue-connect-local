@@ -49,7 +49,6 @@
       "no_mac_provided": "❌ No se ha seleccionado ningún dispositivo ni se ha introducido una dirección MAC.",
       "mac_conflict": "❌ El dispositivo seleccionado y la dirección introducida manualmente son diferentes. Complete solo uno de los dos.",
       "ph_calibration_equal": "❌ Los valores de calibración de pH deben ser diferentes",
-      "ph_reference_equal": "❌ Los valores de referencia de pH deben ser diferentes",
       "ph_slope_mismatch": "❌ Error lógico: La pendiente de calibración es incoherente",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
       "ph_threshold_error": "❌ El pH mínimo debe ser inferior al pH máximo",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "❌ La temperatura mínima debe ser inferior a la temperatura máxima",
       "invalid_access_code": "❌ Código de Acceso no válido (9 caracteres alfanuméricos).",
       "ph_calibration_equal": "❌ Los valores de calibración de pH deben ser diferentes",
-      "ph_reference_equal": "❌ Los valores de referencia de pH deben ser diferentes",
       "ph_slope_mismatch": "❌ Error lógico: La pendiente de calibración es incoherente",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
     }

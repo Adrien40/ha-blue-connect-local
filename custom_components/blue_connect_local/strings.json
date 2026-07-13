@@ -49,7 +49,6 @@
       "no_mac_provided": "No device selected and no MAC address entered.",
       "mac_conflict": "The selected device and the manually entered address are different. Fill in only one.",
       "ph_calibration_equal": "pH calibration values must be different",
-      "ph_reference_equal": "pH reference values must be different",
       "ph_slope_mismatch": "Logical error: The calibration slope is inconsistent",
       "ph_ref_out_of_range": "pH 4: 2.5-5.5, pH 7: 6.5-7.5",
       "ph_threshold_error": "Minimum pH must be less than maximum pH",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "Minimum temperature must be less than maximum temperature",
       "invalid_access_code": "Invalid Access Code (9 alphanumeric characters).",
       "ph_calibration_equal": "pH calibration values must be different",
-      "ph_reference_equal": "pH reference values must be different",
       "ph_slope_mismatch": "Logical error: The calibration slope is inconsistent",
       "ph_ref_out_of_range": "pH 4: 2.5-5.5, pH 7: 6.5-7.5"
     }

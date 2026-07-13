@@ -49,3 +49,14 @@ def compute_ph_equilibrium(
     except (ValueError, OverflowError, ZeroDivisionError) as e:
         _LOGGER.warning("Math error in compute_ph_equilibrium: %s", e)
         return None
+
+
+def compute_ph_calibrated(
+    ph_raw: float, c4_meas: float, c7_meas: float, ref_4: float, ref_7: float
+) -> float:
+    if abs(c7_meas - c4_meas) < 0.01:
+        return ph_raw
+    slope = (ref_7 - ref_4) / (c7_meas - c4_meas)
+    if abs(slope) < 1e-9:
+        return ref_7
+    return ref_7 + (ph_raw - c7_meas) * slope

@@ -49,7 +49,6 @@
       "no_mac_provided": "❌ Nije odabran nijedan uređaj i nije unesena MAC adresa.",
       "mac_conflict": "❌ Odabrani uređaj i ručno unesena adresa se razlikuju. Ispunite samo jedno polje.",
       "ph_calibration_equal": "❌ Vrijednosti kalibracije pH moraju biti različite",
-      "ph_reference_equal": "❌ Referentne vrijednosti pH moraju biti različite",
       "ph_slope_mismatch": "❌ Logička pogreška: Nagib kalibracije je nedosljedan",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
       "ph_threshold_error": "❌ Minimalni pH mora biti manji od maksimalnog pH",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "❌ Minimalna temperatura mora biti niža od maksimalne temperature",
       "invalid_access_code": "❌ Nevažeći pristupni kod (9 alfanumeričkih znakova).",
       "ph_calibration_equal": "❌ Vrijednosti kalibracije pH moraju biti različite",
-      "ph_reference_equal": "❌ Referentne vrijednosti pH moraju biti različite",
       "ph_slope_mismatch": "❌ Logička pogreška: Nagib kalibracije je nedosljedan",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
     }

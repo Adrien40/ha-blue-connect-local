@@ -49,7 +49,6 @@
       "no_mac_provided": "❌ Ingen enhet valgt, og ingen MAC-adresse angitt.",
       "mac_conflict": "❌ Den valgte enheten og den manuelt angitte adressen er forskjellige. Fyll ut kun ett av feltene.",
       "ph_calibration_equal": "❌ pH-kalibreringsverdiene må være forskjellige",
-      "ph_reference_equal": "❌ pH-referanseverdiene må være forskjellige",
       "ph_slope_mismatch": "❌ Logisk feil: Kalibreringshellingen er inkonsekvent",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
       "ph_threshold_error": "❌ Minimum pH må være lavere enn maksimum pH",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "❌ Minimumstemperaturen må være lavere enn maksimumstemperaturen",
       "invalid_access_code": "❌ Ugyldig tilgangskode (9 alfanumeriske tegn).",
       "ph_calibration_equal": "❌ pH-kalibreringsverdiene må være forskjellige",
-      "ph_reference_equal": "❌ pH-referanseverdiene må være forskjellige",
       "ph_slope_mismatch": "❌ Logisk feil: Kalibreringshellingen er inkonsekvent",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
     }

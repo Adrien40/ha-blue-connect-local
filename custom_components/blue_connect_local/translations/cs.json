@@ -49,7 +49,6 @@
       "no_mac_provided": "❌ Nebylo vybráno žádné zařízení a nebyla zadána žádná MAC adresa.",
       "mac_conflict": "❌ Vybrané zařízení a ručně zadaná adresa se liší. Vyplňte pouze jedno.",
       "ph_calibration_equal": "❌ Kalibrační hodnoty pH musí být odlišné",
-      "ph_reference_equal": "❌ Referenční hodnoty pH musí být odlišné",
       "ph_slope_mismatch": "❌ Logická chyba: Kalibrační sklon je nekonzistentní",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
       "ph_threshold_error": "❌ Minimální pH musí být nižší než maximální pH",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "❌ Minimální teplota musí být nižší než maximální teplota",
       "invalid_access_code": "❌ Neplatný přístupový kód (9 alfanumerických znaků).",
       "ph_calibration_equal": "❌ Kalibrační hodnoty pH musí být odlišné",
-      "ph_reference_equal": "❌ Referenční hodnoty pH musí být odlišné",
       "ph_slope_mismatch": "❌ Logická chyba: Kalibrační sklon je nekonzistentní",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
     }

@@ -1,7 +1,6 @@
 # Copyright (c) 2026 Adrien40
 # This file is part of Blue Connect Local.
 
-import math
 import voluptuous as vol
 import re
 from homeassistant import config_entries
@@ -50,101 +49,12 @@ from .const import (
     DEFAULT_ORP_CALIB,
     DEFAULT_ORP_REF,
 )
+from .validation import _flatten_sections, validate_calibration
 
 CONF_MANUAL_MAC = "manual_mac_address"
 MAC_PATTERN = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 
 CHLORINE_MODEL_OPTIONS = ["chlorine", "bromine"]
-
-
-def _to_float(val: object) -> float:
-    if isinstance(val, str):
-        val = val.replace(",", ".")
-    result = float(val)
-    if math.isnan(result) or math.isinf(result):
-        raise ValueError("NaN/Inf is not a valid calibration value")
-    return result
-
-
-def _flatten_sections(user_input: dict) -> dict:
-    flat: dict = {}
-    for value in user_input.values():
-        if isinstance(value, dict):
-            flat.update(value)
-    for k, v in user_input.items():
-        if not isinstance(v, dict):
-            flat.setdefault(k, v)
-    return flat
-
-
-def validate_calibration(data: dict) -> dict | tuple[str, str]:
-    try:
-        c4_meas = _to_float(data.get(CONF_PH_CALIB_4, DEFAULT_PH_CALIB_4))
-        c7_meas = _to_float(data.get(CONF_PH_CALIB_7, DEFAULT_PH_CALIB_7))
-        ref4 = _to_float(data.get(CONF_PH_REF_4, DEFAULT_PH_REF_4))
-        ref7 = _to_float(data.get(CONF_PH_REF_7, DEFAULT_PH_REF_7))
-    except (ValueError, TypeError):
-        return (CONF_PH_CALIB_4, "unknown")
-
-    try:
-        if CONF_PH_MIN in data and CONF_PH_MAX in data:
-            ph_min = _to_float(data[CONF_PH_MIN])
-            ph_max = _to_float(data[CONF_PH_MAX])
-            if ph_min >= ph_max:
-                return (CONF_PH_MIN, "ph_threshold_error")
-    except (ValueError, TypeError):
-        return (CONF_PH_MIN, "unknown")
-
-    try:
-        if CONF_TEMP_MIN in data and CONF_TEMP_MAX in data:
-            temp_min = _to_float(data[CONF_TEMP_MIN])
-            temp_max = _to_float(data[CONF_TEMP_MAX])
-            if temp_min >= temp_max:
-                return (CONF_TEMP_MIN, "temp_threshold_error")
-    except (ValueError, TypeError):
-        return (CONF_TEMP_MIN, "unknown")
-
-    try:
-        if CONF_ORP_MIN in data and CONF_ORP_MAX in data:
-            orp_min = int(_to_float(data[CONF_ORP_MIN]))
-            orp_max = int(_to_float(data[CONF_ORP_MAX]))
-            if orp_min >= orp_max:
-                return (CONF_ORP_MIN, "orp_threshold_error")
-    except (ValueError, TypeError):
-        return (CONF_ORP_MIN, "unknown")
-
-    if ref4 < 2.5 or ref4 > 5.5 or ref7 < 6.5 or ref7 > 7.5:
-        return (CONF_PH_REF_4, "ph_ref_out_of_range")
-    if abs(c7_meas - c4_meas) < 0.1:
-        return (CONF_PH_CALIB_7, "ph_calibration_equal")
-    if abs(ref7 - ref4) < 0.01:
-        return (CONF_PH_REF_7, "ph_reference_equal")
-    if c4_meas > c7_meas:
-        return (CONF_PH_CALIB_7, "ph_slope_mismatch")
-
-    normalized = dict(data)
-    normalized[CONF_PH_CALIB_4] = c4_meas
-    normalized[CONF_PH_CALIB_7] = c7_meas
-    normalized[CONF_PH_REF_4] = ref4
-    normalized[CONF_PH_REF_7] = ref7
-
-    if CONF_ORP_REF in data:
-        normalized[CONF_ORP_REF] = int(_to_float(data[CONF_ORP_REF]))
-    if CONF_ORP_CALIB in data:
-        normalized[CONF_ORP_CALIB] = int(_to_float(data[CONF_ORP_CALIB]))
-    if CONF_TEMP_OFFSET in data:
-        normalized[CONF_TEMP_OFFSET] = float(_to_float(data[CONF_TEMP_OFFSET]))
-    if CONF_CYA in data:
-        normalized[CONF_CYA] = int(_to_float(data[CONF_CYA]))
-    if CONF_SCAN_INTERVAL in data:
-        normalized[CONF_SCAN_INTERVAL] = int(_to_float(data[CONF_SCAN_INTERVAL]))
-    if CONF_REFERENCE_TIME in data:
-        normalized[CONF_REFERENCE_TIME] = str(data[CONF_REFERENCE_TIME])
-
-    normalized[CONF_PASSIVE_MEASURES] = bool(data.get(CONF_PASSIVE_MEASURES, True))
-    normalized[CONF_IGNORE_ECHOES] = bool(data.get(CONF_IGNORE_ECHOES, True))
-
-    return normalized
 
 
 class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

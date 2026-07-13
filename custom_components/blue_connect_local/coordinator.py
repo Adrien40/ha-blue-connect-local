@@ -29,6 +29,7 @@ from datetime import timedelta
 
 from .chemistry import (
     compute_lsi,
+    compute_ph_calibrated,
     compute_ph_equilibrium,
 )
 from .const import (
@@ -80,6 +81,7 @@ from .const import (
     ECHO_MARKER,
     ACCEL_THRESHOLD,
 )
+from .protocol import parse_raw_frame
 
 UUID_RAW_SENSORS = "70ea0005-7a29-4fdf-93d2-838665e72677"
 UUID_ACCELEROMETER = "70ea000a-7a29-4fdf-93d2-838665e72677"
@@ -367,7 +369,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     self.safe_mac,
                     hex_frame,
                 )
-                parsed = self._parse_raw_frame(raw_payload)
+                parsed = parse_raw_frame(raw_payload)
                 if parsed:
                     new_state = self._apply_new_measurements(parsed, hex_frame)
                     new_state["receive_method"] = "passive"
@@ -507,16 +509,6 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
     def _set_bt_status(self, status: str) -> None:
         self.update_volatile_state({"bluetooth_status": status})
 
-    def _compute_ph_calibrated(
-        self, ph_raw: float, c4_meas: float, c7_meas: float, ref_4: float, ref_7: float
-    ) -> float:
-        if abs(c7_meas - c4_meas) < 0.01:
-            return ph_raw
-        slope = (ref_7 - ref_4) / (c7_meas - c4_meas)
-        if abs(slope) < 1e-9:
-            return ref_7
-        return ref_7 + (ph_raw - c7_meas) * slope
-
     def _load_ph_calibration(
         self, entry: ConfigEntry
     ) -> tuple[float, float, float, float]:
@@ -585,9 +577,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         orp = raw_orp + orp_offset
 
         c4_meas, c7_meas, ref_4, ref_7 = self._load_ph_calibration(current_entry)
-        ph_calculated = self._compute_ph_calibrated(
-            raw_ph, c4_meas, c7_meas, ref_4, ref_7
-        )
+        ph_calculated = compute_ph_calibrated(raw_ph, c4_meas, c7_meas, ref_4, ref_7)
 
         tac_val = self.data.get(CONF_TAC) or 0
         th_val = self.data.get(CONF_TH) or 0
@@ -665,34 +655,6 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             }
             if changed_updates:
                 self.update_volatile_state(changed_updates)
-
-    def _parse_raw_frame(self, data: bytes) -> dict[str, Any] | None:
-        if len(data) not in (18, 19):
-            return None
-
-        offset = 4 if len(data) == 19 else 3
-        try:
-            raw_temp = ((data[offset] << 8) | data[offset + 1]) / 100.0
-            raw_ph = ((data[offset + 2] << 8) | data[offset + 3]) / 10.0
-            raw_orp = (data[offset + 4] << 8) | data[offset + 5]
-            cond = (data[offset + 6] << 8) | data[offset + 7]
-            salinity = ((data[offset + 8] << 8) | data[offset + 9]) / 100.0
-            battery_percent = data[offset + 10]
-            battery_adc = (data[offset + 11] << 8) | data[offset + 12]
-            battery_mv = int(battery_adc * 0.8791)
-
-            return {
-                "temp_raw": raw_temp,
-                "ph_raw": raw_ph,
-                "orp_raw": raw_orp,
-                "conductivity": cond,
-                "salinity": round(salinity, 2),
-                "battery_percent": battery_percent,
-                "battery_adc": battery_adc,
-                "battery": battery_mv,
-            }
-        except IndexError:
-            return None
 
     async def _async_update_data(self) -> dict[str, Any]:
         self.update_volatile_state({"action_running": True})
@@ -923,7 +885,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     await _safely_disconnect(client)
 
             self.retry_count = 0
-            parsed_data = self._parse_raw_frame(received_payload)
+            parsed_data = parse_raw_frame(received_payload)
 
             if not parsed_data:
                 return self._handle_ble_error("Payload parsing error", BT_STATUS_ERROR)

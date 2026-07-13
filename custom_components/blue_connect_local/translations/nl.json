@@ -49,7 +49,6 @@
       "no_mac_provided": "❌ Geen apparaat geselecteerd en geen MAC-adres ingevoerd.",
       "mac_conflict": "❌ Het geselecteerde apparaat en het handmatig ingevoerde adres verschillen. Vul slechts één van beide in.",
       "ph_calibration_equal": "❌ De pH-kalibratiewaarden moeten verschillend zijn",
-      "ph_reference_equal": "❌ De pH-referentiewaarden moeten verschillend zijn",
       "ph_slope_mismatch": "❌ Logische fout: De kalibratiehelling is inconsistent",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
       "ph_threshold_error": "❌ Minimum pH moet lager zijn dan maximum pH",
@@ -118,7 +117,6 @@
       "temp_threshold_error": "❌ De minimumtemperatuur moet lager zijn dan de maximumtemperatuur",
       "invalid_access_code": "❌ Ongeldige toegangscode (9 alfanumerieke tekens).",
       "ph_calibration_equal": "❌ De pH-kalibratiewaarden moeten verschillend zijn",
-      "ph_reference_equal": "❌ De pH-referentiewaarden moeten verschillend zijn",
       "ph_slope_mismatch": "❌ Logische fout: De kalibratiehelling is inconsistent",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
     }
