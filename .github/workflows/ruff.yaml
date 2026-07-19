@@ -2,7 +2,7 @@ name: Linting
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  
+
 on:
   push:
   pull_request:
@@ -14,13 +14,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Install Ruff
+      - name: Check for logic and style errors
         uses: astral-sh/ruff-action@v1
         with:
-          args: "check" # Vérifie les erreurs de logique et de style
-
-      - name: Check formatting with Ruff
+          args: "check"
+      - name: Check formatting
         uses: astral-sh/ruff-action@v1
         with:
-          args: "format --check" # Vérifie que le code respecte les règles d'espacement
+          args: "format --check"
