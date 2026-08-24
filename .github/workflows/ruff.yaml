@@ -16,11 +16,11 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Check for logic and style errors
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: "check"
 
       - name: Check formatting
-        uses: astral-sh/ruff-action@v4
+        uses: astral-sh/ruff-action@v4.1.0
         with:
           args: "format --check"
