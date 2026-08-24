@@ -13,8 +13,9 @@ Si ce projet vous est utile, vous pouvez soutenir son développement 🙏
 ## ⚡ En résumé
 - 🔌 Fonctionnement 100 % local via Bluetooth (BLE)
 - 🏠 Compatible Home Assistant (sans cloud)
+- 🏷️ Détection Automatique du modèle (Gold / Silver)
 - 🌡️ Mesures : Température, pH, ORP Redox, Salinité, Conductivité, Batterie
-- 🎯 Analyse Manuel : Possibilité de forcer une nouvelle analyse de l'eau à la demande, à distance
+- 🎯 Analyse Manuelle : Possibilité de forcer une nouvelle analyse de l'eau à la demande, à distance
 - ⚖️ Statut de Flottaison
 - 🔋 Optimisé pour préserver la batterie
 - ⚙️ Installation via HACS en 2 minutes
@@ -64,8 +65,8 @@ Blue Connect Local permet de remplacer le cloud par une solution de **local cont
 ---
 
 ### ✅ Compatibilité / Prérequis
-* 🏷️ **Modèles supportés** : ZODIAC Blue Connect (Gold / Silver).
-* 🏅 **Testé sur** : Validé sur le **ZODIAC Blue Connect Gold**.
+* 🏷️ **Modèles supportés** : ZODIAC Blue Connect (Gold / Silver) avec **détection et adaptation automatiques** des capteurs (Conductivité et Salinité).
+* 🏅 **Testé sur** : Validé sur le **ZODIAC Blue Connect Gold et Silver**.
 * 🔑 **Code d'Accès (Optionnel)** : Le code d'accès à 9 caractères de votre appareil. S'il n'est pas obligatoire pour l'écoute passive, il est **indispensable** pour les analyses à la demande.
 * 🛠️ **Matériel requis** : Adaptateur Bluetooth interne, clé USB Bluetooth ou **Bluetooth Proxy ESPHome** (Fortement recommandé, [installation facile ici](https://esphome.github.io/bluetooth-proxies/)).
 * 📶 **Qualité du signal** : Un signal RSSI stable (idéalement **supérieur à -75 dBm**) est indispensable pour garantir la connexion au Blue Connect. Les tests montrent qu'un signal inférieur à -90 dBm entraîne des échecs de lecture fréquents.
@@ -77,6 +78,7 @@ Blue Connect Local permet de remplacer le cloud par une solution de **local cont
 
 ### ✨ Points forts
 * 🏠 **100% Local (BLE)** : Aucune dépendance au Cloud, pas d'abonnement, pas de latence.
+* 🏷️ **Détection intelligente du modèle** : Identification automatique de votre variante (Gold ou Silver) en mode actif comme en mode passif. Les capteurs de conductivité et de salinité sont automatiquement activés ou désactivés selon votre sonde matérielle.
 * 🌡️ **Remontée des capteurs bruts** : Température, pH, ORP (Redox), Salinité, Conductivité, Batterie (%).
 * 🚀 **Analyse en temps réel** : Lancez une mesure manuelle quand vous le souhaitez.
 * 🧪 **Intelligence Chimique Avancée** :
@@ -85,7 +87,6 @@ Blue Connect Local permet de remplacer le cloud par une solution de **local cont
 * ⚙️ **Configuration 100% UI** : Découverte automatique Bluetooth, calibrage des sondes et réglage des seuils d'alerte directement depuis l'interface Home Assistant (aucun YAML requis).
 * 🔄 **Modes de Synchronisation** : Mode Passif (écoute silencieuse préservant la batterie) et Mode Actif (analyses Bluetooth à la demande via le code d'accès).
 * 🌍 **Multi-langue** : Développé en Français 🇫🇷 et disponible en EN, ES, DE, IT, NL, PL, PT, PT-BR, SV, RU, ZH-HANS, ZH-HANT, CS, HU, EL, HR, DA, NB (Traduction via IA).
-* 📡 Transforme votre Blue Connect en véritable **BLE sensor** pour Home Assistant
 
 ---
 
@@ -100,7 +101,7 @@ Ce dépôt n'étant pas (encore) dans la liste officielle par défaut, vous deve
 4. Dans **Type**, choisissez **Intégration** puis cliquez sur **Ajouter**.
 5. Une fois ajouté, une fenêtre apparaît : cliquez sur **Télécharger** (sélectionnez la dernière version).
 6. **Redémarrez complètement Home Assistant**.
-7. Allez dans **Paramètres** > **Appareils et Services** > **Ajouter une intégration** et cherchez "Blue Connect Local".
+7. Allez dans **Paramètres** > **Appareils et Services** > **Ajouter une intégration** et cherchez « Blue Connect Local ».
 
 ### Manuelle
 Copiez le dossier `custom_components/blue_connect_local` dans le dossier `custom_components` de votre configuration Home Assistant, puis redémarrez.
@@ -113,6 +114,8 @@ Copiez le dossier `custom_components/blue_connect_local` dans le dossier `custom
 | 💧 **pH** | pH | pH calculé (Nernst + Compensation thermique). |
 | ⚡ **Redox / ORP** | mV | Potentiel d'oxydoréduction. |
 | 🌡️ **Température** | °C | Température précise de l'eau. |
+| 🧂 **Salinité** | g/L | Salinité de l'eau (activée automatiquement sur Blue Connect Gold). |
+| 🧪 **Conductivité** | µS/cm | Conductivité électrique de l'eau (activée automatiquement sur Blue Connect Gold). |
 | ⚖️ **Indice de Langelier** | ISL | Indicateur d'équilibre de l'eau (Corrosive, Équilibrée ou Entartrante). |
 | 🎯 **pH d'Équilibre** | pH | Cible du pH idéal calculé selon la Balance de Taylor. |
 | 🔋 **Batterie** | % et mV | Niveau de charge (%) et tension brute de la pile. |
@@ -122,7 +125,9 @@ Copiez le dossier `custom_components/blue_connect_local` dans le dossier `custom
 | 🚀 **Nouvelle Analyse** | Bouton | **Lancer une analyse instantanée (~60s).** |
 | ⏸️ **Analyses Auto.** | Interrupteur | Activer/Désactiver la relève automatique (Mode Pause). |
 
-> 🛠️ **Diagnostic** : L'intégration expose également des capteurs avancés (pH formule usine d'origine, trame hexadécimale brute complète, et statuts d'alertes binaires).
+> 🛠️ **Fiche appareil & Diagnostic** : Le **Numéro de Série**, le **Numéro de Modèle (SKU)** et l'**Adresse MAC** sont nativement intégrés dans l'en-tête de l'appareil Home Assistant. L'intégration expose également des capteurs de diagnostic avancés (pH brut, trame hexadécimale complète, statut de flottaison et alertes binaires).
+
+> ℹ️ **Sur Blue Connect Silver** (sans sonde de conductivité) : les entités Conductivité et Salinité sont masquées par défaut. Si vous avez mis à jour une installation existante où Conductivité était déjà présente, elle restera visible mais affichera « Inconnu » — vous pouvez la masquer manuellement dans **Paramètres > Entités**.
 
 ---
 
@@ -141,28 +146,26 @@ L'Indice de Saturation de Langelier (ISL) est le complément indispensable de la
 
 Renseignez votre TAC, TH et TDS dans les options, et Home Assistant calculera votre équilibre en direct selon la température lue par le Blue Connect !
 
-> **Diagnostic** : L'intégration expose également le pH brut (mV), le pH calculé par la formule d'usine, la trame hexadécimale complète et l'horodatage de la dernière mesure.
-
 </details>
 
+---
 
 ### 🎯 Note sur la précision des mesures
 Les valeurs affichées dans Home Assistant peuvent différer légèrement de celles de l'application officielle Blue Connect.
 
-Blue Connect Local permet une calibration "haute précision". Contrairement à l'application mobile qui utilise des valeurs fixes, notre intégration vous permet de saisir la valeur exacte de votre solution tampon (pH 7.02, 4.01, etc.) ajustée à la température lors de votre calibration. C'est cette rigueur scientifique qui peut créer un léger décalage, signe d'une mesure plus proche de la réalité de votre bassin. 🔬
+Blue Connect Local permet une calibration « haute précision ». Contrairement à l'application mobile qui utilise des valeurs fixes, notre intégration vous permet de saisir la valeur exacte de votre solution tampon (pH 7.02, 4.01, etc.) ajustée à la température lors de votre calibration. C'est cette rigueur scientifique qui peut créer un léger décalage, signe d'une mesure plus proche de la réalité de votre bassin. 🔬
 
 ---
 
 ## 🚀 Configuration
 1. Allez dans **Paramètres** > **Appareils et services**.
-2. L'intégration devrait détecter automatiquement votre Blue Connect si votre clé/antenne Bluetooth est à portée.
-2. Cliquez sur **Ajouter une intégration** et recherchez **Blue Connect Local**.
+2. L'intégration devrait détecter automatiquement votre Blue Connect si votre antenne Bluetooth est à portée. Sinon, cliquez sur **Ajouter une intégration** et recherchez **Blue Connect Local**.
 3. Suivez les instructions à l'écran pour définir le type de traitement (Chlore, Brome) et le calibrage/décalage de vos sondes.
 
 ### ⚙️ Options, Calibrations et Alertes
 Une fois l'appareil ajouté, vous pouvez cliquer sur **Configurer** ⚙️ pour :
 * Ajuster les valeurs de vos solutions de calibration (pH 4, pH 7, Redox).
-* Modifier les paramètres de votre eau (TAC, TH, TDS, Stabilisant) via le tableau de bord.
+* Modifier les paramètres de votre eau (TAC, TH, TDS, Stabilisant) directement via les contrôles exposés.
 * Définir vos **seuils d'alerte personnalisés** (pH Min/Max, ORP Min/Max, etc.) pour piloter vos propres automatisations.
 
 ---
@@ -182,10 +185,10 @@ Une fois l'appareil ajouté, vous pouvez cliquer sur **Configurer** ⚙️ pour 
 Pour tout bug ou demande d'amélioration, merci d'ouvrir une [Issue](https://github.com/Adrien40/ha-blue-connect-local/issues) sur ce dépôt.
 
 ### ⚠️ Avertissement (Disclaimer)
-Cette intégration est un projet indépendant. Elle n'a aucun lien, de près ou de loin, avec l'entreprise Fluidra/Zodiac. L'utilisation de ce logiciel se fait sous votre propre responsabilité.
+Cette intégration est un projet indépendant. Elle n'a aucun lien, de près ou de loin, avec l'entreprise FLUIDRA/ZODIAC. L'utilisation de ce logiciel se fait sous votre propre responsabilité.
 
 ### ⚖️ Licence
-Projet sous licence **GPLv3**. Indépendant de la société Fluidra. Utilisation sous votre entière responsabilité.
+Projet sous licence **GPLv3**. Indépendant de la société FLUIDRA. Utilisation sous votre entière responsabilité.
 
 ---
 

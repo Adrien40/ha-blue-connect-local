@@ -13,6 +13,7 @@ If this project is useful to you, you can support its development 🙏
 ## ⚡ At a Glance
 - 🔌 100% local operation via Bluetooth (BLE)
 - 🏠 Compatible with Home Assistant (no cloud)
+- 🏷️ Automatic Model Detection (Gold / Silver)
 - 🌡️ Measurements: Temperature, pH, ORP Redox, Salinity, Conductivity, Battery
 - 🎯 Manual Analysis: Force a new water analysis on demand, remotely
 - ⚖️ Floating Status
@@ -64,8 +65,8 @@ Blue Connect Local replaces the cloud with a **local control** solution, while o
 ---
 
 ### ✅ Compatibility / Requirements
-* 🏷️ **Supported models**: ZODIAC Blue Connect (Gold / Silver).
-* 🏅 **Tested on**: Validated on the **ZODIAC Blue Connect Gold**.
+* 🏷️ **Supported models**: ZODIAC Blue Connect (Gold / Silver) with **automatic detection and adaptation** of sensors (Conductivity and Salinity).
+* 🏅 **Tested on**: Validated on the **ZODIAC Blue Connect Gold and Silver**.
 * 🔑 **Access Code (Optional)**: Your device's 9-character access code. It isn't required for passive listening, but it is **essential** for on-demand analyses.
 * 🛠️ **Required hardware**: Internal Bluetooth adapter, USB Bluetooth dongle, or an **ESPHome Bluetooth Proxy** (strongly recommended, [easy installation here](https://esphome.github.io/bluetooth-proxies/)).
 * 📶 **Signal quality**: A stable RSSI signal (ideally **above -75 dBm**) is essential to guarantee a reliable connection to the Blue Connect. Testing shows that a signal below -90 dBm causes frequent read failures.
@@ -77,6 +78,7 @@ Blue Connect Local replaces the cloud with a **local control** solution, while o
 
 ### ✨ Highlights
 * 🏠 **100% Local (BLE)**: No Cloud dependency, no subscription, no latency.
+* 🏷️ **Smart Model Detection**: Automatic identification of your device variant (Gold or Silver) in both active and passive modes. Conductivity and Salinity sensors are automatically enabled or disabled according to your hardware probe.
 * 🌡️ **Raw sensor readings**: Temperature, pH, ORP (Redox), Salinity, Conductivity, Battery (%).
 * 🚀 **Real-time analysis**: Trigger a manual measurement whenever you want.
 * 🧪 **Advanced Chemical Intelligence**:
@@ -113,6 +115,8 @@ Copy the `custom_components/blue_connect_local` folder into the `custom_componen
 | 💧 **pH** | pH | Calculated pH (Nernst equation + thermal compensation). |
 | ⚡ **Redox / ORP** | mV | Oxidation-reduction potential. |
 | 🌡️ **Temperature** | °C | Precise water temperature. |
+| 🧂 **Salinity** | g/L | Water salinity (automatically enabled on Blue Connect Gold). |
+| 🧪 **Conductivity** | µS/cm | Electrical conductivity (automatically enabled on Blue Connect Gold). |
 | ⚖️ **Langelier Saturation Index** | LSI | Water balance indicator (Corrosive, Balanced, or Scale-forming). |
 | 🎯 **Equilibrium pH** | pH | Ideal pH target, calculated per the Taylor Balance. |
 | 🔋 **Battery** | % and mV | Charge level (%) and raw battery voltage. |
@@ -122,7 +126,9 @@ Copy the `custom_components/blue_connect_local` folder into the `custom_componen
 | 🚀 **New Analysis** | Button | **Trigger an instant analysis (~60s).** |
 | ⏸️ **Auto Analysis** | Switch | Turn automatic readings on/off (Pause Mode). |
 
-> 🛠️ **Diagnostics**: The integration also exposes advanced sensors (original factory-formula pH, the full raw hex frame, and binary alert statuses).
+> 🛠️ **Device Info & Diagnostics**: **Serial Number**, **Model Number (SKU)**, and **MAC Address** are natively integrated into the Home Assistant device header. The integration also exposes advanced diagnostic sensors (raw pH, full raw hex frame, floating status, and binary alerts).
+
+> ℹ️ **On Blue Connect Silver** (no conductivity probe): the Conductivity and Salinity entities are disabled by default. If you updated an existing installation where Conductivity was already present, it will remain visible but will show "Unknown" — you can disable it manually under **Settings > Entities**.
 
 ---
 
@@ -141,10 +147,9 @@ The Langelier Saturation Index (LSI) is the essential companion to the **Taylor 
 
 Enter your TAC (Total Alkalinity), TH (Total Hardness), and TDS in the options, and Home Assistant will calculate your balance live, based on the temperature read from the Blue Connect!
 
-> **Diagnostics**: The integration also exposes the raw pH (mV), the factory-formula pH, the full hex frame, and the timestamp of the last measurement.
-
 </details>
 
+---
 
 ### 🎯 A Note on Measurement Accuracy
 Values shown in Home Assistant may differ slightly from those in the official Blue Connect app.
@@ -155,14 +160,13 @@ Blue Connect Local supports "high-precision" calibration. Unlike the mobile app,
 
 ## 🚀 Configuration
 1. Go to **Settings** > **Devices & Services**.
-2. The integration should automatically detect your Blue Connect if your Bluetooth dongle/antenna is in range.
-2. Click **Add Integration** and search for **Blue Connect Local**.
+2. The integration should automatically detect your Blue Connect if your Bluetooth dongle/antenna is in range. Otherwise, click **Add Integration** and search for **Blue Connect Local**.
 3. Follow the on-screen instructions to set your treatment type (Chlorine, Bromine) and your probe calibration/offset.
 
 ### ⚙️ Options, Calibration & Alerts
 Once the device has been added, you can click **Configure** ⚙️ to:
 * Adjust the values of your calibration solutions (pH 4, pH 7, Redox).
-* Update your water parameters (TAC, TH, TDS, Stabilizer) from the dashboard.
+* Update your water parameters (TAC, TH, TDS, Stabilizer) directly via the exposed controls.
 * Set your own **custom alert thresholds** (pH Min/Max, ORP Min/Max, etc.) to drive your own automations.
 
 ---
@@ -182,10 +186,10 @@ Once the device has been added, you can click **Configure** ⚙️ to:
 For any bugs or feature requests, please open an [Issue](https://github.com/Adrien40/ha-blue-connect-local/issues) on this repository.
 
 ### ⚠️ Disclaimer
-This integration is an independent project. It has no affiliation whatsoever with the Fluidra/Zodiac company. Use of this software is at your own risk.
+This integration is an independent project. It has no affiliation whatsoever with the FLUIDRA/ZODIAC company. Use of this software is at your own risk.
 
 ### ⚖️ License
-Project licensed under **GPLv3**. Independent of the Fluidra company. Use at your own risk.
+Project licensed under **GPLv3**. Independent of the FLUIDRA company. Use at your own risk.
 
 ---
 
