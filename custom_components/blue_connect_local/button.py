@@ -1,19 +1,22 @@
 # Copyright (c) 2026 Adrien40
 # This file is part of Blue Connect Local.
 
-import logging
 import asyncio
+import logging
+
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    DOMAIN,
     CONF_MAC_ADDRESS,
-    get_blue_connect_model,
-    blue_connect_device_info,
+    DOMAIN,
     TIMEOUT_FORCE_REFRESH,
+    blue_connect_device_info,
+    get_blue_connect_model,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -88,7 +91,7 @@ class BlueConnectForceAnalysisButton(CoordinatorEntity, ButtonEntity):
                     TIMEOUT_FORCE_REFRESH,
                     self.coordinator.safe_mac,
                 )
-            except Exception:
+            except (HomeAssistantError, RuntimeError):
                 _LOGGER.exception(
                     "Analysis failed for %s",
                     self.coordinator.safe_mac,

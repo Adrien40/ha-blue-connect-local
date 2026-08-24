@@ -3,6 +3,7 @@
 
 import logging
 from datetime import time
+
 from homeassistant.components.time import TimeEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
@@ -11,11 +12,11 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    DOMAIN,
     CONF_MAC_ADDRESS,
     CONF_REFERENCE_TIME,
-    get_blue_connect_model,
+    DOMAIN,
     blue_connect_device_info,
+    get_blue_connect_model,
 )
 
 _LOGGER = logging.getLogger(__name__)

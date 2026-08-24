@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Adrien40
 # This file is part of Blue Connect Local.
 
-import math
 import logging
+import math
 
 _LOGGER = logging.getLogger(__name__)
 

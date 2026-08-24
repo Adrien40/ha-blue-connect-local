@@ -3,47 +3,49 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime as dt_datetime
 from typing import Any
-import logging
+
 import homeassistant.util.dt as dt_util
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorDeviceClass,
-    SensorStateClass,
-    RestoreSensor,
-)
 from homeassistant.components.bluetooth import (
-    async_register_callback,
     BluetoothCallbackMatcher,
     BluetoothChange,
+    BluetoothScanningMode,
     BluetoothServiceInfoBleak,
     async_last_service_info,
-    BluetoothScanningMode,
+    async_register_callback,
 )
-from homeassistant.const import UnitOfTemperature, EntityCategory
+from homeassistant.components.sensor import (
+    RestoreSensor,
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    DOMAIN,
-    CONF_MAC_ADDRESS,
-    get_blue_connect_model,
-    blue_connect_device_info,
-    model_has_conductivity,
-    model_has_salinity,
-    BT_STATUS_WAITING,
-    BT_STATUS_CONNECTING,
     BT_STATUS_AUTHENTICATING,
-    BT_STATUS_REQUESTING,
-    BT_STATUS_READING,
-    BT_STATUS_SUCCESS,
+    BT_STATUS_CONNECTING,
     BT_STATUS_ERROR,
     BT_STATUS_ERROR_RETRY,
-    BT_STATUS_WRITE_FAILED,
-    BT_STATUS_PAUSED,
     BT_STATUS_OUT_OF_RANGE,
+    BT_STATUS_PAUSED,
+    BT_STATUS_READING,
+    BT_STATUS_REQUESTING,
+    BT_STATUS_SUCCESS,
+    BT_STATUS_WAITING,
+    BT_STATUS_WRITE_FAILED,
+    CONF_MAC_ADDRESS,
+    DOMAIN,
+    blue_connect_device_info,
+    get_blue_connect_model,
+    model_has_conductivity,
+    model_has_salinity,
 )
 
 _LOGGER = logging.getLogger(__name__)

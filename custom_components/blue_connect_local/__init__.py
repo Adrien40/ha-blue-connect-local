@@ -2,11 +2,12 @@
 # This file is part of Blue Connect Local.
 
 import logging
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import DOMAIN, CONF_ACCESS_CODE, CONF_MAC_ADDRESS, PLATFORMS
+from .const import CONF_ACCESS_CODE, CONF_MAC_ADDRESS, DOMAIN, PLATFORMS
 from .coordinator import BlueConnectCoordinator, format_mac_safe, store_key
 
 _LOGGER = logging.getLogger(__name__)

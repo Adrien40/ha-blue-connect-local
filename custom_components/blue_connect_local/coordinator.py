@@ -1,32 +1,34 @@
 # Copyright (c) 2026 Adrien40
 # This file is part of Blue Connect Local.
 
-import logging
 import asyncio
+import logging
 import math
+from datetime import timedelta
+from time import monotonic
 from typing import Any
+
 import homeassistant.util.dt as dt_util
 from bleak import BleakClient
+from bleak.exc import BleakError
 from bleak_retry_connector import establish_connection
-from time import monotonic
 from homeassistant.components.bluetooth import (
-    async_ble_device_from_address,
-    async_last_service_info,
-    async_scanner_count,
-    async_register_callback,
-    async_track_unavailable,
     BluetoothCallbackMatcher,
     BluetoothChange,
-    BluetoothServiceInfoBleak,
     BluetoothScanningMode,
+    BluetoothServiceInfoBleak,
+    async_ble_device_from_address,
+    async_last_service_info,
+    async_register_callback,
+    async_scanner_count,
+    async_track_unavailable,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback, CALLBACK_TYPE
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from homeassistant.helpers.storage import Store
-from homeassistant.helpers.event import async_call_later
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
-from datetime import timedelta
+from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers.storage import Store
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .chemistry import (
     compute_lsi,
@@ -34,53 +36,53 @@ from .chemistry import (
     compute_ph_equilibrium,
 )
 from .const import (
-    DOMAIN,
+    ACCEL_THRESHOLD,
+    BLE_RECENTLY_SEEN_THRESHOLD_S,
+    BT_STATUS_AUTHENTICATING,
+    BT_STATUS_CONNECTING,
+    BT_STATUS_ERROR,
+    BT_STATUS_ERROR_RETRY,
+    BT_STATUS_OUT_OF_RANGE,
+    BT_STATUS_PAUSED,
+    BT_STATUS_READING,
+    BT_STATUS_REQUESTING,
+    BT_STATUS_SUCCESS,
+    BT_STATUS_WAITING,
+    BT_STATUS_WRITE_FAILED,
+    CHAR_AUTH_UUID,
+    CHAR_NOTIFY_UUID,
+    CHAR_TRIGGER_UUID,
     CONF_ACCESS_CODE,
+    CONF_CHLORINE_MODEL,
+    CONF_CYA,
+    CONF_IGNORE_ECHOES,
+    CONF_ORP_CALIB,
+    CONF_ORP_REF,
+    CONF_PASSIVE_MEASURES,
     CONF_PH_CALIB_4,
     CONF_PH_CALIB_7,
-    CONF_PH_REF_7,
     CONF_PH_REF_4,
-    CONF_ORP_REF,
-    CONF_ORP_CALIB,
-    CONF_TEMP_OFFSET,
-    CONF_CYA,
-    CONF_TAC,
-    CONF_TH,
-    CONF_TDS,
-    CONF_CHLORINE_MODEL,
-    CONF_SCAN_INTERVAL,
+    CONF_PH_REF_7,
     CONF_REFERENCE_TIME,
-    CONF_PASSIVE_MEASURES,
-    CONF_IGNORE_ECHOES,
-    CHAR_AUTH_UUID,
-    CHAR_TRIGGER_UUID,
-    CHAR_NOTIFY_UUID,
-    TIMEOUT_BLE_CONN,
-    SAVE_DEBOUNCE_DELAY,
+    CONF_SCAN_INTERVAL,
+    CONF_TAC,
+    CONF_TDS,
+    CONF_TEMP_OFFSET,
+    CONF_TH,
     DEBOUNCE_COOLDOWN,
-    BLE_RECENTLY_SEEN_THRESHOLD_S,
+    DEFAULT_ORP_CALIB,
+    DEFAULT_ORP_REF,
     DEFAULT_PH_CALIB_4,
     DEFAULT_PH_CALIB_7,
     DEFAULT_PH_REF_4,
     DEFAULT_PH_REF_7,
-    DEFAULT_ORP_CALIB,
-    DEFAULT_ORP_REF,
+    DOMAIN,
+    ECHO_MARKER,
+    EXPECTED_FRAME_HEX_LEN_18,
+    SAVE_DEBOUNCE_DELAY,
+    TIMEOUT_BLE_CONN,
     TIMEOUT_GATT_OP,
     TIMEOUT_NOTIFICATION_WAIT,
-    BT_STATUS_WAITING,
-    BT_STATUS_CONNECTING,
-    BT_STATUS_AUTHENTICATING,
-    BT_STATUS_REQUESTING,
-    BT_STATUS_READING,
-    BT_STATUS_SUCCESS,
-    BT_STATUS_ERROR,
-    BT_STATUS_ERROR_RETRY,
-    BT_STATUS_WRITE_FAILED,
-    BT_STATUS_PAUSED,
-    BT_STATUS_OUT_OF_RANGE,
-    EXPECTED_FRAME_HEX_LEN_18,
-    ECHO_MARKER,
-    ACCEL_THRESHOLD,
     get_blue_connect_model,
 )
 from .protocol import extract_raw_payload, parse_raw_frame
@@ -92,6 +94,10 @@ UUID_HW_VERSION = "70ea0021-7a29-4fdf-93d2-838665e72677"
 UUID_SW_VERSION = "70ea0022-7a29-4fdf-93d2-838665e72677"
 
 _LOGGER = logging.getLogger(__name__)
+
+# Errors expected from BLE I/O (connect/disconnect/read/write/notify) across
+# bleak backends: protocol errors, dropped/refused connections, and timeouts.
+_BLE_IO_ERRORS = (BleakError, OSError, TimeoutError, EOFError)
 
 # Keys in self.data that describe a specific BLE reading and are only
 # trustworthy alongside a valid raw_frame. Everything else stored in
@@ -142,7 +148,7 @@ async def _safely_disconnect(client: BleakClient | None) -> None:
     if client and client.is_connected:
         try:
             await asyncio.wait_for(client.disconnect(), timeout=TIMEOUT_GATT_OP)
-        except Exception as err:
+        except _BLE_IO_ERRORS as err:
             _LOGGER.debug("Ignored error during disconnect: %s", err)
 
 
@@ -273,7 +279,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             parts = ref_time_str.split(":")
             hour = int(parts[0]) if len(parts) > 0 else 0
             minute = int(parts[1]) if len(parts) > 1 else 0
-        except Exception:
+        except (ValueError, AttributeError, IndexError):
             hour, minute = 0, 0
 
         now = dt_util.now()
@@ -769,7 +775,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                 ),
                                 timeout=TIMEOUT_GATT_OP,
                             )
-                        except Exception as write_err:
+                        except _BLE_IO_ERRORS as write_err:
                             _LOGGER.warning(
                                 "GATT write failed on attempt %d: %s",
                                 attempt,
@@ -807,7 +813,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             timeout=TIMEOUT_GATT_OP,
                         )
                         self.data["raw_frame_0005"] = raw_0005.hex().upper()
-                    except Exception as err:
+                    except _BLE_IO_ERRORS as err:
                         _LOGGER.debug(
                             "Failed to read raw sensors frame (0x0005): %s", err
                         )
@@ -838,7 +844,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                 self.data["float_status"] = "horizontal"
                             else:
                                 self.data["float_status"] = "tilted"
-                    except Exception as err:
+                    except _BLE_IO_ERRORS as err:
                         _LOGGER.debug("Failed to read accelerometer data: %s", err)
 
                     if not self.data.get("serial_number"):
@@ -850,7 +856,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             val = sn.decode("ascii").replace("\x00", "").strip()
                             if val:
                                 self.data["serial_number"] = val
-                        except Exception as err:
+                        except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
                             _LOGGER.debug("Failed to read serial number: %s", err)
 
                     if not self.data.get("hw_version"):
@@ -862,7 +868,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             val = hw.decode("ascii").replace("\x00", "").strip()
                             if val:
                                 self.data["hw_version"] = val
-                        except Exception as err:
+                        except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
                             _LOGGER.debug("Failed to read hardware version: %s", err)
 
                     if not self.data.get("sw_version"):
@@ -874,10 +880,10 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             val = sw.decode("ascii").replace("\x00", "").strip()
                             if val:
                                 self.data["sw_version"] = val
-                        except Exception as err:
+                        except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
                             _LOGGER.debug("Failed to read software version: %s", err)
 
-                except Exception as err:
+                except (*_BLE_IO_ERRORS, ValueError, RuntimeError) as err:
                     return self._handle_ble_error(
                         f"Communication error: {err}", BT_STATUS_ERROR
                     )
@@ -888,7 +894,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                 client.stop_notify(CHAR_NOTIFY_UUID),
                                 timeout=TIMEOUT_GATT_OP,
                             )
-                        except Exception as err:
+                        except _BLE_IO_ERRORS as err:
                             _LOGGER.debug("Ignored error during stop_notify: %s", err)
                     await _safely_disconnect(client)
 

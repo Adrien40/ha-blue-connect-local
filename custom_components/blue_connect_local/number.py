@@ -2,23 +2,25 @@
 # This file is part of Blue Connect Local.
 
 import logging
+
 from homeassistant.components.number import RestoreNumber
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    DOMAIN,
-    CONF_MAC_ADDRESS,
-    CONF_CYA,
-    CONF_TAC,
-    CONF_TH,
-    CONF_TDS,
-    CONF_SCAN_INTERVAL,
     CONF_CHLORINE_MODEL,
-    get_blue_connect_model,
+    CONF_CYA,
+    CONF_MAC_ADDRESS,
+    CONF_SCAN_INTERVAL,
+    CONF_TAC,
+    CONF_TDS,
+    CONF_TH,
+    DOMAIN,
     blue_connect_device_info,
+    get_blue_connect_model,
 )
 
 _LOGGER = logging.getLogger(__name__)

@@ -2,31 +2,32 @@
 # This file is part of Blue Connect Local.
 
 from homeassistant.components.binary_sensor import (
-    BinarySensorEntity,
     BinarySensorDeviceClass,
+    BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    DOMAIN,
     CONF_MAC_ADDRESS,
-    get_blue_connect_model,
-    blue_connect_device_info,
-    CONF_PH_MIN,
-    CONF_PH_MAX,
-    CONF_ORP_MIN,
     CONF_ORP_MAX,
-    CONF_TEMP_MIN,
+    CONF_ORP_MIN,
+    CONF_PH_MAX,
+    CONF_PH_MIN,
     CONF_TEMP_MAX,
-    DEFAULT_PH_MIN,
-    DEFAULT_PH_MAX,
-    DEFAULT_ORP_MIN,
+    CONF_TEMP_MIN,
     DEFAULT_ORP_MAX,
-    DEFAULT_TEMP_MIN,
+    DEFAULT_ORP_MIN,
+    DEFAULT_PH_MAX,
+    DEFAULT_PH_MIN,
     DEFAULT_TEMP_MAX,
+    DEFAULT_TEMP_MIN,
+    DOMAIN,
+    blue_connect_device_info,
+    get_blue_connect_model,
 )
 
 _DEFAULT_THRESHOLDS: dict[str, float] = {

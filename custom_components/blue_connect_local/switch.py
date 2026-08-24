@@ -2,21 +2,23 @@
 # This file is part of Blue Connect Local.
 
 import logging
+
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.const import EntityCategory
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
 from .const import (
-    DOMAIN,
-    CONF_MAC_ADDRESS,
-    CONF_PASSIVE_MEASURES,
-    get_blue_connect_model,
-    blue_connect_device_info,
     BT_STATUS_OUT_OF_RANGE,
     BT_STATUS_PAUSED,
     BT_STATUS_WAITING,
+    CONF_MAC_ADDRESS,
+    CONF_PASSIVE_MEASURES,
+    DOMAIN,
+    blue_connect_device_info,
+    get_blue_connect_model,
 )
 
 _LOGGER = logging.getLogger(__name__)

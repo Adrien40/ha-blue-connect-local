@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
 from .model import (  # noqa: F401 (re-export)
