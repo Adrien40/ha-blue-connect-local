@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime as dt_datetime
-from typing import Any
+from typing import Any, ClassVar
 
 import homeassistant.util.dt as dt_util
 from homeassistant.components.bluetooth import (
@@ -318,14 +318,17 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
 
     @property
     def available(self) -> bool:
-        if self._key in (
-            "raw_frame_0005",
-            "accelerometer",
-            "float_status",
-            "sw_version",
+        if (
+            self._key
+            in (
+                "raw_frame_0005",
+                "accelerometer",
+                "float_status",
+                "sw_version",
+            )
+            and not self.coordinator.access_code
         ):
-            if not self.coordinator.access_code:
-                return False
+            return False
         return super().available
 
 
@@ -334,7 +337,7 @@ class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_translation_key = "bluetooth_status"
-    _attr_options = [
+    _attr_options: ClassVar[list[str]] = [
         BT_STATUS_WAITING,
         BT_STATUS_CONNECTING,
         BT_STATUS_AUTHENTICATING,
