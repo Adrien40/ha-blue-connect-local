@@ -35,7 +35,6 @@ from .const import (
     CONF_REFERENCE_TIME,
     CONF_PASSIVE_MEASURES,
     CONF_IGNORE_ECHOES,
-    get_blue_connect_model,
     DEFAULT_PH_MIN,
     DEFAULT_PH_MAX,
     DEFAULT_ORP_MIN,
@@ -48,7 +47,9 @@ from .const import (
     DEFAULT_PH_REF_7,
     DEFAULT_ORP_CALIB,
     DEFAULT_ORP_REF,
+    get_blue_connect_model,
 )
+from .protocol import extract_raw_payload, parse_raw_frame
 from .validation import _flatten_sections, validate_calibration
 
 CONF_MANUAL_MAC = "manual_mac_address"
@@ -56,16 +57,28 @@ MAC_PATTERN = re.compile(r"^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$")
 
 CHLORINE_MODEL_OPTIONS = ["chlorine", "bromine"]
 
+GENERIC_MODEL_NAME = "Blue Connect"
+
+
+def _model_from_service_info(info: BluetoothServiceInfoBleak) -> str:
+    """Infer Blue Connect model name directly from broadcast frame."""
+    payload = extract_raw_payload(info.manufacturer_data, info.service_data)
+    if payload:
+        parsed = parse_raw_frame(payload)
+        if parsed:
+            return get_blue_connect_model(None, parsed.get("has_conductivity"))
+    return GENERIC_MODEL_NAME
+
 
 class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
-    MINOR_VERSION = 1
+    MINOR_VERSION = 2
 
     def __init__(self):
         super().__init__()
         self._mac_address: str | None = None
         self._bt_name: str | None = None
-        self._discovered_name: str = "Blue Connect"
+        self._discovered_name: str = GENERIC_MODEL_NAME
 
     def _get_display_name(self, bt_name: str | None, model: str) -> str:
         if (
@@ -85,8 +98,8 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._mac_address = discovery_info.address.upper()
         self._bt_name = discovery_info.name or ""
 
-        model = get_blue_connect_model(self._bt_name)
-        self._discovered_name = self._get_display_name(self._bt_name, model)
+        detected_model = _model_from_service_info(discovery_info)
+        self._discovered_name = self._get_display_name(self._bt_name, detected_model)
 
         self.context["title_placeholders"] = {"name": self._discovered_name}
 
@@ -146,26 +159,26 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         bt_name = (
                             self._bt_name if final_mac == self._mac_address else None
                         )
+                        detected_model = GENERIC_MODEL_NAME
 
                         if final_mac != self._mac_address:
                             await self.async_set_unique_id(final_mac)
                             self._abort_if_unique_id_configured(reload_on_update=False)
 
-                        if not bt_name:
-                            for info in async_discovered_service_info(self.hass, False):
-                                if info.address.upper() == final_mac and info.name:
+                        for info in async_discovered_service_info(self.hass, False):
+                            if info.address.upper() == final_mac:
+                                if not bt_name and info.name:
                                     bt_name = info.name
-                                    break
+                                detected_model = _model_from_service_info(info)
+                                break
 
-                        model = get_blue_connect_model(bt_name)
-                        title = self._get_display_name(bt_name, model)
+                        title = self._get_display_name(bt_name, detected_model)
 
                         final_access_code = normalized_input.pop(CONF_ACCESS_CODE, "")
 
                         entry_data = {
                             CONF_MAC_ADDRESS: final_mac,
                             CONF_ACCESS_CODE: final_access_code,
-                            "model": model,
                         }
                         normalized_input.pop(CONF_MAC_ADDRESS, None)
                         normalized_input.pop(CONF_MANUAL_MAC, None)
@@ -181,8 +194,8 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if info.name:
                 name_up = info.name.upper()
                 if name_up.startswith("BC3"):
-                    list_model = get_blue_connect_model(info.name)
-                    display = self._get_display_name(info.name, list_model)
+                    model = _model_from_service_info(info)
+                    display = self._get_display_name(info.name, model)
                     entry = f"{display} ({info.address.upper()})"
                     device_entries.append(entry)
                     mac_to_display[info.address.upper()] = entry
@@ -192,9 +205,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if self._mac_address in mac_to_display:
                 default_selection = mac_to_display[self._mac_address]
             else:
-                model_auto = get_blue_connect_model(self._bt_name)
-                display_auto = self._get_display_name(self._bt_name, model_auto)
-                auto_entry = f"{display_auto} ({self._mac_address})"
+                auto_entry = f"{self._discovered_name} ({self._mac_address})"
                 device_entries.insert(0, auto_entry)
                 mac_to_display[self._mac_address] = auto_entry
                 default_selection = auto_entry

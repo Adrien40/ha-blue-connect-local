@@ -25,6 +25,7 @@ from homeassistant.core import HomeAssistant, callback, CALLBACK_TYPE
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers import device_registry as dr
 from datetime import timedelta
 
 from .chemistry import (
@@ -80,8 +81,9 @@ from .const import (
     EXPECTED_FRAME_HEX_LEN_18,
     ECHO_MARKER,
     ACCEL_THRESHOLD,
+    get_blue_connect_model,
 )
-from .protocol import parse_raw_frame
+from .protocol import extract_raw_payload, parse_raw_frame
 
 UUID_RAW_SENSORS = "70ea0005-7a29-4fdf-93d2-838665e72677"
 UUID_ACCELEROMETER = "70ea000a-7a29-4fdf-93d2-838665e72677"
@@ -107,6 +109,7 @@ _MEASUREMENT_ONLY_KEYS = frozenset(
         "orp_raw",
         "conductivity",
         "salinity",
+        "has_conductivity",
         "battery_percent",
         "battery_adc",
         "battery",
@@ -185,6 +188,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         self._ble_unavail_cancel: CALLBACK_TYPE | None = None
         self._ble_avail_cancel: CALLBACK_TYPE | None = None
 
+        # coordinator.data is always initialized as a dict and never set to None
         self.data: dict[str, Any] = {CONF_ACCESS_CODE: access_code}
         self.data.update(
             {
@@ -225,6 +229,23 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         if last_info:
             return (monotonic() - last_info.time) <= BLE_RECENTLY_SEEN_THRESHOLD_S
         return False
+
+    def _update_device_registry(self) -> None:
+        """Update device registry entry with hardware and serial metadata."""
+        device_registry = dr.async_get(self.hass)
+        device_entry = device_registry.async_get_device(
+            identifiers={(DOMAIN, self.mac)}
+        )
+        if device_entry:
+            model_name = get_blue_connect_model(
+                self.data.get("hw_version"), self.data.get("has_conductivity")
+            )
+            device_registry.async_update_device(
+                device_entry.id,
+                model=model_name,
+                hw_version=self.data.get("hw_version"),
+                serial_number=self.data.get("serial_number"),
+            )
 
     def update_schedule(self) -> None:
         if self._is_shutdown:
@@ -329,18 +350,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         if not passive_enabled:
             return
 
-        raw_payload = None
-
-        for mfr_data in info.manufacturer_data.values():
-            if len(mfr_data) in (18, 19):
-                raw_payload = mfr_data
-                break
-
-        if not raw_payload:
-            for svc_data in info.service_data.values():
-                if len(svc_data) in (18, 19):
-                    raw_payload = svc_data
-                    break
+        raw_payload = extract_raw_payload(info.manufacturer_data, info.service_data)
 
         if raw_payload:
             clean_payload = raw_payload[1:] if len(raw_payload) == 19 else raw_payload
@@ -374,6 +384,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     new_state = self._apply_new_measurements(parsed, hex_frame)
                     new_state["receive_method"] = "passive"
                     self.update_local_state(new_state)
+                    self._update_device_registry()
 
     async def async_initialize(self) -> None:
         saved_data = await self.store.async_load()
@@ -400,10 +411,6 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     else:
                         saved_data.pop("last_received", None)
             else:
-                # No (valid) cached reading yet: don't restore stale/absent
-                # measurement fields, but still restore every preference and
-                # device-identity key below - they have nothing to do with
-                # whether a BLE frame was ever captured.
                 for key in _MEASUREMENT_ONLY_KEYS:
                     saved_data.pop(key, None)
 
@@ -416,6 +423,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
             if saved_data:
                 self.data.update(saved_data)
+                self._update_device_registry()
             self.update_schedule()
 
         last_info = async_last_service_info(self.hass, self.mac, connectable=False)
@@ -901,6 +909,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             new_data["receive_method"] = "active"
 
             self.data.update(new_data)
+            self._update_device_registry()
             self._schedule_save()
             self.update_schedule()
             return self.data

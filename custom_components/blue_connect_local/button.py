@@ -24,7 +24,9 @@ async def async_setup_entry(
 ) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
     mac = entry.data[CONF_MAC_ADDRESS]
-    model_name = entry.data.get("model") or get_blue_connect_model(entry.title)
+    hw_version = coordinator.data.get("hw_version")
+    has_conductivity = coordinator.data.get("has_conductivity")
+    model_name = get_blue_connect_model(hw_version, has_conductivity)
 
     async_add_entities([BlueConnectForceAnalysisButton(coordinator, mac, model_name)])
 
@@ -38,7 +40,12 @@ class BlueConnectForceAnalysisButton(CoordinatorEntity, ButtonEntity):
         self._mac = mac
         self._attr_unique_id = f"{mac}_force_analysis"
         self._attr_icon = "mdi:refresh-circle"
-        self._attr_device_info = blue_connect_device_info(mac, model_name)
+        self._attr_device_info = blue_connect_device_info(
+            mac,
+            model_name,
+            hw_version=coordinator.data.get("hw_version"),
+            serial_number=coordinator.data.get("serial_number"),
+        )
 
     @property
     def available(self) -> bool:

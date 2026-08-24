@@ -1,10 +1,16 @@
 # Copyright (c) 2026 Adrien40
 # This file is part of Blue Connect Local.
 
-from datetime import timedelta
-from homeassistant.helpers.device_registry import DeviceInfo
+from __future__ import annotations
 
-from .model import get_blue_connect_model, model_has_salinity  # noqa: F401 (re-export)
+from datetime import timedelta
+from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
+
+from .model import (  # noqa: F401 (re-export)
+    get_blue_connect_model,
+    model_has_conductivity,
+    model_has_salinity,
+)
 
 DOMAIN = "blue_connect_local"
 
@@ -97,12 +103,21 @@ DEFAULT_PH_REF_7: float = 7.00
 DEFAULT_PH_REF_4: float = 4.00
 
 
-def blue_connect_device_info(mac: str, model_name: str) -> DeviceInfo:
+def blue_connect_device_info(
+    mac: str,
+    model_name: str,
+    hw_version: str | None = None,
+    serial_number: str | None = None,
+) -> DeviceInfo:
+    """Return device registry information for the Blue Connect device."""
     mac_suffix = mac.replace(":", "")[-4:].upper() if mac else ""
     display_name = f"{model_name} ({mac_suffix})" if mac_suffix else model_name
     return DeviceInfo(
         identifiers={(DOMAIN, mac)},
+        connections={(CONNECTION_BLUETOOTH, mac)},
         name=display_name,
         manufacturer="Zodiac",
         model=model_name,
+        hw_version=hw_version,
+        serial_number=serial_number,
     )

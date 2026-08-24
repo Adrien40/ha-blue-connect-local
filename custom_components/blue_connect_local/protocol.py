@@ -12,6 +12,31 @@ from __future__ import annotations
 
 from typing import Any
 
+# Sentinel value the probe sends in the conductivity field when it has no
+# conductivity sensor wired (Blue Connect Silver). Salinity is derived from
+# conductivity on-device, so when conductivity is this sentinel, salinity
+# is not a real reading either - it decodes to a fixed, meaningless value.
+CONDUCTIVITY_SENSOR_ABSENT = 0xFFFF
+
+
+def extract_raw_payload(
+    manufacturer_data: dict[Any, bytes], service_data: dict[Any, bytes]
+) -> bytes | None:
+    """Pick the raw 18/19-byte sensor payload out of a BLE advertisement.
+
+    Shared between the coordinator's passive listener (coordinator.py) and
+    the config flow (config_flow.py, which peeks at the advertisement
+    during discovery - before any active connection exists - to guess
+    Gold vs Silver for display purposes only).
+    """
+    for mfr_data in manufacturer_data.values():
+        if len(mfr_data) in (18, 19):
+            return mfr_data
+    for svc_data in service_data.values():
+        if len(svc_data) in (18, 19):
+            return svc_data
+    return None
+
 
 def parse_raw_frame(data: bytes) -> dict[str, Any] | None:
     if len(data) not in (18, 19):
@@ -28,15 +53,18 @@ def parse_raw_frame(data: bytes) -> dict[str, Any] | None:
         battery_adc = (data[offset + 11] << 8) | data[offset + 12]
         battery_mv = int(battery_adc * 0.8791)
 
+        has_conductivity = cond != CONDUCTIVITY_SENSOR_ABSENT
+
         return {
             "temp_raw": raw_temp,
             "ph_raw": raw_ph,
             "orp_raw": raw_orp,
-            "conductivity": cond,
-            "salinity": round(salinity, 2),
+            "conductivity": cond if has_conductivity else None,
+            "salinity": round(salinity, 2) if has_conductivity else None,
             "battery_percent": battery_percent,
             "battery_adc": battery_adc,
             "battery": battery_mv,
+            "has_conductivity": has_conductivity,
         }
     except IndexError:
         return None

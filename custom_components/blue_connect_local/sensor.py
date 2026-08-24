@@ -31,6 +31,7 @@ from .const import (
     CONF_MAC_ADDRESS,
     get_blue_connect_model,
     blue_connect_device_info,
+    model_has_conductivity,
     model_has_salinity,
     BT_STATUS_WAITING,
     BT_STATUS_CONNECTING,
@@ -53,7 +54,9 @@ async def async_setup_entry(
 ) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
     mac_address = entry.data[CONF_MAC_ADDRESS]
-    model_name = entry.data.get("model") or get_blue_connect_model(entry.title)
+    hw_version = coordinator.data.get("hw_version")
+    has_conductivity = coordinator.data.get("has_conductivity")
+    model_name = get_blue_connect_model(hw_version, has_conductivity)
 
     sensors = [
         BlueConnectSensor(
@@ -93,6 +96,7 @@ async def async_setup_entry(
             "µS/cm",
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
+            enabled_default=model_has_conductivity(hw_version, has_conductivity),
         ),
         BlueConnectSensor(
             coordinator,
@@ -224,26 +228,6 @@ async def async_setup_entry(
         BlueConnectSensor(
             coordinator,
             mac_address,
-            "serial_number",
-            None,
-            None,
-            category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:identifier",
-            model_name=model_name,
-        ),
-        BlueConnectSensor(
-            coordinator,
-            mac_address,
-            "hw_version",
-            None,
-            None,
-            category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:chip",
-            model_name=model_name,
-        ),
-        BlueConnectSensor(
-            coordinator,
-            mac_address,
             "sw_version",
             None,
             None,
@@ -267,20 +251,20 @@ async def async_setup_entry(
         BlueConnectNextAnalysisSensor(coordinator, mac_address, model_name),
     ]
 
-    if model_has_salinity(model_name):
-        sensors.append(
-            BlueConnectSensor(
-                coordinator,
-                mac_address,
-                "salinity",
-                None,
-                "g/L",
-                2,
-                icon="mdi:shaker",
-                model_name=model_name,
-                state_class=SensorStateClass.MEASUREMENT,
-            )
+    sensors.append(
+        BlueConnectSensor(
+            coordinator,
+            mac_address,
+            "salinity",
+            None,
+            "g/L",
+            2,
+            icon="mdi:shaker",
+            model_name=model_name,
+            state_class=SensorStateClass.MEASUREMENT,
+            enabled_default=model_has_salinity(hw_version, has_conductivity),
         )
+    )
 
     async_add_entities(sensors)
 
@@ -301,6 +285,7 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
         model_name: str = "Blue Connect",
         options: list[str] | None = None,
         state_class: SensorStateClass | None = None,
+        enabled_default: bool = True,
     ) -> None:
         super().__init__(coordinator)
         self._mac = mac
@@ -313,9 +298,15 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
         self._attr_entity_category = category
         self._attr_state_class = state_class
         self._attr_icon = icon
+        self._attr_entity_registry_enabled_default = enabled_default
         if options:
             self._attr_options = options
-        self._attr_device_info = blue_connect_device_info(mac, model_name)
+        self._attr_device_info = blue_connect_device_info(
+            mac,
+            model_name,
+            hw_version=coordinator.data.get("hw_version"),
+            serial_number=coordinator.data.get("serial_number"),
+        )
 
     @property
     def native_value(self) -> Any | None:
@@ -329,8 +320,6 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
             "raw_frame_0005",
             "accelerometer",
             "float_status",
-            "serial_number",
-            "hw_version",
             "sw_version",
         ):
             if not self.coordinator.access_code:
@@ -362,7 +351,12 @@ class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{mac}_bluetooth_status"
-        self._attr_device_info = blue_connect_device_info(mac, model_name)
+        self._attr_device_info = blue_connect_device_info(
+            mac,
+            model_name,
+            hw_version=coordinator.data.get("hw_version"),
+            serial_number=coordinator.data.get("serial_number"),
+        )
 
     @property
     def native_value(self) -> str:
@@ -409,7 +403,12 @@ class BlueConnectRealTimeRSSISensor(CoordinatorEntity, RestoreSensor):
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{mac}_rssi"
-        self._attr_device_info = blue_connect_device_info(mac, model_name)
+        self._attr_device_info = blue_connect_device_info(
+            mac,
+            model_name,
+            hw_version=coordinator.data.get("hw_version"),
+            serial_number=coordinator.data.get("serial_number"),
+        )
         self._attr_native_value = None
 
     @property
@@ -462,7 +461,12 @@ class BlueConnectNextAnalysisSensor(CoordinatorEntity, SensorEntity):
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{mac}_next_analysis"
-        self._attr_device_info = blue_connect_device_info(mac, model_name)
+        self._attr_device_info = blue_connect_device_info(
+            mac,
+            model_name,
+            hw_version=coordinator.data.get("hw_version"),
+            serial_number=coordinator.data.get("serial_number"),
+        )
 
     @property
     def native_value(self) -> dt_datetime | None:

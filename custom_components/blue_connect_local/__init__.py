@@ -30,14 +30,27 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         return False
 
-    # Version 1 is the only version that has ever existed, so there is
-    # nothing to transform yet. Kept as scaffolding for future migrations,
-    # e.g.:
-    #   if entry.minor_version < 2:
-    #       new_data = {**entry.data, ...}
-    #       hass.config_entries.async_update_entry(
-    #           entry, data=new_data, minor_version=2
-    #       )
+    if entry.minor_version < 2:
+        # Older entries persisted a "model" guess (Gold/Silver) derived
+        # from the advertised BLE name at config-flow time. That name
+        # never actually carries the real SKU, so the guess was wrong
+        # for anyone who wasn't running the exact device this was
+        # developed against. The model is now derived on every platform
+        # setup from the live hw_version instead - drop the stale field
+        # so it can no longer shadow that.
+        if "model" in entry.data:
+            new_data = {k: v for k, v in entry.data.items() if k != "model"}
+            hass.config_entries.async_update_entry(
+                entry, data=new_data, minor_version=2
+            )
+            _LOGGER.debug(
+                "Blue Connect entry %s.%s migrated to 1.2: dropped stale 'model' field",
+                entry.version,
+                entry.minor_version,
+            )
+        else:
+            hass.config_entries.async_update_entry(entry, minor_version=2)
+
     _LOGGER.debug(
         "Blue Connect entry %s.%s already up to date, no migration needed",
         entry.version,
