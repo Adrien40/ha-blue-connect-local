@@ -23,7 +23,7 @@
             "data": {
               "scan_interval": "Analysis Interval (minutes)",
               "reference_time": "Reference Time (Scheduling)",
-              "passive_measures": "Blue Connect Internal Analyses (Passive)",
+              "passive_measures": "Blue Connect Internal Analysis (Passive)",
               "ignore_echoes": "Ignore Analysis Echoes (Passive)"
             }
           },
@@ -80,7 +80,7 @@
             "data": {
               "scan_interval": "Analysis Interval (minutes)",
               "reference_time": "Reference Time (Scheduling)",
-              "passive_measures": "Blue Connect Internal Analyses (Passive)",
+              "passive_measures": "Blue Connect Internal Analysis (Passive)",
               "ignore_echoes": "Ignore Analysis Echoes (Passive)"
             }
           },
@@ -177,7 +177,7 @@
           "error_retry": "Error (Retrying in 60s)",
           "write_failed": "Write failed",
           "auth_failed": "Invalid access code",
-          "paused": "Analyses paused",
+          "paused": "Analysis paused",
           "out_of_range": "Signal Lost",
           "passive_mode": "Passive Mode"
         }
@@ -265,10 +265,10 @@
     },
     "switch": {
       "active_measures": {
-        "name": "Automatic Analyses"
+        "name": "Automatic Analysis"
       },
       "passive_measures": {
-        "name": "Blue Connect Internal Analyses (Passive)"
+        "name": "Blue Connect Internal Analysis (Passive)"
       }
     },
     "time": {

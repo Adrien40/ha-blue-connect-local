@@ -853,6 +853,14 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                     client.read_gatt_char(CHAR_AUTH_STATUS_UUID),
                                     timeout=TIMEOUT_GATT_OP,
                                 )
+                                # Some BLE proxies or slower firmwares might need
+                                # an extra moment to flip the characteristic byte.
+                                if auth_status and auth_status[0] == 0x00:
+                                    await asyncio.sleep(0.5)
+                                    auth_status = await asyncio.wait_for(
+                                        client.read_gatt_char(CHAR_AUTH_STATUS_UUID),
+                                        timeout=TIMEOUT_GATT_OP,
+                                    )
                             except _BLE_IO_ERRORS as status_err:
                                 # Some firmware/backends may not expose this
                                 # characteristic reliably. Fall back to the
