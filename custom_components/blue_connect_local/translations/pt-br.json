@@ -176,6 +176,7 @@
           "error": "❌ Erro de conexão",
           "error_retry": "⏳ Erro (Tentando novamente em 60s)",
           "write_failed": "⚠️ Falha na gravação",
+          "auth_failed": "🔒 Código de acesso inválido",
           "paused": "⏸️ Análises pausadas",
           "out_of_range": "📵 Sinal Perdido",
           "passive_mode": "Modo Passivo"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Quadro Elétrico"
       },
-      "serial_number": {
-        "name": "Número de Série"
-      },
-      "hw_version": {
-        "name": "Número do Modelo (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "ID da Nuvem / SN"
       },
       "rssi": {

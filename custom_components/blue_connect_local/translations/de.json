@@ -176,6 +176,7 @@
           "error": "❌ Verbindungsfehler",
           "error_retry": "⏳ Fehler (Wiederholung in 60s)",
           "write_failed": "⚠️ Schreibvorgang fehlgeschlagen",
+          "auth_failed": "🔒 Ungültiger Zugangscode",
           "paused": "⏸️ Analysen pausiert",
           "out_of_range": "📵 Signal verloren",
           "passive_mode": "Passivmodus"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Elektrischer Datenrahmen"
       },
-      "serial_number": {
-        "name": "Seriennummer"
-      },
-      "hw_version": {
-        "name": "Modellnummer (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud-ID / SN"
       },
       "rssi": {

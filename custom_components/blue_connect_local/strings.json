@@ -176,6 +176,7 @@
           "error": "Connection error",
           "error_retry": "Error (Retrying in 60s)",
           "write_failed": "Write failed",
+          "auth_failed": "Invalid access code",
           "paused": "Analyses paused",
           "out_of_range": "Signal Lost",
           "passive_mode": "Passive Mode"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Electric Frame"
       },
-      "serial_number": {
-        "name": "Serial Number"
-      },
-      "hw_version": {
-        "name": "Model number (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

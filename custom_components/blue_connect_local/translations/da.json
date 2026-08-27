@@ -176,6 +176,7 @@
           "error": "❌ Forbindelsesfejl",
           "error_retry": "⏳ Fejl (prøver igen om 60s)",
           "write_failed": "⚠️ Skrivning mislykkedes",
+          "auth_failed": "🔒 Ugyldig adgangskode",
           "paused": "⏸️ Analyser sat på pause",
           "out_of_range": "📵 Signal tabt",
           "passive_mode": "Passiv tilstand"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Elektrisk frame"
       },
-      "serial_number": {
-        "name": "Serienummer"
-      },
-      "hw_version": {
-        "name": "Modelnummer (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

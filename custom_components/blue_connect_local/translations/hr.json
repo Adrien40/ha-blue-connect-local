@@ -176,6 +176,7 @@
           "error": "❌ Pogreška veze",
           "error_retry": "⏳ Pogreška (ponavljanje za 60s)",
           "write_failed": "⚠️ Pisanje nije uspjelo",
+          "auth_failed": "🔒 Nevažeći pristupni kod",
           "paused": "⏸️ Analize pauzirane",
           "out_of_range": "📵 Signal izgubljen",
           "passive_mode": "Pasivni način rada"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Električni okvir"
       },
-      "serial_number": {
-        "name": "Serijski broj"
-      },
-      "hw_version": {
-        "name": "Broj modela (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

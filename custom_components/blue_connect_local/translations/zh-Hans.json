@@ -176,6 +176,7 @@
           "error": "❌ 连接错误",
           "error_retry": "⏳ 错误（60 秒后重试）",
           "write_failed": "⚠️ 写入失败",
+          "auth_failed": "🔒 访问代码无效",
           "paused": "⏸️ 分析已暂停",
           "out_of_range": "📵 信号丢失",
           "passive_mode": "被动模式"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "电气数据帧"
       },
-      "serial_number": {
-        "name": "序列号"
-      },
-      "hw_version": {
-        "name": "型号编号（SKU）"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "云端 ID / SN"
       },
       "rssi": {

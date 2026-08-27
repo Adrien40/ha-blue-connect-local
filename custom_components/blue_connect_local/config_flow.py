@@ -61,25 +61,29 @@ CHLORINE_MODEL_OPTIONS = ["chlorine", "bromine"]
 GENERIC_MODEL_NAME = "Blue Connect"
 
 
-def _model_from_service_info(info: BluetoothServiceInfoBleak) -> str:
-    """Infer Blue Connect model name directly from broadcast frame."""
+def _model_from_service_info(
+    info: BluetoothServiceInfoBleak,
+) -> tuple[str, bool | None]:
+    """Infer Blue Connect model name (and has_conductivity) from broadcast frame."""
     payload = extract_raw_payload(info.manufacturer_data, info.service_data)
     if payload:
         parsed = parse_raw_frame(payload)
         if parsed:
-            return get_blue_connect_model(None, parsed.get("has_conductivity"))
-    return GENERIC_MODEL_NAME
+            has_conductivity = parsed.get("has_conductivity")
+            return get_blue_connect_model(None, has_conductivity), has_conductivity
+    return GENERIC_MODEL_NAME, None
 
 
 class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
-    MINOR_VERSION = 2
+    MINOR_VERSION = 4
 
     def __init__(self):
         super().__init__()
         self._mac_address: str | None = None
         self._bt_name: str | None = None
         self._discovered_name: str = GENERIC_MODEL_NAME
+        self._has_conductivity: bool | None = None
 
     def _get_display_name(self, bt_name: str | None, model: str) -> str:
         if (
@@ -99,7 +103,9 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._mac_address = discovery_info.address.upper()
         self._bt_name = discovery_info.name or ""
 
-        detected_model = _model_from_service_info(discovery_info)
+        detected_model, self._has_conductivity = _model_from_service_info(
+            discovery_info
+        )
         self._discovered_name = self._get_display_name(self._bt_name, detected_model)
 
         self.context["title_placeholders"] = {"name": self._discovered_name}
@@ -161,6 +167,20 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             self._bt_name if final_mac == self._mac_address else None
                         )
                         detected_model = GENERIC_MODEL_NAME
+                        # Prefer the value captured in async_step_bluetooth:
+                        # it was read directly off the advertisement HA had
+                        # in hand at that exact moment, with no dependency
+                        # on the discovery cache still holding it later.
+                        # Only fall back to a fresh cache lookup below when
+                        # that's unavailable (manually-entered MAC that
+                        # differs from the discovered one, or a flow
+                        # started straight at the "user" step without ever
+                        # going through "bluetooth").
+                        has_conductivity: bool | None = (
+                            self._has_conductivity
+                            if final_mac == self._mac_address
+                            else None
+                        )
 
                         if final_mac != self._mac_address:
                             await self.async_set_unique_id(final_mac)
@@ -170,7 +190,11 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             if info.address.upper() == final_mac:
                                 if not bt_name and info.name:
                                     bt_name = info.name
-                                detected_model = _model_from_service_info(info)
+                                detected_model, cache_has_conductivity = (
+                                    _model_from_service_info(info)
+                                )
+                                if has_conductivity is None:
+                                    has_conductivity = cache_has_conductivity
                                 break
 
                         title = self._get_display_name(bt_name, detected_model)
@@ -181,6 +205,19 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             CONF_MAC_ADDRESS: final_mac,
                             CONF_ACCESS_CODE: final_access_code,
                         }
+                        # has_conductivity is a fixed hardware trait (Gold vs
+                        # Silver), known here whenever HA has seen at least
+                        # one advertisement from the device - which covers
+                        # the common auto-discovery path. Persisting it lets
+                        # the coordinator seed conductivity/salinity's
+                        # enabled_default correctly on first entity
+                        # registration instead of only correcting it
+                        # retroactively once a BLE frame arrives (see
+                        # BlueConnectCoordinator._correct_stale_enabled_entities,
+                        # which remains the fallback for manually-entered
+                        # MACs the discovery scanner never saw).
+                        if has_conductivity is not None:
+                            entry_data["has_conductivity"] = has_conductivity
                         normalized_input.pop(CONF_MAC_ADDRESS, None)
                         normalized_input.pop(CONF_MANUAL_MAC, None)
                         normalized_input.pop("model", None)
@@ -195,7 +232,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if info.name:
                 name_up = info.name.upper()
                 if name_up.startswith("BC3"):
-                    model = _model_from_service_info(info)
+                    model, _ = _model_from_service_info(info)
                     display = self._get_display_name(info.name, model)
                     entry = f"{display} ({info.address.upper()})"
                     device_entries.append(entry)
@@ -412,7 +449,7 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                         coordinator.update_local_state(normalized_input)
                         coordinator.request_deferred_recompute()
 
-                        if access_code and not current_access_code:
+                        if access_code and access_code != current_access_code:
                             coordinator.request_one_shot_analysis()
                             entry.async_create_background_task(
                                 self.hass,

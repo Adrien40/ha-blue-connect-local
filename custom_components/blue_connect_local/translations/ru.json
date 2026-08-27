@@ -176,6 +176,7 @@
           "error": "❌ Ошибка подключения",
           "error_retry": "⏳ Ошибка (повтор через 60с)",
           "write_failed": "⚠️ Ошибка записи",
+          "auth_failed": "🔒 Неверный код доступа",
           "paused": "⏸️ Анализы приостановлены",
           "out_of_range": "📵 Сигнал потерян",
           "passive_mode": "Пассивный режим"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Электрический кадр"
       },
-      "serial_number": {
-        "name": "Серийный номер"
-      },
-      "hw_version": {
-        "name": "Номер модели (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

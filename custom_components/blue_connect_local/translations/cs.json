@@ -176,6 +176,7 @@
           "error": "❌ Chyba připojení",
           "error_retry": "⏳ Chyba (opakování za 60s)",
           "write_failed": "⚠️ Zápis selhal",
+          "auth_failed": "🔒 Neplatný přístupový kód",
           "paused": "⏸️ Analýzy pozastaveny",
           "out_of_range": "📵 Signál ztracen",
           "passive_mode": "Pasivní režim"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Elektrický rámec"
       },
-      "serial_number": {
-        "name": "Sériové číslo"
-      },
-      "hw_version": {
-        "name": "Číslo modelu (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

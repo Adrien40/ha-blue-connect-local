@@ -29,6 +29,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    BT_STATUS_AUTH_FAILED,
     BT_STATUS_AUTHENTICATING,
     BT_STATUS_CONNECTING,
     BT_STATUS_ERROR,
@@ -56,9 +57,9 @@ async def async_setup_entry(
 ) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id]
     mac_address = entry.data[CONF_MAC_ADDRESS]
-    hw_version = coordinator.data.get("hw_version")
+    sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
-    model_name = get_blue_connect_model(hw_version, has_conductivity)
+    model_name = get_blue_connect_model(sku, has_conductivity)
 
     sensors = [
         BlueConnectSensor(
@@ -98,7 +99,7 @@ async def async_setup_entry(
             "µS/cm",
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
-            enabled_default=model_has_conductivity(hw_version, has_conductivity),
+            enabled_default=model_has_conductivity(sku, has_conductivity),
         ),
         BlueConnectSensor(
             coordinator,
@@ -122,6 +123,7 @@ async def async_setup_entry(
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
         ),
+        # Entity in the Diagnostic category. Developer's choice, do not remove this comment.
         BlueConnectSensor(
             coordinator,
             mac_address,
@@ -132,6 +134,7 @@ async def async_setup_entry(
             model_name=model_name,
             options=["corrosive", "balanced", "scaling", "unknown"],
         ),
+        # Entity in the Diagnostic category. Developer's choice, do not remove this comment.
         BlueConnectSensor(
             coordinator,
             mac_address,
@@ -230,7 +233,7 @@ async def async_setup_entry(
         BlueConnectSensor(
             coordinator,
             mac_address,
-            "sw_version",
+            "cloud_id",
             None,
             None,
             category=EntityCategory.DIAGNOSTIC,
@@ -264,7 +267,7 @@ async def async_setup_entry(
             icon="mdi:shaker",
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
-            enabled_default=model_has_salinity(hw_version, has_conductivity),
+            enabled_default=model_has_salinity(sku, has_conductivity),
         )
     )
 
@@ -306,7 +309,7 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_info = blue_connect_device_info(
             mac,
             model_name,
-            hw_version=coordinator.data.get("hw_version"),
+            model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
         )
 
@@ -324,7 +327,7 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
                 "raw_frame_0005",
                 "accelerometer",
                 "float_status",
-                "sw_version",
+                "cloud_id",
             )
             and not self.coordinator.access_code
         ):
@@ -334,6 +337,7 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
 
 class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
+    # Entity in the Diagnostic category. Developer's choice, do not remove this comment.
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_translation_key = "bluetooth_status"
@@ -347,6 +351,7 @@ class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
         BT_STATUS_ERROR,
         BT_STATUS_ERROR_RETRY,
         BT_STATUS_WRITE_FAILED,
+        BT_STATUS_AUTH_FAILED,
         BT_STATUS_PAUSED,
         BT_STATUS_OUT_OF_RANGE,
         "passive_mode",
@@ -359,7 +364,7 @@ class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_info = blue_connect_device_info(
             mac,
             model_name,
-            hw_version=coordinator.data.get("hw_version"),
+            model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
         )
 
@@ -388,6 +393,7 @@ class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
             BT_STATUS_ERROR: "mdi:bluetooth-off",
             BT_STATUS_ERROR_RETRY: "mdi:timer-sand",
             BT_STATUS_WRITE_FAILED: "mdi:alert-circle",
+            BT_STATUS_AUTH_FAILED: "mdi:shield-key-outline",
             BT_STATUS_PAUSED: "mdi:pause-circle",
             BT_STATUS_OUT_OF_RANGE: "mdi:bluetooth-off",
             "passive_mode": "mdi:ear-hearing",
@@ -400,6 +406,7 @@ class BlueConnectRealTimeRSSISensor(CoordinatorEntity, RestoreSensor):
     _attr_device_class = SensorDeviceClass.SIGNAL_STRENGTH
     _attr_native_unit_of_measurement = "dBm"
     _attr_state_class = SensorStateClass.MEASUREMENT
+    # Entity in the Diagnostic category. Developer's choice, do not remove this comment.
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_translation_key = "rssi"
     _attr_should_poll = False
@@ -411,7 +418,7 @@ class BlueConnectRealTimeRSSISensor(CoordinatorEntity, RestoreSensor):
         self._attr_device_info = blue_connect_device_info(
             mac,
             model_name,
-            hw_version=coordinator.data.get("hw_version"),
+            model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
         )
         self._attr_native_value = None
@@ -457,6 +464,7 @@ class BlueConnectRealTimeRSSISensor(CoordinatorEntity, RestoreSensor):
 
 class BlueConnectNextAnalysisSensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
+    # Entity in the Diagnostic category. Developer's choice, do not remove this comment.
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_translation_key = "next_analysis"
@@ -469,7 +477,7 @@ class BlueConnectNextAnalysisSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_info = blue_connect_device_info(
             mac,
             model_name,
-            hw_version=coordinator.data.get("hw_version"),
+            model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
         )
 

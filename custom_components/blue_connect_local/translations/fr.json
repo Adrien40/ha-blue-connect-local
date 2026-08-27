@@ -176,6 +176,7 @@
           "error": "❌ Erreur de connexion",
           "error_retry": "⏳ Erreur (Relance dans 60s)",
           "write_failed": "⚠️ Échec d'écriture",
+          "auth_failed": "🔒 Code d'Accès invalide",
           "paused": "⏸️ Analyses en pause",
           "out_of_range": "📵 Signal Perdu",
           "passive_mode": "Mode Passif"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Trame Électrique"
       },
-      "serial_number": {
-        "name": "Numéro de Série"
-      },
-      "hw_version": {
-        "name": "Numéro de Modèle (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

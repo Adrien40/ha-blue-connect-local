@@ -176,6 +176,7 @@
           "error": "❌ Error de conexión",
           "error_retry": "⏳ Error (Reintentando en 60s)",
           "write_failed": "⚠️ Fallo de escritura",
+          "auth_failed": "🔒 Código de acceso no válido",
           "paused": "⏸️ Análisis en pausa",
           "out_of_range": "📵 Señal Perdida",
           "passive_mode": "Modo Pasivo"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Trama Eléctrica"
       },
-      "serial_number": {
-        "name": "Número de Serie"
-      },
-      "hw_version": {
-        "name": "Número de Modelo (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "ID de la Nube / SN"
       },
       "rssi": {

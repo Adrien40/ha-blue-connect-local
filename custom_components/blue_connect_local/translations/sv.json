@@ -176,6 +176,7 @@
           "error": "❌ Anslutningsfel",
           "error_retry": "⏳ Fel (försöker igen om 60s)",
           "write_failed": "⚠️ Skrivning misslyckades",
+          "auth_failed": "🔒 Ogiltig åtkomstkod",
           "paused": "⏸️ Analyser pausade",
           "out_of_range": "📵 Signal förlorad",
           "passive_mode": "Passivt läge"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Elektrisk ram"
       },
-      "serial_number": {
-        "name": "Serienummer"
-      },
-      "hw_version": {
-        "name": "Modellnummer (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud-ID / SN"
       },
       "rssi": {

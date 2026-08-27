@@ -28,9 +28,9 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][entry.entry_id]
     mac = entry.data[CONF_MAC_ADDRESS]
     entry_id = entry.entry_id
-    hw_version = coordinator.data.get("hw_version")
+    sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
-    model_name = get_blue_connect_model(hw_version, has_conductivity)
+    model_name = get_blue_connect_model(sku, has_conductivity)
 
     async_add_entities(
         [BlueConnectReferenceTime(coordinator, mac, model_name, entry_id)]
@@ -51,7 +51,7 @@ class BlueConnectReferenceTime(CoordinatorEntity, TimeEntity):
         self._attr_device_info = blue_connect_device_info(
             mac,
             model_name,
-            hw_version=coordinator.data.get("hw_version"),
+            model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
         )
 

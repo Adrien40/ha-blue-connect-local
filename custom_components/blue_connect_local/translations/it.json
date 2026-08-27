@@ -176,6 +176,7 @@
           "error": "❌ Errore di connessione",
           "error_retry": "⏳ Errore (Nuovo tentativo tra 60s)",
           "write_failed": "⚠️ Scrittura non riuscita",
+          "auth_failed": "🔒 Codice di accesso non valido",
           "paused": "⏸️ Analisi in pausa",
           "out_of_range": "📵 Segnale Perso",
           "passive_mode": "Modalità Passiva"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Frame Elettrico"
       },
-      "serial_number": {
-        "name": "Numero di Serie"
-      },
-      "hw_version": {
-        "name": "Numero Modello (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

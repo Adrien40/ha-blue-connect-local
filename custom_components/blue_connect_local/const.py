@@ -3,8 +3,6 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
-
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
 from .model import (  # noqa: F401 (re-export)
@@ -46,13 +44,16 @@ CONF_REFERENCE_TIME = "reference_time"
 CONF_PASSIVE_MEASURES = "passive_measures"
 CONF_IGNORE_ECHOES = "ignore_echoes"
 
-SERVICE_AUTH_UUID = "1fb21fd9-02c9-4001-bc9b-a2d1b18fab45"
 CHAR_AUTH_UUID = "1fb20001-02c9-4001-bc9b-a2d1b18fab45"
-SERVICE_TRIGGER_UUID = "70ea1476-7a29-4fdf-93d2-838665e72677"
+# Auth result flag: 0x01 once the probe has validated the code written to
+# CHAR_AUTH_UUID, 0x00 if it rejected it. Reading this lets us detect a
+# bad access code immediately instead of waiting out the full
+# TIMEOUT_NOTIFICATION_WAIT x2 (the probe never sends a measurement
+# notification if auth failed).
+CHAR_AUTH_STATUS_UUID = "1fb20002-02c9-4001-bc9b-a2d1b18fab45"
 CHAR_TRIGGER_UUID = "70ea0003-7a29-4fdf-93d2-838665e72677"
 CHAR_NOTIFY_UUID = "70ea0004-7a29-4fdf-93d2-838665e72677"
 
-DEFAULT_UPDATE_INTERVAL = timedelta(minutes=60)
 TIMEOUT_BLE_CONN = 30.0
 TIMEOUT_GATT_OP = 10.0
 TIMEOUT_NOTIFICATION_WAIT = 60.0
@@ -87,6 +88,7 @@ BT_STATUS_ERROR_RETRY = "error_retry"
 BT_STATUS_WRITE_FAILED = "write_failed"
 BT_STATUS_PAUSED = "paused"
 BT_STATUS_OUT_OF_RANGE = "out_of_range"
+BT_STATUS_AUTH_FAILED = "auth_failed"
 
 DEFAULT_PH_MIN: float = 6.90
 DEFAULT_PH_MAX: float = 7.40
@@ -107,10 +109,17 @@ DEFAULT_PH_REF_4: float = 4.00
 def blue_connect_device_info(
     mac: str,
     model_name: str,
-    hw_version: str | None = None,
+    model_id: str | None = None,
     serial_number: str | None = None,
 ) -> DeviceInfo:
-    """Return device registry information for the Blue Connect device."""
+    """Return device registry information for the Blue Connect device.
+
+    `model_id` is the commercial SKU read from GATT characteristic
+    70ea0021 (e.g. "WA000100"), stored internally as
+    coordinator.data["sku"]. It is not a real hardware revision, so it
+    is surfaced here as `model_id` - the HA DeviceInfo field reserved
+    for part numbers/SKUs - rather than `hw_version`.
+    """
     mac_suffix = mac.replace(":", "")[-4:].upper() if mac else ""
     display_name = f"{model_name} ({mac_suffix})" if mac_suffix else model_name
     return DeviceInfo(
@@ -119,6 +128,6 @@ def blue_connect_device_info(
         name=display_name,
         manufacturer="Zodiac",
         model=model_name,
-        hw_version=hw_version,
+        model_id=model_id,
         serial_number=serial_number,
     )

@@ -26,6 +26,8 @@ from homeassistant.components.bluetooth import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity_registry import RegistryEntryDisabler
 from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -38,6 +40,7 @@ from .chemistry import (
 from .const import (
     ACCEL_THRESHOLD,
     BLE_RECENTLY_SEEN_THRESHOLD_S,
+    BT_STATUS_AUTH_FAILED,
     BT_STATUS_AUTHENTICATING,
     BT_STATUS_CONNECTING,
     BT_STATUS_ERROR,
@@ -49,6 +52,7 @@ from .const import (
     BT_STATUS_SUCCESS,
     BT_STATUS_WAITING,
     BT_STATUS_WRITE_FAILED,
+    CHAR_AUTH_STATUS_UUID,
     CHAR_AUTH_UUID,
     CHAR_NOTIFY_UUID,
     CHAR_TRIGGER_UUID,
@@ -84,6 +88,7 @@ from .const import (
     TIMEOUT_GATT_OP,
     TIMEOUT_NOTIFICATION_WAIT,
     get_blue_connect_model,
+    model_has_conductivity,
 )
 from .protocol import extract_raw_payload, parse_raw_frame
 
@@ -103,7 +108,7 @@ _BLE_IO_ERRORS = (BleakError, OSError, TimeoutError, EOFError)
 # trustworthy alongside a valid raw_frame. Everything else stored in
 # self.data (preferences: active_measures, passive_measures, ignore_echoes,
 # chlorine_model, cya, tac/th/tds, scan_interval, reference_time, access_code,
-# and device identity: serial_number/hw_version/sw_version) is independent
+# and device identity: serial_number/sku/cloud_id) is independent
 # of whether a BLE frame was ever successfully parsed and must always be
 # restored when present.
 _MEASUREMENT_ONLY_KEYS = frozenset(
@@ -207,6 +212,20 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             }
         )
 
+        # Best-effort seed from the config flow's discovery-time snapshot
+        # (only present when async_step_bluetooth saw the device in an
+        # advertisement - not for manually-entered MACs). This lets
+        # conductivity/salinity's enabled_default be correct on the very
+        # first entity registration for the common auto-discovery case.
+        # It's a guess, not authoritative: any real value later loaded
+        # from storage or read from a live BLE frame overwrites it, and
+        # _correct_stale_enabled_entities() remains the fallback for
+        # whichever devices never got seeded here (manual MAC entry) or
+        # whose seed turns out to be wrong.
+        seeded_has_conductivity = entry.data.get("has_conductivity")
+        if seeded_has_conductivity is not None:
+            self.data["has_conductivity"] = seeded_has_conductivity
+
         self.update_schedule()
 
     @property
@@ -243,15 +262,63 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             identifiers={(DOMAIN, self.mac)}
         )
         if device_entry:
-            model_name = get_blue_connect_model(
-                self.data.get("hw_version"), self.data.get("has_conductivity")
-            )
+            sku = self.data.get("sku")
+            model_name = get_blue_connect_model(sku, self.data.get("has_conductivity"))
             device_registry.async_update_device(
                 device_entry.id,
                 model=model_name,
-                hw_version=self.data.get("hw_version"),
+                model_id=sku,
                 serial_number=self.data.get("serial_number"),
             )
+
+        self._correct_stale_enabled_entities()
+
+    def _correct_stale_enabled_entities(self) -> None:
+        """One-shot correction for the conductivity/salinity entities.
+
+        Home Assistant only honors `entity_registry_enabled_default` at
+        first entity creation. On a fresh install, no BLE frame has been
+        received yet when entities are created, so has_conductivity/sku
+        are both None and the entities default to enabled (see
+        model_has_conductivity). If the device later turns out to be a
+        Silver (no conductivity sensor), those entities stay enabled
+        forever unless corrected here. This runs once per resolution and
+        never overrides an explicit choice the user made afterwards.
+        """
+        if self.data.get("_conductivity_default_corrected"):
+            return
+
+        sku = self.data.get("sku")
+        has_conductivity = self.data.get("has_conductivity")
+        if sku is None and has_conductivity is None:
+            return  # Model still unknown - nothing to correct yet.
+
+        if model_has_conductivity(sku, has_conductivity):
+            # Gold (or genuinely unresolved) - the optimistic default was
+            # correct, nothing to disable.
+            self.data["_conductivity_default_corrected"] = True
+            self._schedule_save()
+            return
+
+        registry = er.async_get(self.hass)
+        entries = er.async_entries_for_config_entry(registry, self.entry_id)
+        stale_unique_ids = (f"{self.mac}_conductivity", f"{self.mac}_salinity")
+        for reg_entry in entries:
+            if reg_entry.unique_id not in stale_unique_ids:
+                continue
+            if reg_entry.disabled_by is not None:
+                continue  # User (or a previous run of this fix) already set it.
+            registry.async_update_entity(
+                reg_entry.entity_id,
+                disabled_by=RegistryEntryDisabler.INTEGRATION,
+            )
+            _LOGGER.info(
+                "Disabled %s: this Blue Connect has no conductivity sensor",
+                reg_entry.entity_id,
+            )
+
+        self.data["_conductivity_default_corrected"] = True
+        self._schedule_save()
 
     def update_schedule(self) -> None:
         if self._is_shutdown:
@@ -396,6 +463,12 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         saved_data = await self.store.async_load()
 
         if saved_data:
+            # Pre-refactor storage used the "hw_version" key for what is
+            # actually the commercial SKU. Migrate it once so existing
+            # installs keep their already-detected model on upgrade.
+            if "hw_version" in saved_data and "sku" not in saved_data:
+                saved_data["sku"] = saved_data.pop("hw_version")
+
             rf = saved_data.get("raw_frame")
             raw_frame_valid = (
                 isinstance(rf, str) and len(rf) == EXPECTED_FRAME_HEX_LEN_18
@@ -423,7 +496,13 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             for transient in ("bluetooth_status", "action_running"):
                 saved_data.pop(transient, None)
 
-            for static_key in ("serial_number", "hw_version", "sw_version"):
+            # Storage predates the sw_version -> cloud_id rename and has no
+            # migration function of its own (Store(hass, 1, ...) below), so
+            # normalize the legacy key here instead of bumping its version.
+            if "sw_version" in saved_data:
+                saved_data["cloud_id"] = saved_data.pop("sw_version")
+
+            for static_key in ("serial_number", "sku", "cloud_id"):
                 if static_key in saved_data and not saved_data[static_key]:
                     saved_data.pop(static_key, None)
 
@@ -768,6 +847,32 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             )
                             await asyncio.sleep(0.2)
 
+                            try:
+                                auth_status = await asyncio.wait_for(
+                                    client.read_gatt_char(CHAR_AUTH_STATUS_UUID),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                            except _BLE_IO_ERRORS as status_err:
+                                # Some firmware/backends may not expose this
+                                # characteristic reliably. Fall back to the
+                                # old behavior (wait for the measurement
+                                # notification) rather than failing the
+                                # whole update over it.
+                                _LOGGER.debug(
+                                    "Failed to read auth status (1fb20002): %s",
+                                    status_err,
+                                )
+                                auth_status = None
+
+                            if auth_status and auth_status[0] == 0x00:
+                                _LOGGER.warning(
+                                    "Blue Connect rejected the access code for %s",
+                                    self.safe_mac,
+                                )
+                                return self._handle_ble_error(
+                                    "Invalid access code", BT_STATUS_AUTH_FAILED
+                                )
+
                             self._set_bt_status(BT_STATUS_REQUESTING)
                             await asyncio.wait_for(
                                 client.write_gatt_char(
@@ -859,29 +964,35 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                         except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
                             _LOGGER.debug("Failed to read serial number: %s", err)
 
-                    if not self.data.get("hw_version"):
+                    if not self.data.get("sku"):
                         try:
+                            # UUID_HW_VERSION is the GATT characteristic's own
+                            # name (Bluetooth SIG naming), but the value it
+                            # returns is actually the commercial SKU.
                             hw = await asyncio.wait_for(
                                 client.read_gatt_char(UUID_HW_VERSION),
                                 timeout=TIMEOUT_GATT_OP,
                             )
                             val = hw.decode("ascii").replace("\x00", "").strip()
                             if val:
-                                self.data["hw_version"] = val
+                                self.data["sku"] = val
                         except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
-                            _LOGGER.debug("Failed to read hardware version: %s", err)
+                            _LOGGER.debug("Failed to read SKU: %s", err)
 
-                    if not self.data.get("sw_version"):
+                    if not self.data.get("cloud_id"):
                         try:
+                            # UUID_SW_VERSION is the GATT characteristic's own
+                            # name, but the value it returns is the device's
+                            # Cloud ID, not a firmware version.
                             sw = await asyncio.wait_for(
                                 client.read_gatt_char(UUID_SW_VERSION),
                                 timeout=TIMEOUT_GATT_OP,
                             )
                             val = sw.decode("ascii").replace("\x00", "").strip()
                             if val:
-                                self.data["sw_version"] = val
+                                self.data["cloud_id"] = val
                         except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
-                            _LOGGER.debug("Failed to read software version: %s", err)
+                            _LOGGER.debug("Failed to read Cloud ID: %s", err)
 
                 except (*_BLE_IO_ERRORS, ValueError, RuntimeError) as err:
                     return self._handle_ble_error(

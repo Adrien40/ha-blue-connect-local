@@ -176,6 +176,7 @@
           "error": "❌ Błąd połączenia",
           "error_retry": "⏳ Błąd (ponowna próba za 60s)",
           "write_failed": "⚠️ Zapis nie powiódł się",
+          "auth_failed": "🔒 Nieprawidłowy kod dostępu",
           "paused": "⏸️ Analizy wstrzymane",
           "out_of_range": "📵 Utracono sygnał",
           "passive_mode": "Tryb pasywny"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Ramka elektryczna"
       },
-      "serial_number": {
-        "name": "Numer seryjny"
-      },
-      "hw_version": {
-        "name": "Numer modelu (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

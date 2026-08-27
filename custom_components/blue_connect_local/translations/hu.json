@@ -176,6 +176,7 @@
           "error": "❌ Kapcsolódási hiba",
           "error_retry": "⏳ Hiba (újrapróbálkozás 60s múlva)",
           "write_failed": "⚠️ Az írás sikertelen",
+          "auth_failed": "🔒 Érvénytelen hozzáférési kód",
           "paused": "⏸️ Elemzések szüneteltetve",
           "out_of_range": "📵 Jel elveszett",
           "passive_mode": "Passzív mód"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Elektromos keret"
       },
-      "serial_number": {
-        "name": "Sorozatszám"
-      },
-      "hw_version": {
-        "name": "Modellszám (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud ID / SN"
       },
       "rssi": {

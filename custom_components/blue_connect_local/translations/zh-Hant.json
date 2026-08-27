@@ -176,6 +176,7 @@
           "error": "❌ 連線錯誤",
           "error_retry": "⏳ 錯誤（60 秒後重試）",
           "write_failed": "⚠️ 寫入失敗",
+          "auth_failed": "🔒 存取碼無效",
           "paused": "⏸️ 分析已暫停",
           "out_of_range": "📵 訊號遺失",
           "passive_mode": "被動模式"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "電氣資料訊框"
       },
-      "serial_number": {
-        "name": "序號"
-      },
-      "hw_version": {
-        "name": "型號編號（SKU）"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "雲端 ID / SN"
       },
       "rssi": {

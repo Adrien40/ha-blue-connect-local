@@ -176,6 +176,7 @@
           "error": "❌ Verbindingsfout",
           "error_retry": "⏳ Fout (nieuwe poging over 60s)",
           "write_failed": "⚠️ Schrijven mislukt",
+          "auth_failed": "🔒 Ongeldige toegangscode",
           "paused": "⏸️ Analyses gepauzeerd",
           "out_of_range": "📵 Signaal verloren",
           "passive_mode": "Passieve modus"
@@ -247,13 +248,7 @@
       "raw_frame_0005": {
         "name": "Elektrisch frame"
       },
-      "serial_number": {
-        "name": "Serienummer"
-      },
-      "hw_version": {
-        "name": "Modelnummer (SKU)"
-      },
-      "sw_version": {
+      "cloud_id": {
         "name": "Cloud-ID / SN"
       },
       "rssi": {
