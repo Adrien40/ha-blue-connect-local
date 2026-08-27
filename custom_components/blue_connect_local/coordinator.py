@@ -268,6 +268,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 device_entry.id,
                 model=model_name,
                 model_id=sku,
+                hw_version=None,
                 serial_number=self.data.get("serial_number"),
             )
 
