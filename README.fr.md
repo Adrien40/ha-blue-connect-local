@@ -127,7 +127,7 @@ Copiez le dossier `custom_components/blue_connect_local` dans le dossier `custom
 
 > 🛠️ **Fiche appareil & Diagnostic** : Le **Numéro de Série**, le **Numéro de Modèle (SKU)** et l'**Adresse MAC** sont nativement intégrés dans l'en-tête de l'appareil Home Assistant. L'intégration expose également des capteurs de diagnostic avancés (pH brut, trame hexadécimale complète, statut de flottaison et alertes binaires).
 
-> ℹ️ **Sur Blue Connect Silver** (sans sonde de conductivité) : les entités Conductivité et Salinité sont masquées par défaut. Si vous avez mis à jour une installation existante où Conductivité était déjà présente, elle restera visible mais affichera « Inconnu » — vous pouvez la masquer manuellement dans **Paramètres > Entités**.
+> ℹ️ **Sur Blue Connect Silver** (sans sonde de conductivité) : les entités Conductivité et Salinité sont désormais désactivées automatiquement. Si vous avez mis à jour une installation existante où Conductivité était déjà présente, l'intégration détecte le modèle Silver et désactive ces entités elle-même — aucune action manuelle requise.
 
 ---
 
@@ -176,6 +176,7 @@ Une fois l'appareil ajouté, vous pouvez cliquer sur **Configurer** ⚙️ pour 
 <summary>⚠️ Voir les problèmes fréquents</summary>
   
 * **Erreurs Bluetooth fréquentes** : L'intégration gère automatiquement les tentatives de connexion. Si le capteur indique `Signal Perdu`, le Blue Connect est hors de portée. Rapprochez votre antenne ou [installez un Proxy Bluetooth ESPHome](https://esphome.github.io/bluetooth-proxies/) au plus près du bassin (nécessite juste un ESP32 (~10€) et un chargeur USB).
+* **Code d'Accès invalide** : L'intégration vérifie votre code d'accès dès la connexion, donc s'il est erroné vous verrez `Invalid access code` sur le capteur d'état Bluetooth en quelques secondes — inutile d'attendre le timeout complet de l'analyse. Corrigez-le simplement dans **Configurer ⚙️**, une analyse se déclenche automatiquement dès l'enregistrement.
 
 </details>
 
