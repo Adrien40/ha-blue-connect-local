@@ -128,7 +128,7 @@ Copy the `custom_components/blue_connect_local` folder into the `custom_componen
 
 > 🛠️ **Device Info & Diagnostics**: **Serial Number**, **Model Number (SKU)**, and **MAC Address** are natively integrated into the Home Assistant device header. The integration also exposes advanced diagnostic sensors (raw pH, full raw hex frame, floating status, and binary alerts).
 
-> ℹ️ **On Blue Connect Silver** (no conductivity probe): the Conductivity and Salinity entities are disabled by default. If you updated an existing installation where Conductivity was already present, it will remain visible but will show "Unknown" — you can disable it manually under **Settings > Entities**.
+> ℹ️ **On Blue Connect Silver** (no conductivity probe): the Conductivity and Salinity entities are automatically disabled. If you updated an existing installation where Conductivity was already present, the integration now detects the Silver model and disables these entities on its own — no manual action needed.
 
 ---
 
@@ -177,6 +177,7 @@ Once the device has been added, you can click **Configure** ⚙️ to:
 <summary>⚠️ See common issues</summary>
   
 * **Frequent Bluetooth errors**: The integration automatically handles connection retries. If the sensor shows `Signal Lost`, the Blue Connect is out of range. Move your antenna closer, or [install an ESPHome Bluetooth Proxy](https://esphome.github.io/bluetooth-proxies/) as close to the pool as possible (all you need is an ESP32 (~€10) and a USB charger).
+* **Invalid access code**: The integration checks your access code as soon as it connects, so if it's wrong you'll see `Invalid access code` on the Bluetooth State sensor within seconds — no need to wait for the full analysis timeout. Just correct it in **Configure ⚙️**, an analysis is triggered automatically once you save.
 
 </details>
 
