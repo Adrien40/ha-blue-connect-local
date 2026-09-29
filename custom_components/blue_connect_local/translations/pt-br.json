@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "🧪 Tratamento da Água",
               "cya": "💧 Nível de Estabilizante / CyA (mg/l)"
+            },
+            "data_description": {
+              "chlorine_model": "Desinfetante usado na sua piscina. O bromo desativa a entidade CyA, que não é relevante para esse tratamento. Guardado para uso futuro: por enquanto nenhum valor calculado depende dele.",
+              "cya": "Nível de ácido cianúrico (estabilizante) em mg/l; use 0 se não utilizar estabilizante. Guardado para uso futuro: por enquanto nenhum valor calculado depende dele."
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "🕒 Horário de Referência (Agendamento)",
               "passive_measures": "📡 Análises Internas do Blue Connect (Passivas)",
               "ignore_echoes": "🚫 Ignorar Ecos de Análise (Passivas)"
+            },
+            "data_description": {
+              "reference_time": "Horário de referência usado para alinhar as análises programadas em intervalos regulares (ex.: 08:00, 10:00, 12:00... para um intervalo de 2 horas).",
+              "scan_interval": "Tempo entre duas análises agendadas, de 5 a 1440 minutos. Somente no Modo Ativo (requer o código de acesso).",
+              "passive_measures": "Usa as leituras que a sonda transmite por conta própria, cerca de uma por hora. Funciona sem código de acesso.",
+              "ignore_echoes": "Ignora os quadros passivos que a sonda marca como ecos de uma análise, para que não sobrescrevam a última medição."
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "📏 Valor Medido ORP (ex.: 650)",
               "orp_ref": "🎯 Solução de Referência ORP (ex.: 650)",
               "temp_offset": "🌡️ Desvio de Temperatura (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "O valor bruto de pH que sua sonda realmente mediu enquanto estava imersa nesta solução de calibração (não o valor nominal da solução).",
+              "ph_calib_4": "O valor bruto de pH que sua sonda realmente mediu enquanto estava imersa nesta solução de calibração (não o valor nominal da solução).",
+              "ph_ref_7": "O pH desta solução de calibração na temperatura atual dela: varia com a temperatura, veja a tabela no frasco.",
+              "ph_ref_4": "O pH desta solução de calibração na temperatura atual dela: varia com a temperatura, veja a tabela no frasco.",
+              "orp_calib": "O valor ORP bruto (mV) que a sua sonda realmente exibiu mergulhada na solução de referência.",
+              "orp_ref": "O valor ORP (mV) da solução de referência na temperatura atual dela: varia com a temperatura, veja o frasco. A correção aplicada é este valor menos o valor medido.",
+              "temp_offset": "Correção em °C somada à temperatura medida pela sonda. Pode ser positiva ou negativa."
             }
           }
+        },
+        "data_description": {
+          "access_code": "Encontrado em um adesivo sob a tampa da porta USB, ou na tampa de proteção das sondas. Necessário para análises sob demanda; deixe em branco para modo apenas passivo.",
+          "mac_address": "Escolha um Blue Connect detectado por perto pelo Bluetooth do Home Assistant. Se o seu não aparecer, use o campo abaixo.",
+          "manual_mac_address": "Necessário apenas se o seu dispositivo não estiver listado acima. Formato AA:BB:CC:DD:EE:FF, como exibido nas configurações de Bluetooth do Home Assistant."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar Blue Connect",
+        "description": "O código de acesso de {name} foi rejeitado. Digite o novo código de acesso de 9 caracteres.",
+        "data": {
+          "access_code": "Código de Acesso"
+        },
+        "data_description": {
+          "access_code": "Encontrado em um adesivo sob a tampa da porta USB, ou na tampa de proteção das sondas. Necessário para análises sob demanda; deixe em branco para modo apenas passivo."
+        }
+      },
+      "reconfigure": {
+        "title": "Atualizar dispositivo Blue Connect",
+        "description": "Associe esta entrada a outro Blue Connect físico (por exemplo, após substituir o dispositivo), ou corrija o código de acesso. Suas opções, automações e histórico de entidades são mantidos.",
+        "data": {
+          "mac_address": "✍️ Endereço MAC Bluetooth",
+          "access_code": "🔑 Código de Acesso"
+        },
+        "data_description": {
+          "mac_address": "Endereço MAC Bluetooth do Blue Connect que esta entrada deve usar (AA:BB:CC:DD:EE:FF). Altere apenas depois de substituir o dispositivo.",
+          "access_code": "Encontrado em um adesivo sob a tampa da porta USB, ou na tampa de proteção das sondas. Necessário para análises sob demanda; deixe em branco para modo apenas passivo."
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "❌ Código de Acesso inválido (9 caracteres alfanuméricos)."
     },
     "abort": {
-      "already_configured": "⚠️ Este dispositivo já está configurado."
+      "already_configured": "⚠️ Este dispositivo já está configurado.",
+      "reauth_successful": "A reautenticação foi bem-sucedida"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "🔑 Código de Acesso (deixe em branco para o Modo Passivo: 1 análise por hora)",
               "chlorine_model": "🧪 Tratamento da Água",
               "cya": "💧 Nível de Estabilizante / CyA (mg/l)"
+            },
+            "data_description": {
+              "access_code": "Encontrado em um adesivo sob a tampa da porta USB, ou na tampa de proteção das sondas. Necessário para análises sob demanda; deixe em branco para modo apenas passivo.",
+              "chlorine_model": "Desinfetante usado na sua piscina. O bromo desativa a entidade CyA, que não é relevante para esse tratamento. Guardado para uso futuro: por enquanto nenhum valor calculado depende dele.",
+              "cya": "Nível de ácido cianúrico (estabilizante) em mg/l; use 0 se não utilizar estabilizante. Guardado para uso futuro: por enquanto nenhum valor calculado depende dele."
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "🕒 Horário de Referência (Agendamento)",
               "passive_measures": "📡 Análises Internas do Blue Connect (Passivas)",
               "ignore_echoes": "🚫 Ignorar Ecos de Análise (Passivas)"
+            },
+            "data_description": {
+              "reference_time": "Horário de referência usado para alinhar as análises programadas em intervalos regulares (ex.: 08:00, 10:00, 12:00... para um intervalo de 2 horas).",
+              "scan_interval": "Tempo entre duas análises agendadas, de 5 a 1440 minutos. Somente no Modo Ativo (requer o código de acesso).",
+              "passive_measures": "Usa as leituras que a sonda transmite por conta própria, cerca de uma por hora. Funciona sem código de acesso.",
+              "ignore_echoes": "Ignora os quadros passivos que a sonda marca como ecos de uma análise, para que não sobrescrevam a última medição."
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "📏 Valor Medido ORP (ex.: 650)",
               "orp_ref": "🎯 Solução de Referência ORP (ex.: 650)",
               "temp_offset": "🌡️ Desvio de Temperatura (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "O valor bruto de pH que sua sonda realmente mediu enquanto estava imersa nesta solução de calibração (não o valor nominal da solução).",
+              "ph_calib_4": "O valor bruto de pH que sua sonda realmente mediu enquanto estava imersa nesta solução de calibração (não o valor nominal da solução).",
+              "ph_ref_7": "O pH desta solução de calibração na temperatura atual dela: varia com a temperatura, veja a tabela no frasco.",
+              "ph_ref_4": "O pH desta solução de calibração na temperatura atual dela: varia com a temperatura, veja a tabela no frasco.",
+              "orp_calib": "O valor ORP bruto (mV) que a sua sonda realmente exibiu mergulhada na solução de referência.",
+              "orp_ref": "O valor ORP (mV) da solução de referência na temperatura atual dela: varia com a temperatura, veja o frasco. A correção aplicada é este valor menos o valor medido.",
+              "temp_offset": "Correção em °C somada à temperatura medida pela sonda. Pode ser positiva ou negativa."
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "pH Bruto"
       },
+      "orp_raw": {
+        "name": "ORP Bruto"
+      },
       "lsi": {
         "name": "Índice de Langelier"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "Horário de Referência"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect inacessível",
+      "description": "A sonda Blue Connect ({name}) não responde há {days} dia(s). Verifique a alimentação, o alcance, e se um adaptador Bluetooth ou proxy ESPHome cobre a área da piscina."
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "O Blue Connect {mac} está fora do alcance Bluetooth e não há dados anteriores disponíveis."
+    },
+    "unreachable_no_history": {
+      "message": "O Blue Connect está inacessível e não há dados anteriores disponíveis: {error}"
     }
   }
 }

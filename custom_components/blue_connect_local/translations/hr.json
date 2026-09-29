@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "🧪 Obrada vode",
               "cya": "💧 Razina stabilizatora / CyA (mg/l)"
+            },
+            "data_description": {
+              "chlorine_model": "Dezinficijens koji koristite u bazenu. Brom isključuje entitet CyA, koji za njega nije relevantan. Sprema se za buduću upotrebu: za sada nijedna izračunata vrijednost ne ovisi o tome.",
+              "cya": "Razina cijanurne kiseline (stabilizatora) u mg/l; unesite 0 ako ne koristite stabilizator. Sprema se za buduću upotrebu: za sada nijedna izračunata vrijednost ne ovisi o njoj."
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "🕒 Referentno vrijeme (raspored)",
               "passive_measures": "📡 Interne analize Blue Connect uređaja (pasivne)",
               "ignore_echoes": "🚫 Zanemari odjeke analiza (pasivne)"
+            },
+            "data_description": {
+              "reference_time": "Referentno vrijeme za usklađivanje planiranih analiza s redovitim intervalima (npr. 08:00, 10:00, 12:00... za 2-satni interval).",
+              "scan_interval": "Vrijeme između dvije planirane analize, od 5 do 1440 minuta. Samo u aktivnom načinu (potreban je pristupni kod).",
+              "passive_measures": "Koristi očitanja koja sonda sama šalje, otprilike jedno na sat. Radi bez pristupnog koda.",
+              "ignore_echoes": "Zanemaruje pasivne okvire koje sonda označi kao jeku analize kako ne bi prepisali posljednje mjerenje."
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "📏 Izmjerena vrijednost ORP (npr. 650)",
               "orp_ref": "🎯 Ciljna otopina ORP (npr. 650)",
               "temp_offset": "🌡️ Odstupanje temperature (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
+              "ph_calib_4": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
+              "ph_ref_7": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
+              "ph_ref_4": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
+              "orp_calib": "Neobrađena ORP vrijednost (mV) koju je vaša sonda stvarno prikazala u referentnoj otopini.",
+              "orp_ref": "ORP vrijednost (mV) referentne otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte bocu. Primijenjena korekcija je ta vrijednost minus izmjerena vrijednost.",
+              "temp_offset": "Korekcija u °C koja se dodaje temperaturi koju je izmjerila sonda. Može biti pozitivna ili negativna."
             }
           }
+        },
+        "data_description": {
+          "access_code": "Nalazi se na naljepnici ispod poklopca USB priključka ili na zaštitnom poklopcu sondi. Potrebno za analize na zahtjev; ostavite prazno za samo pasivno slušanje.",
+          "mac_address": "Odaberite Blue Connect koji je Bluetooth Home Assistanta otkrio u blizini. Ako vašeg nema, upotrijebite polje ispod.",
+          "manual_mac_address": "Potrebno samo ako vaš uređaj nije naveden iznad. Format AA:BB:CC:DD:EE:FF, kako je prikazano u Bluetooth postavkama Home Assistanta."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ponovna autentifikacija Blue Connect",
+        "description": "Pristupni kod za {name} je odbijen. Unesite novi pristupni kod od 9 znakova.",
+        "data": {
+          "access_code": "Pristupni Kod"
+        },
+        "data_description": {
+          "access_code": "Nalazi se na naljepnici ispod poklopca USB priključka ili na zaštitnom poklopcu sondi. Potrebno za analize na zahtjev; ostavite prazno za samo pasivno slušanje."
+        }
+      },
+      "reconfigure": {
+        "title": "Ažuriraj Blue Connect uređaj",
+        "description": "Povežite ovaj unos s drugim fizičkim Blue Connectom (npr. nakon zamjene uređaja), ili ispravite pristupni kod. Vaše opcije, automatizacije i povijest entiteta ostaju sačuvani.",
+        "data": {
+          "mac_address": "✍️ Bluetooth MAC adresa",
+          "access_code": "🔑 Pristupni Kod"
+        },
+        "data_description": {
+          "mac_address": "Bluetooth MAC adresa uređaja Blue Connect koji ovaj unos treba koristiti (AA:BB:CC:DD:EE:FF). Mijenjajte je samo nakon zamjene uređaja.",
+          "access_code": "Nalazi se na naljepnici ispod poklopca USB priključka ili na zaštitnom poklopcu sondi. Potrebno za analize na zahtjev; ostavite prazno za samo pasivno slušanje."
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "❌ Nevažeći pristupni kod (9 alfanumeričkih znakova)."
     },
     "abort": {
-      "already_configured": "⚠️ Ovaj uređaj je već konfiguriran."
+      "already_configured": "⚠️ Ovaj uređaj je već konfiguriran.",
+      "reauth_successful": "Ponovna autentifikacija uspjela"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "🔑 Pristupni kod (ostavite prazno za pasivni način rada: 1 analiza na sat)",
               "chlorine_model": "🧪 Obrada vode",
               "cya": "💧 Razina stabilizatora / CyA (mg/l)"
+            },
+            "data_description": {
+              "access_code": "Nalazi se na naljepnici ispod poklopca USB priključka ili na zaštitnom poklopcu sondi. Potrebno za analize na zahtjev; ostavite prazno za samo pasivno slušanje.",
+              "chlorine_model": "Dezinficijens koji koristite u bazenu. Brom isključuje entitet CyA, koji za njega nije relevantan. Sprema se za buduću upotrebu: za sada nijedna izračunata vrijednost ne ovisi o tome.",
+              "cya": "Razina cijanurne kiseline (stabilizatora) u mg/l; unesite 0 ako ne koristite stabilizator. Sprema se za buduću upotrebu: za sada nijedna izračunata vrijednost ne ovisi o njoj."
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "🕒 Referentno vrijeme (raspored)",
               "passive_measures": "📡 Interne analize Blue Connect uređaja (pasivne)",
               "ignore_echoes": "🚫 Zanemari odjeke analiza (pasivne)"
+            },
+            "data_description": {
+              "reference_time": "Referentno vrijeme za usklađivanje planiranih analiza s redovitim intervalima (npr. 08:00, 10:00, 12:00... za 2-satni interval).",
+              "scan_interval": "Vrijeme između dvije planirane analize, od 5 do 1440 minuta. Samo u aktivnom načinu (potreban je pristupni kod).",
+              "passive_measures": "Koristi očitanja koja sonda sama šalje, otprilike jedno na sat. Radi bez pristupnog koda.",
+              "ignore_echoes": "Zanemaruje pasivne okvire koje sonda označi kao jeku analize kako ne bi prepisali posljednje mjerenje."
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "📏 Izmjerena vrijednost ORP (npr. 650)",
               "orp_ref": "🎯 Ciljna otopina ORP (npr. 650)",
               "temp_offset": "🌡️ Odstupanje temperature (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
+              "ph_calib_4": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
+              "ph_ref_7": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
+              "ph_ref_4": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
+              "orp_calib": "Neobrađena ORP vrijednost (mV) koju je vaša sonda stvarno prikazala u referentnoj otopini.",
+              "orp_ref": "ORP vrijednost (mV) referentne otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte bocu. Primijenjena korekcija je ta vrijednost minus izmjerena vrijednost.",
+              "temp_offset": "Korekcija u °C koja se dodaje temperaturi koju je izmjerila sonda. Može biti pozitivna ili negativna."
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "Sirovi pH"
       },
+      "orp_raw": {
+        "name": "Sirovi ORP"
+      },
       "lsi": {
         "name": "Langelierov indeks"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "Referentno vrijeme"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect nedostupan",
+      "description": "Blue Connect sonda ({name}) nije odgovorila {days} dan(a). Provjerite napajanje, domet i pokriva li Bluetooth adapter ili ESPHome proxy područje bazena."
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "Blue Connect {mac} je izvan Bluetooth dometa i nema dostupnih prethodnih podataka."
+    },
+    "unreachable_no_history": {
+      "message": "Blue Connect je nedostupan i nema dostupnih prethodnih podataka: {error}"
     }
   }
 }

@@ -5,27 +5,32 @@ import asyncio
 import logging
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import BlueConnectConfigEntry
 from .const import (
     CONF_MAC_ADDRESS,
-    DOMAIN,
     TIMEOUT_FORCE_REFRESH,
     blue_connect_device_info,
     get_blue_connect_model,
 )
+from .coordinator import BlueConnectCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# Single Bluetooth connection to the device: commands must be serialized.
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: BlueConnectConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     mac = entry.data[CONF_MAC_ADDRESS]
     sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
@@ -34,15 +39,18 @@ async def async_setup_entry(
     async_add_entities([BlueConnectForceAnalysisButton(coordinator, mac, model_name)])
 
 
-class BlueConnectForceAnalysisButton(CoordinatorEntity, ButtonEntity):
+class BlueConnectForceAnalysisButton(
+    CoordinatorEntity[BlueConnectCoordinator], ButtonEntity
+):
     _attr_has_entity_name = True
     _attr_translation_key = "force_analysis"
 
-    def __init__(self, coordinator, mac: str, model_name: str) -> None:
+    def __init__(
+        self, coordinator: BlueConnectCoordinator, mac: str, model_name: str
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{mac}_force_analysis"
-        self._attr_icon = "mdi:refresh-circle"
         self._attr_device_info = blue_connect_device_info(
             mac,
             model_name,
@@ -85,13 +93,13 @@ class BlueConnectForceAnalysisButton(CoordinatorEntity, ButtonEntity):
                     self.coordinator.async_request_refresh(),
                     timeout=TIMEOUT_FORCE_REFRESH,
                 )
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 _LOGGER.exception(
                     "Analysis exceeded timeout of %s seconds for %s",
                     TIMEOUT_FORCE_REFRESH,
                     self.coordinator.safe_mac,
                 )
-            except (HomeAssistantError, RuntimeError):
+            except Exception:
                 _LOGGER.exception(
                     "Analysis failed for %s",
                     self.coordinator.safe_mac,

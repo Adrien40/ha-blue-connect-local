@@ -5,12 +5,12 @@ from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import BlueConnectConfigEntry
 from .const import (
     CONF_MAC_ADDRESS,
     CONF_ORP_MAX,
@@ -25,10 +25,10 @@ from .const import (
     DEFAULT_PH_MIN,
     DEFAULT_TEMP_MAX,
     DEFAULT_TEMP_MIN,
-    DOMAIN,
     blue_connect_device_info,
     get_blue_connect_model,
 )
+from .coordinator import BlueConnectCoordinator
 
 _DEFAULT_THRESHOLDS: dict[str, float] = {
     CONF_PH_MIN: DEFAULT_PH_MIN,
@@ -40,10 +40,16 @@ _DEFAULT_THRESHOLDS: dict[str, float] = {
 }
 
 
+# Coordinator centralizes updates; entities are read-only.
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: BlueConnectConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     mac = entry.data[CONF_MAC_ADDRESS]
     sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
@@ -69,7 +75,9 @@ async def async_setup_entry(
     )
 
 
-class BlueConnectAlertSensor(CoordinatorEntity, BinarySensorEntity):
+class BlueConnectAlertSensor(
+    CoordinatorEntity[BlueConnectCoordinator], BinarySensorEntity
+):
     _attr_has_entity_name = True
     _attr_device_class = BinarySensorDeviceClass.PROBLEM
 
@@ -78,7 +86,7 @@ class BlueConnectAlertSensor(CoordinatorEntity, BinarySensorEntity):
 
     def __init__(
         self,
-        coordinator,
+        coordinator: BlueConnectCoordinator,
         entry_id: str,
         mac: str,
         model_name: str,
@@ -119,16 +127,18 @@ class BlueConnectAlertSensor(CoordinatorEntity, BinarySensorEntity):
             return None
 
         if self._data_key == "ph":
-            return val < self._threshold(CONF_PH_MIN) or val > self._threshold(
-                CONF_PH_MAX
+            return bool(
+                val < self._threshold(CONF_PH_MIN) or val > self._threshold(CONF_PH_MAX)
             )
         if self._data_key == "orp":
-            return val < self._threshold(CONF_ORP_MIN) or val > self._threshold(
-                CONF_ORP_MAX
+            return bool(
+                val < self._threshold(CONF_ORP_MIN)
+                or val > self._threshold(CONF_ORP_MAX)
             )
         if self._data_key == "temperature":
-            return val < self._threshold(CONF_TEMP_MIN) or val > self._threshold(
-                CONF_TEMP_MAX
+            return bool(
+                val < self._threshold(CONF_TEMP_MIN)
+                or val > self._threshold(CONF_TEMP_MAX)
             )
 
         return None

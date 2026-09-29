@@ -1,0 +1,12 @@
+# Dépendances pour lancer la suite de tests : pip install -r requirements_test.txt
+# (Python 3.14 : version fournie avec Home Assistant 2026.3, notre minimum)
+pytest-homeassistant-custom-component
+hypothesis
+ruff
+mypy
+# Dépendances de l'intégration `bluetooth` de Home Assistant, non tirées
+# automatiquement par le paquet ci-dessus.
+aiousbwatcher
+pyserial
+serialx
+dbus-fast

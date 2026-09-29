@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "🧪 Vandbehandling",
               "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            },
+            "data_description": {
+              "chlorine_model": "Desinfektionsmiddel brugt i din pool. Brom deaktiverer CyA-entiteten, som ikke er relevant for det. Gemt til fremtidig brug: ingen beregnet værdi afhænger af den endnu.",
+              "cya": "Niveau af cyanursyre (stabilisator) i mg/l; brug 0, hvis du ikke bruger stabilisator. Gemt til fremtidig brug: ingen beregnet værdi afhænger af den endnu."
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "🕒 Referencetid (planlægning)",
               "passive_measures": "📡 Blue Connect interne analyser (passiv)",
               "ignore_echoes": "🚫 Ignorer analyseekkoer (passiv)"
+            },
+            "data_description": {
+              "reference_time": "Referencetidspunkt til at justere planlagte analyser til regelmæssige intervaller (f.eks. 08:00, 10:00, 12:00... for et 2-timers interval).",
+              "scan_interval": "Tid mellem to planlagte analyser, fra 5 til 1440 minutter. Kun i aktiv tilstand (kræver adgangskoden).",
+              "passive_measures": "Bruger de målinger, som proben selv udsender, cirka én i timen. Virker uden adgangskode.",
+              "ignore_echoes": "Ignorerer passive frames, som proben markerer som ekko af en analyse, så de ikke overskriver den seneste måling."
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "📏 Målt værdi ORP (f.eks. 650)",
               "orp_ref": "🎯 Målopløsning ORP (f.eks. 650)",
               "temp_offset": "🌡️ Temperaturforskydning (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Den rå pH-værdi, som sonden faktisk målte, mens den var nedsænket i denne kalibreringsopløsning (ikke opløsningens nominelle værdi).",
+              "ph_calib_4": "Den rå pH-værdi, som sonden faktisk målte, mens den var nedsænket i denne kalibreringsopløsning (ikke opløsningens nominelle værdi).",
+              "ph_ref_7": "pH for denne kalibreringsopløsning ved dens aktuelle temperatur: den afhænger af temperaturen, se tabellen på flasken.",
+              "ph_ref_4": "pH for denne kalibreringsopløsning ved dens aktuelle temperatur: den afhænger af temperaturen, se tabellen på flasken.",
+              "orp_calib": "Den rå ORP-værdi (mV), som din probe faktisk viste i referenceopløsningen.",
+              "orp_ref": "ORP-værdien (mV) for referenceopløsningen ved dens aktuelle temperatur: den afhænger af temperaturen, se flasken. Den anvendte korrektion er denne værdi minus den målte værdi.",
+              "temp_offset": "Korrektion i °C, der lægges til den temperatur, proben måler. Kan være positiv eller negativ."
             }
           }
+        },
+        "data_description": {
+          "access_code": "Findes på en mærkat under USB-portens dæksel eller på sondernes beskyttelseshætte. Kræves til analyser på forespørgsel; lad stå tomt for kun passiv lytning.",
+          "mac_address": "Vælg en Blue Connect, der er fundet i nærheden af Home Assistants Bluetooth. Hvis din ikke vises, så brug feltet nedenfor.",
+          "manual_mac_address": "Kun nødvendigt, hvis din enhed ikke er på listen ovenfor. Format AA:BB:CC:DD:EE:FF, som vist i Home Assistants Bluetooth-indstillinger."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Genautentificer Blue Connect",
+        "description": "Adgangskoden til {name} blev afvist. Indtast den nye 9-tegns adgangskode.",
+        "data": {
+          "access_code": "Adgangskode"
+        },
+        "data_description": {
+          "access_code": "Findes på en mærkat under USB-portens dæksel eller på sondernes beskyttelseshætte. Kræves til analyser på forespørgsel; lad stå tomt for kun passiv lytning."
+        }
+      },
+      "reconfigure": {
+        "title": "Opdater Blue Connect-enhed",
+        "description": "Peg denne post på en anden fysisk Blue Connect (f.eks. efter udskiftning), eller ret adgangskoden. Dine indstillinger, automatiseringer og enhedshistorik bevares.",
+        "data": {
+          "mac_address": "✍️ Bluetooth MAC-adresse",
+          "access_code": "🔑 Adgangskode"
+        },
+        "data_description": {
+          "mac_address": "Bluetooth MAC-adressen på den Blue Connect, som denne post skal bruge (AA:BB:CC:DD:EE:FF). Ændr den kun efter udskiftning af enheden.",
+          "access_code": "Findes på en mærkat under USB-portens dæksel eller på sondernes beskyttelseshætte. Kræves til analyser på forespørgsel; lad stå tomt for kun passiv lytning."
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "❌ Ugyldig adgangskode (9 alfanumeriske tegn)."
     },
     "abort": {
-      "already_configured": "⚠️ Denne enhed er allerede konfigureret."
+      "already_configured": "⚠️ Denne enhed er allerede konfigureret.",
+      "reauth_successful": "Genautentificering lykkedes"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "🔑 Adgangskode (lad stå tom for passiv tilstand: 1 analyse pr. time)",
               "chlorine_model": "🧪 Vandbehandling",
               "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            },
+            "data_description": {
+              "access_code": "Findes på en mærkat under USB-portens dæksel eller på sondernes beskyttelseshætte. Kræves til analyser på forespørgsel; lad stå tomt for kun passiv lytning.",
+              "chlorine_model": "Desinfektionsmiddel brugt i din pool. Brom deaktiverer CyA-entiteten, som ikke er relevant for det. Gemt til fremtidig brug: ingen beregnet værdi afhænger af den endnu.",
+              "cya": "Niveau af cyanursyre (stabilisator) i mg/l; brug 0, hvis du ikke bruger stabilisator. Gemt til fremtidig brug: ingen beregnet værdi afhænger af den endnu."
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "🕒 Referencetid (planlægning)",
               "passive_measures": "📡 Blue Connect interne analyser (passiv)",
               "ignore_echoes": "🚫 Ignorer analyseekkoer (passiv)"
+            },
+            "data_description": {
+              "reference_time": "Referencetidspunkt til at justere planlagte analyser til regelmæssige intervaller (f.eks. 08:00, 10:00, 12:00... for et 2-timers interval).",
+              "scan_interval": "Tid mellem to planlagte analyser, fra 5 til 1440 minutter. Kun i aktiv tilstand (kræver adgangskoden).",
+              "passive_measures": "Bruger de målinger, som proben selv udsender, cirka én i timen. Virker uden adgangskode.",
+              "ignore_echoes": "Ignorerer passive frames, som proben markerer som ekko af en analyse, så de ikke overskriver den seneste måling."
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "📏 Målt værdi ORP (f.eks. 650)",
               "orp_ref": "🎯 Målopløsning ORP (f.eks. 650)",
               "temp_offset": "🌡️ Temperaturforskydning (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Den rå pH-værdi, som sonden faktisk målte, mens den var nedsænket i denne kalibreringsopløsning (ikke opløsningens nominelle værdi).",
+              "ph_calib_4": "Den rå pH-værdi, som sonden faktisk målte, mens den var nedsænket i denne kalibreringsopløsning (ikke opløsningens nominelle værdi).",
+              "ph_ref_7": "pH for denne kalibreringsopløsning ved dens aktuelle temperatur: den afhænger af temperaturen, se tabellen på flasken.",
+              "ph_ref_4": "pH for denne kalibreringsopløsning ved dens aktuelle temperatur: den afhænger af temperaturen, se tabellen på flasken.",
+              "orp_calib": "Den rå ORP-værdi (mV), som din probe faktisk viste i referenceopløsningen.",
+              "orp_ref": "ORP-værdien (mV) for referenceopløsningen ved dens aktuelle temperatur: den afhænger af temperaturen, se flasken. Den anvendte korrektion er denne værdi minus den målte værdi.",
+              "temp_offset": "Korrektion i °C, der lægges til den temperatur, proben måler. Kan være positiv eller negativ."
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "Rå pH"
       },
+      "orp_raw": {
+        "name": "Rå ORP"
+      },
       "lsi": {
         "name": "Langelier-indeks"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "Referencetid"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect utilgængelig",
+      "description": "Blue Connect-sonden ({name}) har ikke svaret i {days} dag(e). Kontroller strøm, rækkevidde, og at en Bluetooth-adapter eller ESPHome-proxy dækker poolområdet."
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "Blue Connect {mac} er uden for Bluetooth-rækkevidde, og der er ingen tidligere data tilgængelige."
+    },
+    "unreachable_no_history": {
+      "message": "Blue Connect er utilgængelig, og der er ingen tidligere data tilgængelige: {error}"
     }
   }
 }

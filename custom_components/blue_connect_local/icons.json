@@ -1,0 +1,98 @@
+{
+  "entity": {
+    "sensor": {
+      "float_status": {
+        "default": "mdi:lifebuoy"
+      },
+      "accelerometer": {
+        "default": "mdi:axis-y-arrow"
+      },
+      "ph_raw": {
+        "default": "mdi:lightning-bolt"
+      },
+      "orp_raw": {
+        "default": "mdi:lightning-bolt-outline"
+      },
+      "battery": {
+        "default": "mdi:battery-bluetooth"
+      },
+      "battery_adc": {
+        "default": "mdi:sine-wave"
+      },
+      "last_received": {
+        "default": "mdi:clock-check"
+      },
+      "raw_frame": {
+        "default": "mdi:bluetooth-transfer"
+      },
+      "raw_frame_0005": {
+        "default": "mdi:memory"
+      },
+      "cloud_id": {
+        "default": "mdi:cloud"
+      },
+      "receive_method": {
+        "default": "mdi:signal-variant"
+      },
+      "salinity": {
+        "default": "mdi:shaker"
+      },
+      "next_analysis": {
+        "default": "mdi:clock-end"
+      },
+      "bluetooth_status": {
+        "default": "mdi:bluetooth-alert",
+        "state": {
+          "waiting": "mdi:bluetooth-off",
+          "connecting": "mdi:bluetooth-connect",
+          "authenticating": "mdi:bluetooth-settings",
+          "requesting": "mdi:bluetooth-transfer",
+          "reading": "mdi:bluetooth-transfer",
+          "success": "mdi:bluetooth",
+          "error": "mdi:bluetooth-off",
+          "error_retry": "mdi:timer-sand",
+          "write_failed": "mdi:alert-circle",
+          "auth_failed": "mdi:shield-key-outline",
+          "paused": "mdi:pause-circle",
+          "out_of_range": "mdi:bluetooth-off",
+          "passive_mode": "mdi:ear-hearing"
+        }
+      }
+    },
+    "button": {
+      "force_analysis": {
+        "default": "mdi:refresh-circle"
+      }
+    },
+    "number": {
+      "scan_interval": {
+        "default": "mdi:sync"
+      },
+      "tac": {
+        "default": "mdi:water-percent"
+      },
+      "tds": {
+        "default": "mdi:blur"
+      },
+      "th": {
+        "default": "mdi:water-outline"
+      },
+      "cya": {
+        "default": "mdi:shield-sun"
+      }
+    },
+    "switch": {
+      "active_measures": {
+        "default": "mdi:clock-check-outline"
+      },
+      "passive_measures": {
+        "default": "mdi:bluetooth-connect"
+      }
+    },
+    "time": {
+      "reference_time": {
+        "default": "mdi:clock-outline"
+      }
+    }
+  }
+}

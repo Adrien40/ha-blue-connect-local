@@ -4,12 +4,13 @@
 import asyncio
 import logging
 import math
-from datetime import timedelta
+from datetime import datetime, timedelta
 from time import monotonic
-from typing import Any
+from typing import Any, cast
 
 import homeassistant.util.dt as dt_util
 from bleak import BleakClient
+from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.exc import BleakError
 from bleak_retry_connector import establish_connection
 from homeassistant.components.bluetooth import (
@@ -25,10 +26,14 @@ from homeassistant.components.bluetooth import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.entity_registry import RegistryEntryDisabler
 from homeassistant.helpers.event import async_call_later
+from homeassistant.helpers.issue_registry import (
+    IssueSeverity,
+    async_create_issue,
+    async_delete_issue,
+)
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -39,6 +44,8 @@ from .chemistry import (
 )
 from .const import (
     ACCEL_THRESHOLD,
+    AUTH_SETTLE_DELAY,
+    AUTH_STATUS_RETRY_DELAY,
     BLE_RECENTLY_SEEN_THRESHOLD_S,
     BT_STATUS_AUTH_FAILED,
     BT_STATUS_AUTHENTICATING,
@@ -82,7 +89,11 @@ from .const import (
     DEFAULT_PH_REF_7,
     DOMAIN,
     ECHO_MARKER,
+    ERROR_RETRY_DELAY,
     EXPECTED_FRAME_HEX_LEN_18,
+    FIRST_ANALYSIS_DELAY,
+    GATT_WRITE_RETRY_DELAY,
+    REPAIR_STALE_AFTER,
     SAVE_DEBOUNCE_DELAY,
     TIMEOUT_BLE_CONN,
     TIMEOUT_GATT_OP,
@@ -149,6 +160,22 @@ def format_mac_safe(mac: str | None) -> str:
     return f"{mac[:8]}:XX:XX:XX"
 
 
+def find_device(
+    registry: dr.DeviceRegistry, identifier: tuple[str, str], config_entry_id: str
+) -> dr.DeviceEntry | None:
+    """Find a device by identifier, across all supported HA versions.
+
+    `async_get_device` is deprecated (identifiers are no longer unique across
+    entries) but its replacement does not exist yet on HA 2026.3.0.
+    """
+    finder = getattr(registry, "async_get_device_by_identifier", None)
+    if finder is not None:
+        # getattr() erases the type; this is the future replacement method
+        # feature-detected above, its real signature matches when present.
+        return cast("dr.DeviceEntry | None", finder(identifier, config_entry_id))
+    return registry.async_get_device(identifiers={identifier})
+
+
 async def _safely_disconnect(client: BleakClient | None) -> None:
     if client and client.is_connected:
         try:
@@ -177,23 +204,25 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=f"Blue Connect {safe_mac}",
             update_interval=timedelta(minutes=60),
         )
         self._entry_id = entry.entry_id
         self.mac = mac
         self.safe_mac = safe_mac
-        self.store = Store(hass, 1, store_key(mac))
+        self.store: Store[dict[str, Any]] = Store(hass, 1, store_key(mac))
 
         self.ble_lock = asyncio.Lock()
         self.retry_count = 0
         self._is_shutdown = False
-        self.next_slot: dt_util.dt.datetime | None = None
+        self.next_slot: datetime | None = None
 
         self._retry_cancel: CALLBACK_TYPE | None = None
         self._recalc_cancel: CALLBACK_TYPE | None = None
         self._save_cancel: asyncio.TimerHandle | None = None
         self._force_one_shot = False
+        self._first_analysis_cancel: CALLBACK_TYPE | None = None
 
         self._ble_available = True
         self._ble_unavail_cancel: CALLBACK_TYPE | None = None
@@ -238,7 +267,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
     @property
     def access_code(self) -> str:
-        return self.data.get(CONF_ACCESS_CODE, "").strip()
+        return str(self.data.get(CONF_ACCESS_CODE, "")).strip()
 
     @property
     def is_shutdown(self) -> bool:
@@ -258,9 +287,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
     def _update_device_registry(self) -> None:
         """Update device registry entry with hardware and serial metadata."""
         device_registry = dr.async_get(self.hass)
-        device_entry = device_registry.async_get_device(
-            identifiers={(DOMAIN, self.mac)}
-        )
+        device_entry = find_device(device_registry, (DOMAIN, self.mac), self.entry_id)
         if device_entry:
             sku = self.data.get("sku")
             model_name = get_blue_connect_model(sku, self.data.get("has_conductivity"))
@@ -347,7 +374,8 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             parts = ref_time_str.split(":")
             hour = int(parts[0]) if len(parts) > 0 else 0
             minute = int(parts[1]) if len(parts) > 1 else 0
-        except (ValueError, AttributeError, IndexError):
+        # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+        except ValueError, AttributeError, IndexError:
             hour, minute = 0, 0
 
         now = dt_util.now()
@@ -381,7 +409,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             self._recalc_cancel = None
 
         @callback
-        def _do_recompute(_now) -> None:
+        def _do_recompute(_now: datetime) -> None:
             self._recalc_cancel = None
             if self.data:
                 self.recompute_derived_values()
@@ -392,6 +420,10 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
     @callback
     def _on_ble_unavailable(self, _info: BluetoothServiceInfoBleak) -> None:
+        # Logged once per transition (Home Assistant fires this callback only
+        # when the probe goes from seen to unseen), as the log-when-unavailable
+        # rule asks for.
+        _LOGGER.info("Blue Connect %s: BLE signal lost", self.safe_mac)
         self._ble_available = False
         self._set_bt_status(BT_STATUS_OUT_OF_RANGE)
         if self._retry_cancel:
@@ -403,11 +435,20 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
     def _on_ble_seen(
         self, info: BluetoothServiceInfoBleak, _change: BluetoothChange
     ) -> None:
+        previously_unavailable = not self._ble_available
         self._ble_available = True
         current_status = self.data.get("bluetooth_status")
         active = self.data.get("active_measures", True)
 
+        if previously_unavailable:
+            _LOGGER.info("Blue Connect %s: BLE signal found", self.safe_mac)
+
         if current_status == BT_STATUS_OUT_OF_RANGE and active:
+            if not previously_unavailable:
+                _LOGGER.debug(
+                    "Blue Connect %s: recovering from stale out_of_range status",
+                    self.safe_mac,
+                )
             self._set_bt_status(
                 "passive_mode" if not self.access_code else BT_STATUS_WAITING
             )
@@ -419,7 +460,14 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
         passive_enabled = self.data.get(CONF_PASSIVE_MEASURES)
         if passive_enabled is None:
-            passive_enabled = _get_opt(self.entry, CONF_PASSIVE_MEASURES, True)
+            # self.entry can be None if the entry was removed from hass
+            # while this callback was already scheduled; fall back to the
+            # same default _get_opt() would have used.
+            passive_enabled = (
+                _get_opt(self.entry, CONF_PASSIVE_MEASURES, True)
+                if self.entry
+                else True
+            )
 
         if not passive_enabled:
             return
@@ -433,7 +481,11 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             if hex_frame != self.data.get("raw_frame"):
                 ignore_echoes = self.data.get(CONF_IGNORE_ECHOES)
                 if ignore_echoes is None:
-                    ignore_echoes = _get_opt(self.entry, CONF_IGNORE_ECHOES, True)
+                    ignore_echoes = (
+                        _get_opt(self.entry, CONF_IGNORE_ECHOES, True)
+                        if self.entry
+                        else True
+                    )
 
                 if (
                     ignore_echoes
@@ -455,6 +507,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 )
                 parsed = parse_raw_frame(raw_payload)
                 if parsed:
+                    self._clear_stale_issue()
                     new_state = self._apply_new_measurements(parsed, hex_frame)
                     new_state["receive_method"] = "passive"
                     self.update_local_state(new_state)
@@ -496,6 +549,12 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
             for transient in ("bluetooth_status", "action_running"):
                 saved_data.pop(transient, None)
+
+            # The access code lives in the config entry (data/options), which
+            # is the source of truth. A copy restored from storage (written by
+            # older versions) would override a code just fixed via reauth or
+            # reconfigure.
+            saved_data.pop(CONF_ACCESS_CODE, None)
 
             # Storage predates the sw_version -> cloud_id rename and has no
             # migration function of its own (Store(hass, 1, ...) below), so
@@ -545,24 +604,35 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     self.update_volatile_state({"action_running": False})
 
             @callback
-            def _trigger_first_analysis(_now) -> None:
+            def _trigger_first_analysis(_now: datetime) -> None:
                 if not self._is_shutdown:
                     self.hass.async_create_task(_run_first_analysis())
 
-            async_call_later(self.hass, 2.0, _trigger_first_analysis)
+            self._first_analysis_cancel = async_call_later(
+                self.hass, FIRST_ANALYSIS_DELAY, _trigger_first_analysis
+            )
 
     async def async_shutdown(self) -> None:
+        """Idempotent shutdown: called by HA on unload AND by async_unload_entry."""
         self._is_shutdown = True
-        if self._ble_unavail_cancel:
-            self._ble_unavail_cancel()
-        if self._ble_avail_cancel:
-            self._ble_avail_cancel()
-        if self._retry_cancel:
-            self._retry_cancel()
-        if self._recalc_cancel:
-            self._recalc_cancel()
+        # The parent cancels the scheduled refresh and the debouncer; without this
+        # call, they would survive the entry unload.
+        await super().async_shutdown()
+
+        for attr in (
+            "_ble_unavail_cancel",
+            "_ble_avail_cancel",
+            "_retry_cancel",
+            "_recalc_cancel",
+            "_first_analysis_cancel",
+        ):
+            cancel = getattr(self, attr)
+            if cancel:
+                setattr(self, attr, None)  # before the call: never cancelled twice
+                cancel()
         if self._save_cancel:
             self._save_cancel.cancel()
+            self._save_cancel = None
         await self.async_save_to_disk()
 
     async def async_save_to_disk(self) -> None:
@@ -572,6 +642,8 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             data_to_save["last_received"] = ts_val.isoformat()
         for transient in ("bluetooth_status", "action_running"):
             data_to_save.pop(transient, None)
+        # Never persist the secret outside the config entry.
+        data_to_save.pop(CONF_ACCESS_CODE, None)
         await self.store.async_save(data_to_save)
 
     def _schedule_save(self) -> None:
@@ -581,7 +653,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             self._save_cancel.cancel()
         loop = asyncio.get_running_loop()
 
-        def _schedule_save_callback():
+        def _schedule_save_callback() -> None:
             self._save_cancel = None
             self.hass.async_create_task(self.async_save_to_disk())
 
@@ -602,6 +674,36 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
     def _set_bt_status(self, status: str) -> None:
         self.update_volatile_state({"bluetooth_status": status})
+
+    def _issue_id(self) -> str:
+        return f"stale_{self.safe_mac}"
+
+    def _check_stale_issue(self) -> None:
+        """Create a repair issue if unreachable for longer than REPAIR_STALE_AFTER."""
+        last = self.data.get("last_received")
+        if not last:
+            return
+        if last.tzinfo is None:
+            last = dt_util.as_utc(last)
+        age = dt_util.utcnow() - last
+        if age < REPAIR_STALE_AFTER:
+            return
+        async_create_issue(
+            self.hass,
+            DOMAIN,
+            self._issue_id(),
+            is_fixable=False,
+            is_persistent=False,
+            severity=IssueSeverity.WARNING,
+            translation_key="device_unreachable",
+            translation_placeholders={
+                "name": self.safe_mac,
+                "days": str(age.days),
+            },
+        )
+
+    def _clear_stale_issue(self) -> None:
+        async_delete_issue(self.hass, DOMAIN, self._issue_id())
 
     def _load_ph_calibration(
         self, entry: ConfigEntry
@@ -671,7 +773,29 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         orp = raw_orp + orp_offset
 
         c4_meas, c7_meas, ref_4, ref_7 = self._load_ph_calibration(current_entry)
-        ph_calculated = compute_ph_calibrated(raw_ph, c4_meas, c7_meas, ref_4, ref_7)
+        try:
+            ph_calculated: float | None = compute_ph_calibrated(
+                raw_ph, c4_meas, c7_meas, ref_4, ref_7
+            )
+        except ValueError:
+            _LOGGER.warning(
+                "Degenerate pH calibration for %s - falling back to raw pH",
+                self.safe_mac,
+            )
+            ph_calculated = float(raw_ph)
+        # Both branches above always set a float (never None) - the range
+        # check right below is the first thing allowed to set it back to
+        # None. Make that visible to mypy.
+        assert ph_calculated is not None
+        if not 0.0 <= ph_calculated <= 14.0:
+            # A pH outside 0-14 is physically impossible (faulty probe or
+            # calibration): better "unknown" than a wrong value displayed.
+            _LOGGER.warning(
+                "Computed pH %.2f for %s is out of the physical range - ignored",
+                ph_calculated,
+                self.safe_mac,
+            )
+            ph_calculated = None
 
         tac_val = self.data.get(CONF_TAC) or 0
         th_val = self.data.get(CONF_TH) or 0
@@ -690,7 +814,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             **self.data,
             **parsed_data,
             "temperature": round(temp, 2),
-            "ph": round(ph_calculated, 2),
+            "ph": None if ph_calculated is None else round(ph_calculated, 2),
             "orp": round(orp),
             "battery_level": bat_pct,
             "last_received": now,
@@ -701,7 +825,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         new_data.update(
             self._build_chemistry_updates(
                 round(temp, 2),
-                round(ph_calculated, 2),
+                None if ph_calculated is None else round(ph_calculated, 2),
                 round(orp),
                 tac_val,
                 th_val,
@@ -775,19 +899,29 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     return self.data
 
             if not self.ble_available and not force_one_shot:
+                _LOGGER.debug(
+                    "Blue Connect %s: Bluetooth signal unavailable, connection ignored",
+                    self.safe_mac,
+                )
                 self._set_bt_status(BT_STATUS_OUT_OF_RANGE)
                 self.retry_count = 0
                 self.update_schedule()
+                self._check_stale_issue()
                 if self.data.get("ph_raw") is not None:
                     return self.data
                 raise UpdateFailed(
-                    f"Blue Connect {self.safe_mac} out of range and no "
-                    "history available"
+                    translation_domain=DOMAIN,
+                    translation_key="out_of_range_no_history",
+                    translation_placeholders={"mac": self.safe_mac},
                 )
 
             device = async_ble_device_from_address(
                 self.hass, self.mac, connectable=True
             )
+            if not device:
+                device = async_ble_device_from_address(
+                    self.hass, self.mac, connectable=False
+                )
             if not device:
                 return self._handle_ble_error(
                     f"Blue Connect {self.safe_mac}: device not found "
@@ -821,10 +955,15 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                         try:
                             received_data_queue.put_nowait(data)
                         except asyncio.QueueFull:
-                            pass
+                            _LOGGER.debug(
+                                "Notification queue full for %s, dropping frame",
+                                self.safe_mac,
+                            )
 
-                    def notification_handler(sender, data: bytes) -> None:
-                        loop.call_soon_threadsafe(_put, data)
+                    def notification_handler(
+                        _sender: BleakGATTCharacteristic, data: bytearray
+                    ) -> None:
+                        loop.call_soon_threadsafe(_put, bytes(data))
 
                     await asyncio.wait_for(
                         client.start_notify(CHAR_NOTIFY_UUID, notification_handler),
@@ -846,7 +985,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                 ),
                                 timeout=TIMEOUT_GATT_OP,
                             )
-                            await asyncio.sleep(0.2)
+                            await asyncio.sleep(AUTH_SETTLE_DELAY)
 
                             try:
                                 auth_status = await asyncio.wait_for(
@@ -856,7 +995,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                 # Some BLE proxies or slower firmwares might need
                                 # an extra moment to flip the characteristic byte.
                                 if auth_status and auth_status[0] == 0x00:
-                                    await asyncio.sleep(0.5)
+                                    await asyncio.sleep(AUTH_STATUS_RETRY_DELAY)
                                     auth_status = await asyncio.wait_for(
                                         client.read_gatt_char(CHAR_AUTH_STATUS_UUID),
                                         timeout=TIMEOUT_GATT_OP,
@@ -878,6 +1017,9 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                     "Blue Connect rejected the access code for %s",
                                     self.safe_mac,
                                 )
+                                current_entry = self.entry
+                                if current_entry:
+                                    current_entry.async_start_reauth(self.hass)
                                 return self._handle_ble_error(
                                     "Invalid access code", BT_STATUS_AUTH_FAILED
                                 )
@@ -899,7 +1041,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                 return self._handle_ble_error(
                                     f"Write failed: {write_err}", BT_STATUS_WRITE_FAILED
                                 )
-                            await asyncio.sleep(1.0)
+                            await asyncio.sleep(GATT_WRITE_RETRY_DELAY)
                             continue
 
                         self._set_bt_status(BT_STATUS_READING)
@@ -910,7 +1052,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             )
                             if received_payload:
                                 break
-                        except asyncio.TimeoutError:
+                        except TimeoutError:
                             _LOGGER.warning(
                                 "Timeout waiting for notification on attempt %d",
                                 attempt,
@@ -920,6 +1062,8 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                         return self._handle_ble_error(
                             "No valid data received from Blue Connect.", BT_STATUS_ERROR
                         )
+
+                    self._clear_stale_issue()
 
                     try:
                         raw_0005 = await asyncio.wait_for(
@@ -1018,11 +1162,14 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             _LOGGER.debug("Ignored error during stop_notify: %s", err)
                     await _safely_disconnect(client)
 
-            self.retry_count = 0
             parsed_data = parse_raw_frame(received_payload)
 
             if not parsed_data:
                 return self._handle_ble_error("Payload parsing error", BT_STATUS_ERROR)
+
+            # Only reset now: before, an invalid frame reset the counter
+            # to 0 on every cycle and the retry budget never ran out.
+            self.retry_count = 0
 
             clean_payload = (
                 received_payload[1:]
@@ -1052,12 +1199,14 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 self._retry_cancel()
 
             @callback
-            def _trigger_retry(_now) -> None:
+            def _trigger_retry(_now: datetime) -> None:
                 self._retry_cancel = None
                 if not self._is_shutdown:
                     self.hass.async_create_task(self.async_request_refresh())
 
-            self._retry_cancel = async_call_later(self.hass, 60, _trigger_retry)
+            self._retry_cancel = async_call_later(
+                self.hass, ERROR_RETRY_DELAY, _trigger_retry
+            )
             self.update_schedule()
             return self.data
 
@@ -1066,4 +1215,8 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         self.update_schedule()
         if self.data.get("ph_raw") is not None:
             return self.data
-        raise UpdateFailed(f"Blue Connect unreachable: {error_msg}")
+        raise UpdateFailed(
+            translation_domain=DOMAIN,
+            translation_key="unreachable_no_history",
+            translation_placeholders={"error": error_msg},
+        )

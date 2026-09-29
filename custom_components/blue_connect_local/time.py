@@ -5,27 +5,33 @@ import logging
 from datetime import time
 
 from homeassistant.components.time import TimeEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import BlueConnectConfigEntry
 from .const import (
     CONF_MAC_ADDRESS,
     CONF_REFERENCE_TIME,
-    DOMAIN,
     blue_connect_device_info,
     get_blue_connect_model,
 )
+from .coordinator import BlueConnectCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# Single Bluetooth connection to the device: commands must be serialized.
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: BlueConnectConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     mac = entry.data[CONF_MAC_ADDRESS]
     entry_id = entry.entry_id
     sku = coordinator.data.get("sku")
@@ -37,13 +43,18 @@ async def async_setup_entry(
     )
 
 
-class BlueConnectReferenceTime(CoordinatorEntity, TimeEntity):
+class BlueConnectReferenceTime(CoordinatorEntity[BlueConnectCoordinator], TimeEntity):
     _attr_has_entity_name = True
     _attr_translation_key = "reference_time"
-    _attr_icon = "mdi:clock-outline"
     _attr_entity_category = EntityCategory.CONFIG
 
-    def __init__(self, coordinator, mac: str, model_name: str, entry_id: str) -> None:
+    def __init__(
+        self,
+        coordinator: BlueConnectCoordinator,
+        mac: str,
+        model_name: str,
+        entry_id: str,
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._entry_id = entry_id
@@ -74,7 +85,8 @@ class BlueConnectReferenceTime(CoordinatorEntity, TimeEntity):
             try:
                 parts = time_str.split(":")
                 return time(hour=int(parts[0]), minute=int(parts[1]))
-            except (ValueError, IndexError):
+            # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+            except ValueError, IndexError:
                 pass
         return time(hour=8, minute=0)
 

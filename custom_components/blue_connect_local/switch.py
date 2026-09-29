@@ -2,32 +2,39 @@
 # This file is part of Blue Connect Local.
 
 import logging
+from typing import Any
 
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import BlueConnectConfigEntry
 from .const import (
     BT_STATUS_OUT_OF_RANGE,
     BT_STATUS_PAUSED,
     BT_STATUS_WAITING,
     CONF_MAC_ADDRESS,
     CONF_PASSIVE_MEASURES,
-    DOMAIN,
     blue_connect_device_info,
     get_blue_connect_model,
 )
+from .coordinator import BlueConnectCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# Single Bluetooth connection to the device: commands must be serialized.
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: BlueConnectConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     mac = entry.data[CONF_MAC_ADDRESS]
     entry_id = entry.entry_id
     sku = coordinator.data.get("sku")
@@ -42,13 +49,20 @@ async def async_setup_entry(
     )
 
 
-class BlueConnectActiveMeasuresSwitch(CoordinatorEntity, SwitchEntity):
+class BlueConnectActiveMeasuresSwitch(
+    CoordinatorEntity[BlueConnectCoordinator], SwitchEntity
+):
     _attr_has_entity_name = True
     _attr_translation_key = "active_measures"
-    _attr_icon = "mdi:clock-check-outline"
     _attr_entity_category = EntityCategory.CONFIG
 
-    def __init__(self, coordinator, mac: str, model_name: str, entry_id: str) -> None:
+    def __init__(
+        self,
+        coordinator: BlueConnectCoordinator,
+        mac: str,
+        model_name: str,
+        entry_id: str,
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._entry_id = entry_id
@@ -70,9 +84,9 @@ class BlueConnectActiveMeasuresSwitch(CoordinatorEntity, SwitchEntity):
     def is_on(self) -> bool:
         if not self.coordinator.data:
             return True
-        return self.coordinator.data.get("active_measures", True)
+        return bool(self.coordinator.data.get("active_measures", True))
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs: Any) -> None:
         if not self.coordinator.ble_available:
             self.coordinator.update_local_state(
                 {
@@ -89,7 +103,7 @@ class BlueConnectActiveMeasuresSwitch(CoordinatorEntity, SwitchEntity):
             }
         )
 
-    async def async_turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         self.coordinator.update_local_state(
             {
                 "active_measures": False,
@@ -98,13 +112,20 @@ class BlueConnectActiveMeasuresSwitch(CoordinatorEntity, SwitchEntity):
         )
 
 
-class BlueConnectPassiveMeasuresSwitch(CoordinatorEntity, SwitchEntity):
+class BlueConnectPassiveMeasuresSwitch(
+    CoordinatorEntity[BlueConnectCoordinator], SwitchEntity
+):
     _attr_has_entity_name = True
     _attr_translation_key = "passive_measures"
-    _attr_icon = "mdi:bluetooth-connect"
     _attr_entity_category = EntityCategory.CONFIG
 
-    def __init__(self, coordinator, mac: str, model_name: str, entry_id: str) -> None:
+    def __init__(
+        self,
+        coordinator: BlueConnectCoordinator,
+        mac: str,
+        model_name: str,
+        entry_id: str,
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._entry_id = entry_id
@@ -120,14 +141,14 @@ class BlueConnectPassiveMeasuresSwitch(CoordinatorEntity, SwitchEntity):
     def is_on(self) -> bool:
         val = self.coordinator.data.get(CONF_PASSIVE_MEASURES)
         if val is not None:
-            return val
+            return bool(val)
         entry = self.hass.config_entries.async_get_entry(self._entry_id)
         if entry and CONF_PASSIVE_MEASURES in entry.options:
-            return entry.options[CONF_PASSIVE_MEASURES]
-        return entry.data.get(CONF_PASSIVE_MEASURES, True) if entry else True
+            return bool(entry.options[CONF_PASSIVE_MEASURES])
+        return bool(entry.data.get(CONF_PASSIVE_MEASURES, True)) if entry else True
 
-    async def async_turn_on(self, **kwargs) -> None:
+    async def async_turn_on(self, **kwargs: Any) -> None:
         self.coordinator.update_local_state({CONF_PASSIVE_MEASURES: True})
 
-    async def async_turn_off(self, **kwargs) -> None:
+    async def async_turn_off(self, **kwargs: Any) -> None:
         self.coordinator.update_local_state({CONF_PASSIVE_MEASURES: False})

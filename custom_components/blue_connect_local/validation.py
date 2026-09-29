@@ -18,9 +18,10 @@ behavior unchanged.
 from __future__ import annotations
 
 import math
+from typing import Any
 
 
-def _to_float(val: object) -> float:
+def _to_float(val: str | int | float) -> float:
     if isinstance(val, str):
         val = val.replace(",", ".")
     result = float(val)
@@ -29,8 +30,10 @@ def _to_float(val: object) -> float:
     return result
 
 
-def _flatten_sections(user_input: dict) -> dict:
-    flat: dict = {}
+def _flatten_sections(
+    user_input: dict[str, Any],
+) -> dict[str, Any]:
+    flat: dict[str, Any] = {}
     for value in user_input.values():
         if isinstance(value, dict):
             flat.update(value)
@@ -40,13 +43,16 @@ def _flatten_sections(user_input: dict) -> dict:
     return flat
 
 
-def validate_calibration(data: dict) -> dict | tuple[str, str]:
+def validate_calibration(
+    data: dict[str, Any],
+) -> dict[str, Any] | tuple[str, str]:
     try:
         c4_meas = _to_float(data.get("ph_calib_4", 4.00))
         c7_meas = _to_float(data.get("ph_calib_7", 7.00))
         ref4 = _to_float(data.get("ph_ref_4", 4.00))
         ref7 = _to_float(data.get("ph_ref_7", 7.00))
-    except (ValueError, TypeError):
+    # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+    except ValueError, TypeError:
         return ("ph_calib_4", "unknown")
 
     try:
@@ -55,7 +61,8 @@ def validate_calibration(data: dict) -> dict | tuple[str, str]:
             ph_max = _to_float(data["ph_max"])
             if ph_min >= ph_max:
                 return ("ph_min", "ph_threshold_error")
-    except (ValueError, TypeError):
+    # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+    except ValueError, TypeError:
         return ("ph_min", "unknown")
 
     try:
@@ -64,7 +71,8 @@ def validate_calibration(data: dict) -> dict | tuple[str, str]:
             temp_max = _to_float(data["temp_max"])
             if temp_min >= temp_max:
                 return ("temp_min", "temp_threshold_error")
-    except (ValueError, TypeError):
+    # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+    except ValueError, TypeError:
         return ("temp_min", "unknown")
 
     try:
@@ -73,7 +81,8 @@ def validate_calibration(data: dict) -> dict | tuple[str, str]:
             orp_max = int(_to_float(data["orp_max"]))
             if orp_min >= orp_max:
                 return ("orp_min", "orp_threshold_error")
-    except (ValueError, TypeError):
+    # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+    except ValueError, TypeError:
         return ("orp_min", "unknown")
 
     if ref4 < 2.5 or ref4 > 5.5 or ref7 < 6.5 or ref7 > 7.5:
@@ -89,16 +98,19 @@ def validate_calibration(data: dict) -> dict | tuple[str, str]:
     normalized["ph_ref_4"] = ref4
     normalized["ph_ref_7"] = ref7
 
-    if "orp_ref" in data:
-        normalized["orp_ref"] = int(_to_float(data["orp_ref"]))
-    if "orp_calib" in data:
-        normalized["orp_calib"] = int(_to_float(data["orp_calib"]))
-    if "temp_offset" in data:
-        normalized["temp_offset"] = float(_to_float(data["temp_offset"]))
-    if "cya" in data:
-        normalized["cya"] = int(_to_float(data["cya"]))
-    if "scan_interval" in data:
-        normalized["scan_interval"] = int(_to_float(data["scan_interval"]))
+    for key, cast in (
+        ("orp_ref", int),
+        ("orp_calib", int),
+        ("temp_offset", float),
+        ("cya", int),
+        ("scan_interval", int),
+    ):
+        if key in data:
+            try:
+                normalized[key] = cast(_to_float(data[key]))
+            # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+            except ValueError, TypeError:
+                return (key, "unknown")
     if "reference_time" in data:
         normalized["reference_time"] = str(data["reference_time"])
 

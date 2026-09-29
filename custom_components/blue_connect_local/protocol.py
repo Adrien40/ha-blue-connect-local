@@ -42,29 +42,28 @@ def parse_raw_frame(data: bytes) -> dict[str, Any] | None:
     if len(data) not in (18, 19):
         return None
 
+    # The length check above guarantees every index below is in range
+    # (the highest one read is 15 for 18 bytes, 16 for 19 bytes).
     offset = 4 if len(data) == 19 else 3
-    try:
-        raw_temp = ((data[offset] << 8) | data[offset + 1]) / 100.0
-        raw_ph = ((data[offset + 2] << 8) | data[offset + 3]) / 10.0
-        raw_orp = (data[offset + 4] << 8) | data[offset + 5]
-        cond = (data[offset + 6] << 8) | data[offset + 7]
-        salinity = ((data[offset + 8] << 8) | data[offset + 9]) / 100.0
-        battery_percent = data[offset + 10]
-        battery_adc = (data[offset + 11] << 8) | data[offset + 12]
-        battery_mv = int(battery_adc * 0.8791)
+    raw_temp = ((data[offset] << 8) | data[offset + 1]) / 100.0
+    raw_ph = ((data[offset + 2] << 8) | data[offset + 3]) / 10.0
+    raw_orp = (data[offset + 4] << 8) | data[offset + 5]
+    cond = (data[offset + 6] << 8) | data[offset + 7]
+    salinity = ((data[offset + 8] << 8) | data[offset + 9]) / 100.0
+    battery_percent = data[offset + 10]
+    battery_adc = (data[offset + 11] << 8) | data[offset + 12]
+    battery_mv = int(battery_adc * 0.8791)
 
-        has_conductivity = cond != CONDUCTIVITY_SENSOR_ABSENT
+    has_conductivity = cond != CONDUCTIVITY_SENSOR_ABSENT
 
-        return {
-            "temp_raw": raw_temp,
-            "ph_raw": raw_ph,
-            "orp_raw": raw_orp,
-            "conductivity": cond if has_conductivity else None,
-            "salinity": round(salinity, 2) if has_conductivity else None,
-            "battery_percent": battery_percent,
-            "battery_adc": battery_adc,
-            "battery": battery_mv,
-            "has_conductivity": has_conductivity,
-        }
-    except IndexError:
-        return None
+    return {
+        "temp_raw": raw_temp,
+        "ph_raw": raw_ph,
+        "orp_raw": raw_orp,
+        "conductivity": cond if has_conductivity else None,
+        "salinity": round(salinity, 2) if has_conductivity else None,
+        "battery_percent": battery_percent,
+        "battery_adc": battery_adc,
+        "battery": battery_mv,
+        "has_conductivity": has_conductivity,
+    }

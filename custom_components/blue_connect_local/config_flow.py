@@ -2,6 +2,7 @@
 # This file is part of Blue Connect Local.
 
 import re
+from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
@@ -9,10 +10,13 @@ from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
     async_discovered_service_info,
 )
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import section
 from homeassistant.helpers import selector
+from homeassistant.helpers.typing import UNDEFINED
 
+from . import BlueConnectConfigEntry
 from .const import (
     CONF_ACCESS_CODE,
     CONF_CHLORINE_MODEL,
@@ -78,7 +82,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     MINOR_VERSION = 4
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._mac_address: str | None = None
         self._bt_name: str | None = None
@@ -96,7 +100,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfoBleak
-    ) -> config_entries.FlowResult:
+    ) -> ConfigFlowResult:
         await self.async_set_unique_id(discovery_info.address.upper())
         self._abort_if_unique_id_configured(reload_on_update=False)
 
@@ -112,11 +116,53 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return await self.async_step_user()
 
-    async def async_step_user(self, user_input=None) -> config_entries.FlowResult:
+    async def async_step_reauth(self, entry_data: dict[str, Any]) -> ConfigFlowResult:
+        """Triggered when the stored access code is rejected by the device."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        errors: dict[str, str] = {}
+        reauth_entry = self._get_reauth_entry()
+
+        if user_input is not None:
+            access_code = user_input[CONF_ACCESS_CODE].strip()
+            if (
+                len(access_code) != 9
+                or not access_code.isascii()
+                or not access_code.isalnum()
+            ):
+                errors[CONF_ACCESS_CODE] = "invalid_access_code"
+            else:
+                # The options flow stores the access code in `options`, and
+                # async_setup_entry gives `options` priority over `data`:
+                # update both, otherwise the new code is silently ignored.
+                new_options = (
+                    {**reauth_entry.options, CONF_ACCESS_CODE: access_code}
+                    if CONF_ACCESS_CODE in reauth_entry.options
+                    else UNDEFINED
+                )
+                return self.async_update_reload_and_abort(
+                    reauth_entry,
+                    data={**reauth_entry.data, CONF_ACCESS_CODE: access_code},
+                    options=new_options,
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required(CONF_ACCESS_CODE): str}),
+            description_placeholders={"name": reauth_entry.title},
+            errors=errors,
+        )
+
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            flat_input: dict = _flatten_sections(user_input)
+            flat_input: dict[str, Any] = _flatten_sections(user_input)
 
             dropdown_raw = (user_input.get(CONF_MAC_ADDRESS) or "").strip()
             manual_raw = (flat_input.get(CONF_MANUAL_MAC, "") or "").strip()
@@ -248,7 +294,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 mac_to_display[self._mac_address] = auto_entry
                 default_selection = auto_entry
 
-        schema: dict = {}
+        schema: dict[Any, Any] = {}
         if device_entries:
             mac_key = (
                 vol.Optional(CONF_MAC_ADDRESS, default=default_selection)
@@ -405,18 +451,84 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Point this entry at a different physical Blue Connect (e.g.
+        after replacing the device), without losing its options,
+        automations, or entity history. Also lets the user correct the
+        access code in the same step, without waiting for a rejected-code
+        reauth to be triggered.
+        """
+        errors: dict[str, str] = {}
+        reconfigure_entry = self._get_reconfigure_entry()
+
+        if user_input is not None:
+            mac_raw = user_input[CONF_MAC_ADDRESS].strip()
+            access_code = user_input.get(CONF_ACCESS_CODE, "").strip()
+
+            if not MAC_PATTERN.match(mac_raw):
+                errors[CONF_MAC_ADDRESS] = "invalid_mac"
+            elif access_code and (
+                len(access_code) != 9
+                or not access_code.isascii()
+                or not access_code.isalnum()
+            ):
+                errors[CONF_ACCESS_CODE] = "invalid_access_code"
+            else:
+                final_mac = mac_raw.upper()
+                if final_mac != reconfigure_entry.data.get(CONF_MAC_ADDRESS):
+                    await self.async_set_unique_id(final_mac)
+                    self._abort_if_unique_id_configured(reload_on_update=False)
+
+                new_options = (
+                    {**reconfigure_entry.options, CONF_ACCESS_CODE: access_code}
+                    if CONF_ACCESS_CODE in reconfigure_entry.options
+                    else UNDEFINED
+                )
+                return self.async_update_reload_and_abort(
+                    reconfigure_entry,
+                    unique_id=final_mac,
+                    data_updates={
+                        CONF_MAC_ADDRESS: final_mac,
+                        CONF_ACCESS_CODE: access_code,
+                    },
+                    options=new_options,
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_MAC_ADDRESS,
+                        default=reconfigure_entry.data.get(CONF_MAC_ADDRESS, ""),
+                    ): str,
+                    vol.Optional(
+                        CONF_ACCESS_CODE,
+                        default=reconfigure_entry.data.get(CONF_ACCESS_CODE, ""),
+                    ): str,
+                }
+            ),
+            errors=errors,
+        )
+
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(
+        config_entry: BlueConnectConfigEntry,
+    ) -> BlueConnectOptionsFlowHandler:
         return BlueConnectOptionsFlowHandler()
 
 
 class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self) -> None:
         super().__init__()
-        self._pending_data: dict | None = None
+        self._pending_data: dict[str, Any] | None = None
 
-    async def async_step_init(self, user_input=None) -> config_entries.FlowResult:
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         errors: dict[str, str] = {}
         entry = self.config_entry
 
@@ -425,7 +537,7 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
         )
 
         if user_input is not None:
-            flat_input: dict = _flatten_sections(user_input)
+            flat_input: dict[str, Any] = _flatten_sections(user_input)
 
             access_code = flat_input.get(CONF_ACCESS_CODE, "").strip()
             if access_code and (
@@ -444,7 +556,7 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                     normalized_input = validation
                     normalized_input[CONF_ACCESS_CODE] = access_code
 
-                    coordinator = self.hass.data.get(DOMAIN, {}).get(entry.entry_id)
+                    coordinator = getattr(entry, "runtime_data", None)
                     if coordinator:
                         coordinator.update_local_state(normalized_input)
                         coordinator.request_deferred_recompute()
@@ -459,7 +571,7 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
 
                     return self.async_create_entry(title="", data=normalized_input)
 
-        coordinator = self.hass.data.get(DOMAIN, {}).get(entry.entry_id)
+        coordinator = getattr(entry, "runtime_data", None)
 
         cya_coord = (
             coordinator.data.get(CONF_CYA) if coordinator and coordinator.data else None

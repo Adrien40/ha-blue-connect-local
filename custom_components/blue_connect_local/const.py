@@ -3,12 +3,18 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
-from .model import (  # noqa: F401 (re-export)
-    get_blue_connect_model,
-    model_has_conductivity,
-    model_has_salinity,
+# The "as X" re-exports below are the explicit-reexport idiom mypy --strict
+# requires (implicit_reexport is off in strict mode): a plain import here
+# would make the names unusable via `from .const import get_blue_connect_model`
+# elsewhere in the package.
+from .model import (
+    get_blue_connect_model as get_blue_connect_model,
+    model_has_conductivity as model_has_conductivity,
+    model_has_salinity as model_has_salinity,
 )
 
 DOMAIN = "blue_connect_local"
@@ -58,6 +64,12 @@ TIMEOUT_BLE_CONN = 30.0
 TIMEOUT_GATT_OP = 10.0
 TIMEOUT_NOTIFICATION_WAIT = 60.0
 TIMEOUT_SAFETY_MARGIN = 30.0
+# BLE cycle pauses (named so they can be shortened in tests).
+AUTH_SETTLE_DELAY = 0.2  # let the probe process the written access code
+AUTH_STATUS_RETRY_DELAY = 0.5  # 2nd read of the authentication status
+GATT_WRITE_RETRY_DELAY = 1.0  # pause before retrying a write
+ERROR_RETRY_DELAY = 60  # seconds before retrying after a BLE error
+FIRST_ANALYSIS_DELAY = 2.0  # delay before the 1st active analysis at startup
 POST_PAYLOAD_READ_COUNT = 5
 # Worst case: one connection, up to 2 full auth+trigger+notification cycles,
 # then the post-payload reads (raw_frame_0005, accelerometer, serial number,
@@ -69,6 +81,7 @@ TIMEOUT_FORCE_REFRESH = (
     + TIMEOUT_SAFETY_MARGIN
 )
 DEBOUNCE_COOLDOWN = 0.3
+REPAIR_STALE_AFTER = timedelta(days=3)
 SAVE_DEBOUNCE_DELAY = 2.0
 
 BLE_RECENTLY_SEEN_THRESHOLD_S: int = 120

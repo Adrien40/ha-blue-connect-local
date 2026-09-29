@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "🧪 水質處理方式",
               "cya": "💧 穩定劑濃度 / CyA（毫克/公升）"
+            },
+            "data_description": {
+              "chlorine_model": "泳池使用的消毒劑。選擇溴時會停用 CyA 實體，因為它與溴無關。保留供未來使用：目前沒有任何計算值依賴它。",
+              "cya": "氰尿酸（穩定劑）含量，單位 mg/l；不使用穩定劑時請填 0。保留供未來使用：目前沒有任何計算值依賴它。"
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "🕒 參考時間（排程）",
               "passive_measures": "📡 Blue Connect 內部分析（被動）",
               "ignore_echoes": "🚫 忽略分析回音（被動）"
+            },
+            "data_description": {
+              "reference_time": "用於將排程分析對齊到固定時段的基準時間（例如2小時間隔對應08:00、10:00、12:00……）。",
+              "scan_interval": "兩次排程分析之間的間隔，範圍 5 至 1440 分鐘。僅限主動模式（需要存取碼）。",
+              "passive_measures": "使用探頭自行廣播的讀數，大約每小時一次。無需存取碼即可使用。",
+              "ignore_echoes": "忽略探頭標記為分析回音的被動幀，以免覆蓋最新的測量值。"
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "📏 測量值 ORP（例如 650）",
               "orp_ref": "🎯 目標溶液 ORP（例如 650）",
               "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
+              "ph_calib_4": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
+              "ph_ref_7": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
+              "ph_ref_4": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
+              "orp_calib": "探頭浸入參考溶液時實際顯示的原始 ORP 值（mV）。",
+              "orp_ref": "參考溶液在目前溫度下的 ORP 值（mV）：它隨溫度變化，請參閱瓶身。套用的修正值等於此值減去實測值。",
+              "temp_offset": "以 °C 為單位的修正值，會加到探頭測得的溫度上。可以是正數或負數。"
             }
           }
+        },
+        "data_description": {
+          "access_code": "位於USB連接埠蓋下方的貼紙上，或探頭保護蓋上。按需分析時必填；留空則僅使用被動監聽模式。",
+          "mac_address": "請選擇 Home Assistant 藍牙在附近偵測到的 Blue Connect。如果找不到您的裝置，請使用下方的欄位。",
+          "manual_mac_address": "僅在上方清單中沒有您的裝置時才需要填寫。格式為 AA:BB:CC:DD:EE:FF，與 Home Assistant 藍牙設定中顯示的一致。"
+        }
+      },
+      "reauth_confirm": {
+        "title": "重新驗證 Blue Connect",
+        "description": "{name} 的存取代碼被拒絕。請輸入新的9位存取代碼。",
+        "data": {
+          "access_code": "存取代碼"
+        },
+        "data_description": {
+          "access_code": "位於USB連接埠蓋下方的貼紙上，或探頭保護蓋上。按需分析時必填；留空則僅使用被動監聽模式。"
+        }
+      },
+      "reconfigure": {
+        "title": "更新 Blue Connect 裝置",
+        "description": "將此設定項目指向另一台實體 Blue Connect（例如更換裝置後），或修正存取碼。您的選項、自動化與實體歷史記錄將被保留。",
+        "data": {
+          "mac_address": "✍️ 藍牙 MAC 位址",
+          "access_code": "🔑 存取碼"
+        },
+        "data_description": {
+          "mac_address": "此項目要使用的 Blue Connect 的藍牙 MAC 位址（AA:BB:CC:DD:EE:FF）。僅在更換裝置後才需要修改。",
+          "access_code": "位於USB連接埠蓋下方的貼紙上，或探頭保護蓋上。按需分析時必填；留空則僅使用被動監聽模式。"
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "❌ 存取碼無效（9 位英數字元）。"
     },
     "abort": {
-      "already_configured": "⚠️ 此裝置已完成設定。"
+      "already_configured": "⚠️ 此裝置已完成設定。",
+      "reauth_successful": "重新驗證成功"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "🔑 存取碼（留空以使用被動模式：每小時 1 次分析）",
               "chlorine_model": "🧪 水質處理方式",
               "cya": "💧 穩定劑濃度 / CyA（毫克/公升）"
+            },
+            "data_description": {
+              "access_code": "位於USB連接埠蓋下方的貼紙上，或探頭保護蓋上。按需分析時必填；留空則僅使用被動監聽模式。",
+              "chlorine_model": "泳池使用的消毒劑。選擇溴時會停用 CyA 實體，因為它與溴無關。保留供未來使用：目前沒有任何計算值依賴它。",
+              "cya": "氰尿酸（穩定劑）含量，單位 mg/l；不使用穩定劑時請填 0。保留供未來使用：目前沒有任何計算值依賴它。"
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "🕒 參考時間（排程）",
               "passive_measures": "📡 Blue Connect 內部分析（被動）",
               "ignore_echoes": "🚫 忽略分析回音（被動）"
+            },
+            "data_description": {
+              "reference_time": "用於將排程分析對齊到固定時段的基準時間（例如2小時間隔對應08:00、10:00、12:00……）。",
+              "scan_interval": "兩次排程分析之間的間隔，範圍 5 至 1440 分鐘。僅限主動模式（需要存取碼）。",
+              "passive_measures": "使用探頭自行廣播的讀數，大約每小時一次。無需存取碼即可使用。",
+              "ignore_echoes": "忽略探頭標記為分析回音的被動幀，以免覆蓋最新的測量值。"
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "📏 測量值 ORP（例如 650）",
               "orp_ref": "🎯 目標溶液 ORP（例如 650）",
               "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
+              "ph_calib_4": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
+              "ph_ref_7": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
+              "ph_ref_4": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
+              "orp_calib": "探頭浸入參考溶液時實際顯示的原始 ORP 值（mV）。",
+              "orp_ref": "參考溶液在目前溫度下的 ORP 值（mV）：它隨溫度變化，請參閱瓶身。套用的修正值等於此值減去實測值。",
+              "temp_offset": "以 °C 為單位的修正值，會加到探頭測得的溫度上。可以是正數或負數。"
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "原始 pH"
       },
+      "orp_raw": {
+        "name": "原始 ORP"
+      },
       "lsi": {
         "name": "朗格利爾指數"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "參考時間"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect 無法連線",
+      "description": "Blue Connect探頭（{name}）已有{days}天未回應。請檢查電源、信號範圍，以及是否有藍牙轉接器或ESPHome代理涵蓋泳池區域。"
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "Blue Connect {mac} 超出藍牙範圍，且沒有可用的歷史資料。"
+    },
+    "unreachable_no_history": {
+      "message": "Blue Connect 無法連線，且沒有可用的歷史資料：{error}"
     }
   }
 }

@@ -4,6 +4,11 @@ Loaded via _load_pure (see that file): __init__.py imports homeassistant and
 bleak transitively, so a normal package import fails without them.
 """
 
+import logging
+import math
+
+import pytest
+
 from ._load_pure import load_pure_module
 
 _chemistry = load_pure_module("chemistry.py")
@@ -37,3 +42,18 @@ def test_lsi_scaling_water():
 def test_ph_equilibrium_plausible():
     phs = compute_ph_equilibrium(temp=27, tac=100, th=250, tds=1000)
     assert 6.5 < phs < 8.5  # re-verified against the real code: 7.55
+
+
+@pytest.mark.parametrize("bad", [math.nan, math.inf, -math.inf])
+@pytest.mark.parametrize("position", range(4))
+def test_ph_equilibrium_rejects_non_finite_inputs(bad, position):
+    args = [25.0, 100.0, 250.0, 1000.0]  # temp, tac, th, tds
+    args[position] = bad
+    assert compute_ph_equilibrium(*args) is None
+
+
+def test_ph_equilibrium_survives_a_math_error(caplog):
+    """-273.15 degC is absolute zero: the logarithm has no valid input."""
+    with caplog.at_level(logging.WARNING):
+        assert compute_ph_equilibrium(-273.15, 100.0, 250.0, 1000.0) is None
+    assert "Math error in compute_ph_equilibrium" in caplog.text

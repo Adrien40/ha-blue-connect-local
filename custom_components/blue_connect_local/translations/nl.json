@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "🧪 Waterbehandeling",
               "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            },
+            "data_description": {
+              "chlorine_model": "Ontsmettingsmiddel dat in uw zwembad wordt gebruikt. Broom schakelt de CyA-entiteit uit, die hiervoor niet relevant is. Bewaard voor toekomstig gebruik: nu hangt nog geen berekende waarde ervan af.",
+              "cya": "Cyanuurzuurgehalte (stabilisator) in mg/l; gebruik 0 zonder stabilisator. Bewaard voor toekomstig gebruik: nu hangt nog geen berekende waarde ervan af."
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "🕒 Referentietijd (planning)",
               "passive_measures": "📡 Interne analyses van Blue Connect (passief)",
               "ignore_echoes": "🚫 Analyse-echo's negeren (passief)"
+            },
+            "data_description": {
+              "reference_time": "Referentietijd gebruikt om geplande analyses af te stemmen op regelmatige intervallen (bijv. 08:00, 10:00, 12:00... voor een interval van 2 uur).",
+              "scan_interval": "Tijd tussen twee geplande analyses, van 5 tot 1440 minuten. Alleen in de actieve modus (toegangscode vereist).",
+              "passive_measures": "Gebruikt de metingen die de sonde zelf uitzendt, ongeveer één per uur. Werkt zonder toegangscode.",
+              "ignore_echoes": "Negeert passieve frames die de sonde als echo van een analyse markeert, zodat ze de laatste meting niet overschrijven."
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "📏 Gemeten waarde ORP (bijv. 650)",
               "orp_ref": "🎯 Referentieoplossing ORP (bijv. 650)",
               "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
+              "ph_calib_4": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
+              "ph_ref_7": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
+              "ph_ref_4": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
+              "orp_calib": "De ruwe ORP-waarde (mV) die uw sonde daadwerkelijk toonde in de referentievloeistof.",
+              "orp_ref": "De ORP-waarde (mV) van de referentievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de fles. De toegepaste correctie is deze waarde min de gemeten waarde.",
+              "temp_offset": "Correctie in °C die wordt opgeteld bij de door de sonde gemeten temperatuur. Kan positief of negatief zijn."
             }
           }
+        },
+        "data_description": {
+          "access_code": "Te vinden op een sticker onder het klepje van de USB-poort, of op de beschermkap van de sondes. Vereist voor analyses op aanvraag; laat leeg voor alleen passief luisteren.",
+          "mac_address": "Kies een Blue Connect die in de buurt is gedetecteerd via de Bluetooth van Home Assistant. Staat die er niet bij, gebruik dan het veld hieronder.",
+          "manual_mac_address": "Alleen nodig als uw apparaat hierboven niet wordt getoond. Formaat AA:BB:CC:DD:EE:FF, zoals weergegeven in de Bluetooth-instellingen van Home Assistant."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Blue Connect opnieuw verifiëren",
+        "description": "De toegangscode voor {name} is geweigerd. Voer de nieuwe toegangscode van 9 tekens in.",
+        "data": {
+          "access_code": "Toegangscode"
+        },
+        "data_description": {
+          "access_code": "Te vinden op een sticker onder het klepje van de USB-poort, of op de beschermkap van de sondes. Vereist voor analyses op aanvraag; laat leeg voor alleen passief luisteren."
+        }
+      },
+      "reconfigure": {
+        "title": "Blue Connect-apparaat bijwerken",
+        "description": "Koppel deze invoer aan een andere fysieke Blue Connect (bijv. na vervanging), of corrigeer de toegangscode. Uw opties, automatiseringen en entiteitsgeschiedenis blijven behouden.",
+        "data": {
+          "mac_address": "✍️ Bluetooth MAC-adres",
+          "access_code": "🔑 Toegangscode"
+        },
+        "data_description": {
+          "mac_address": "Bluetooth-MAC-adres van de Blue Connect die deze invoer moet gebruiken (AA:BB:CC:DD:EE:FF). Wijzig dit alleen na vervanging van het apparaat.",
+          "access_code": "Te vinden op een sticker onder het klepje van de USB-poort, of op de beschermkap van de sondes. Vereist voor analyses op aanvraag; laat leeg voor alleen passief luisteren."
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "❌ Ongeldige toegangscode (9 alfanumerieke tekens)."
     },
     "abort": {
-      "already_configured": "⚠️ Dit apparaat is al geconfigureerd."
+      "already_configured": "⚠️ Dit apparaat is al geconfigureerd.",
+      "reauth_successful": "Herverificatie geslaagd"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "🔑 Toegangscode (leeg laten voor passieve modus: 1 analyse per uur)",
               "chlorine_model": "🧪 Waterbehandeling",
               "cya": "💧 Stabilisatorniveau / CyA (mg/l)"
+            },
+            "data_description": {
+              "access_code": "Te vinden op een sticker onder het klepje van de USB-poort, of op de beschermkap van de sondes. Vereist voor analyses op aanvraag; laat leeg voor alleen passief luisteren.",
+              "chlorine_model": "Ontsmettingsmiddel dat in uw zwembad wordt gebruikt. Broom schakelt de CyA-entiteit uit, die hiervoor niet relevant is. Bewaard voor toekomstig gebruik: nu hangt nog geen berekende waarde ervan af.",
+              "cya": "Cyanuurzuurgehalte (stabilisator) in mg/l; gebruik 0 zonder stabilisator. Bewaard voor toekomstig gebruik: nu hangt nog geen berekende waarde ervan af."
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "🕒 Referentietijd (planning)",
               "passive_measures": "📡 Interne analyses van Blue Connect (passief)",
               "ignore_echoes": "🚫 Analyse-echo's negeren (passief)"
+            },
+            "data_description": {
+              "reference_time": "Referentietijd gebruikt om geplande analyses af te stemmen op regelmatige intervallen (bijv. 08:00, 10:00, 12:00... voor een interval van 2 uur).",
+              "scan_interval": "Tijd tussen twee geplande analyses, van 5 tot 1440 minuten. Alleen in de actieve modus (toegangscode vereist).",
+              "passive_measures": "Gebruikt de metingen die de sonde zelf uitzendt, ongeveer één per uur. Werkt zonder toegangscode.",
+              "ignore_echoes": "Negeert passieve frames die de sonde als echo van een analyse markeert, zodat ze de laatste meting niet overschrijven."
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "📏 Gemeten waarde ORP (bijv. 650)",
               "orp_ref": "🎯 Referentieoplossing ORP (bijv. 650)",
               "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
+              "ph_calib_4": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
+              "ph_ref_7": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
+              "ph_ref_4": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
+              "orp_calib": "De ruwe ORP-waarde (mV) die uw sonde daadwerkelijk toonde in de referentievloeistof.",
+              "orp_ref": "De ORP-waarde (mV) van de referentievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de fles. De toegepaste correctie is deze waarde min de gemeten waarde.",
+              "temp_offset": "Correctie in °C die wordt opgeteld bij de door de sonde gemeten temperatuur. Kan positief of negatief zijn."
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "Ruwe pH"
       },
+      "orp_raw": {
+        "name": "Ruwe ORP"
+      },
       "lsi": {
         "name": "Langelier-index"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "Referentietijd"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect onbereikbaar",
+      "description": "De Blue Connect-sonde ({name}) heeft {days} dag(en) niet gereageerd. Controleer de voeding, het bereik, en of een Bluetooth-adapter of ESPHome-proxy het zwembadgebied dekt."
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "Blue Connect {mac} bevindt zich buiten het Bluetooth-bereik en er zijn geen eerdere gegevens beschikbaar."
+    },
+    "unreachable_no_history": {
+      "message": "Blue Connect is onbereikbaar en er zijn geen eerdere gegevens beschikbaar: {error}"
     }
   }
 }

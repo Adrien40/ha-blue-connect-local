@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime as dt_datetime
-from typing import Any, ClassVar
+from typing import Any
 
 import homeassistant.util.dt as dt_util
 from homeassistant.components.bluetooth import (
@@ -22,12 +22,12 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import BlueConnectConfigEntry
 from .const import (
     BT_STATUS_AUTH_FAILED,
     BT_STATUS_AUTHENTICATING,
@@ -42,20 +42,26 @@ from .const import (
     BT_STATUS_WAITING,
     BT_STATUS_WRITE_FAILED,
     CONF_MAC_ADDRESS,
-    DOMAIN,
     blue_connect_device_info,
     get_blue_connect_model,
     model_has_conductivity,
     model_has_salinity,
 )
+from .coordinator import BlueConnectCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# Coordinator centralizes updates; entities are read-only.
+PARALLEL_UPDATES = 0
+
+
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: BlueConnectConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     mac_address = entry.data[CONF_MAC_ADDRESS]
     sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
@@ -144,7 +150,6 @@ async def async_setup_entry(
             category=EntityCategory.DIAGNOSTIC,
             model_name=model_name,
             options=["vertical", "tilted", "horizontal", "upside_down"],
-            icon="mdi:lifebuoy",
         ),
         BlueConnectSensor(
             coordinator,
@@ -153,7 +158,6 @@ async def async_setup_entry(
             None,
             None,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:axis-y-arrow",
             model_name=model_name,
         ),
         BlueConnectSensor(
@@ -164,7 +168,17 @@ async def async_setup_entry(
             None,
             2,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:lightning-bolt",
+            model_name=model_name,
+            state_class=SensorStateClass.MEASUREMENT,
+        ),
+        BlueConnectSensor(
+            coordinator,
+            mac_address,
+            "orp_raw",
+            None,
+            "mV",
+            0,
+            category=EntityCategory.DIAGNOSTIC,
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -185,7 +199,6 @@ async def async_setup_entry(
             SensorDeviceClass.VOLTAGE,
             "mV",
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:battery-bluetooth",
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -196,7 +209,6 @@ async def async_setup_entry(
             None,
             None,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:sine-wave",
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
         ),
@@ -207,7 +219,6 @@ async def async_setup_entry(
             SensorDeviceClass.TIMESTAMP,
             None,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:clock-check",
             model_name=model_name,
         ),
         BlueConnectSensor(
@@ -217,7 +228,6 @@ async def async_setup_entry(
             None,
             None,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:bluetooth-transfer",
             model_name=model_name,
         ),
         BlueConnectSensor(
@@ -227,7 +237,6 @@ async def async_setup_entry(
             None,
             None,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:memory",
             model_name=model_name,
         ),
         BlueConnectSensor(
@@ -237,7 +246,6 @@ async def async_setup_entry(
             None,
             None,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:cloud",
             model_name=model_name,
         ),
         BlueConnectSensor(
@@ -247,7 +255,6 @@ async def async_setup_entry(
             SensorDeviceClass.ENUM,
             None,
             category=EntityCategory.DIAGNOSTIC,
-            icon="mdi:signal-variant",
             model_name=model_name,
             options=["passive", "active", "unknown"],
         ),
@@ -264,7 +271,6 @@ async def async_setup_entry(
             None,
             "g/L",
             2,
-            icon="mdi:shaker",
             model_name=model_name,
             state_class=SensorStateClass.MEASUREMENT,
             enabled_default=model_has_salinity(sku, has_conductivity),
@@ -274,19 +280,18 @@ async def async_setup_entry(
     async_add_entities(sensors)
 
 
-class BlueConnectSensor(CoordinatorEntity, SensorEntity):
+class BlueConnectSensor(CoordinatorEntity[BlueConnectCoordinator], SensorEntity):
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator,
+        coordinator: BlueConnectCoordinator,
         mac: str,
         key: str,
         device_class: SensorDeviceClass | None = None,
         unit: str | None = None,
         precision: int | None = None,
         category: EntityCategory | None = None,
-        icon: str | None = None,
         model_name: str = "Blue Connect",
         options: list[str] | None = None,
         state_class: SensorStateClass | None = None,
@@ -302,7 +307,6 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
         self._attr_suggested_display_precision = precision
         self._attr_entity_category = category
         self._attr_state_class = state_class
-        self._attr_icon = icon
         self._attr_entity_registry_enabled_default = enabled_default
         if options:
             self._attr_options = options
@@ -335,13 +339,15 @@ class BlueConnectSensor(CoordinatorEntity, SensorEntity):
         return super().available
 
 
-class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
+class BlueConnectBluetoothStatusSensor(
+    CoordinatorEntity[BlueConnectCoordinator], SensorEntity
+):
     _attr_has_entity_name = True
     # Entity in the Diagnostic category. Developer's choice, do not remove this comment.
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_device_class = SensorDeviceClass.ENUM
     _attr_translation_key = "bluetooth_status"
-    _attr_options: ClassVar[list[str]] = [
+    _attr_options: list[str] = [
         BT_STATUS_WAITING,
         BT_STATUS_CONNECTING,
         BT_STATUS_AUTHENTICATING,
@@ -357,7 +363,9 @@ class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
         "passive_mode",
     ]
 
-    def __init__(self, coordinator, mac: str, model_name: str) -> None:
+    def __init__(
+        self, coordinator: BlueConnectCoordinator, mac: str, model_name: str
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{mac}_bluetooth_status"
@@ -376,32 +384,19 @@ class BlueConnectBluetoothStatusSensor(CoordinatorEntity, SensorEntity):
                 if not self.coordinator.access_code
                 else BT_STATUS_WAITING
             )
-        return self.coordinator.data.get(
-            "bluetooth_status",
-            "passive_mode" if not self.coordinator.access_code else BT_STATUS_WAITING,
+        return str(
+            self.coordinator.data.get(
+                "bluetooth_status",
+                "passive_mode"
+                if not self.coordinator.access_code
+                else BT_STATUS_WAITING,
+            )
         )
 
-    @property
-    def icon(self) -> str:
-        icons = {
-            BT_STATUS_WAITING: "mdi:bluetooth-off",
-            BT_STATUS_CONNECTING: "mdi:bluetooth-connect",
-            BT_STATUS_AUTHENTICATING: "mdi:bluetooth-settings",
-            BT_STATUS_REQUESTING: "mdi:bluetooth-transfer",
-            BT_STATUS_READING: "mdi:bluetooth-transfer",
-            BT_STATUS_SUCCESS: "mdi:bluetooth",
-            BT_STATUS_ERROR: "mdi:bluetooth-off",
-            BT_STATUS_ERROR_RETRY: "mdi:timer-sand",
-            BT_STATUS_WRITE_FAILED: "mdi:alert-circle",
-            BT_STATUS_AUTH_FAILED: "mdi:shield-key-outline",
-            BT_STATUS_PAUSED: "mdi:pause-circle",
-            BT_STATUS_OUT_OF_RANGE: "mdi:bluetooth-off",
-            "passive_mode": "mdi:ear-hearing",
-        }
-        return icons.get(self.native_value, "mdi:bluetooth-alert")
 
-
-class BlueConnectRealTimeRSSISensor(CoordinatorEntity, RestoreSensor):
+class BlueConnectRealTimeRSSISensor(
+    CoordinatorEntity[BlueConnectCoordinator], RestoreSensor
+):
     _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.SIGNAL_STRENGTH
     _attr_native_unit_of_measurement = "dBm"
@@ -411,7 +406,9 @@ class BlueConnectRealTimeRSSISensor(CoordinatorEntity, RestoreSensor):
     _attr_translation_key = "rssi"
     _attr_should_poll = False
 
-    def __init__(self, coordinator, mac: str, model_name: str) -> None:
+    def __init__(
+        self, coordinator: BlueConnectCoordinator, mac: str, model_name: str
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{mac}_rssi"
@@ -462,15 +459,18 @@ class BlueConnectRealTimeRSSISensor(CoordinatorEntity, RestoreSensor):
         )
 
 
-class BlueConnectNextAnalysisSensor(CoordinatorEntity, SensorEntity):
+class BlueConnectNextAnalysisSensor(
+    CoordinatorEntity[BlueConnectCoordinator], SensorEntity
+):
     _attr_has_entity_name = True
     # Entity in the Diagnostic category. Developer's choice, do not remove this comment.
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_translation_key = "next_analysis"
-    _attr_icon = "mdi:clock-end"
 
-    def __init__(self, coordinator, mac: str, model_name: str) -> None:
+    def __init__(
+        self, coordinator: BlueConnectCoordinator, mac: str, model_name: str
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._attr_unique_id = f"{mac}_next_analysis"

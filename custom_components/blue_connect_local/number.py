@@ -3,13 +3,13 @@
 
 import logging
 
-from homeassistant.components.number import RestoreNumber
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.components.number import NumberMode, RestoreNumber
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from . import BlueConnectConfigEntry
 from .const import (
     CONF_CHLORINE_MODEL,
     CONF_CYA,
@@ -18,18 +18,24 @@ from .const import (
     CONF_TAC,
     CONF_TDS,
     CONF_TH,
-    DOMAIN,
     blue_connect_device_info,
     get_blue_connect_model,
 )
+from .coordinator import BlueConnectCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# Single Bluetooth connection to the device: commands must be serialized.
+PARALLEL_UPDATES = 1
+
+
 async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
+    hass: HomeAssistant,
+    entry: BlueConnectConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = entry.runtime_data
     mac = entry.data[CONF_MAC_ADDRESS]
     entry_id = entry.entry_id
     sku = coordinator.data.get("sku")
@@ -47,7 +53,6 @@ async def async_setup_entry(
                 500,
                 1,
                 0,
-                "mdi:water-percent",
                 entry_id,
                 model_name,
                 "mg/L",
@@ -60,7 +65,6 @@ async def async_setup_entry(
                 5000,
                 1,
                 0,
-                "mdi:blur",
                 entry_id,
                 model_name,
                 "ppm",
@@ -73,7 +77,6 @@ async def async_setup_entry(
                 800,
                 1,
                 0,
-                "mdi:water-outline",
                 entry_id,
                 model_name,
                 "mg/L",
@@ -86,7 +89,6 @@ async def async_setup_entry(
                 150,
                 1,
                 40,
-                "mdi:shield-sun",
                 entry_id,
                 model_name,
                 "mg/L",
@@ -95,11 +97,24 @@ async def async_setup_entry(
     )
 
 
-class BlueConnectUpdateIntervalNumber(CoordinatorEntity, RestoreNumber):
+def _clamp(value: float, low: float, high: float) -> float:
+    """Keep `value` inside the entity bounds (type preserved when in range)."""
+    return max(low, min(value, high))
+
+
+class BlueConnectUpdateIntervalNumber(
+    CoordinatorEntity[BlueConnectCoordinator], RestoreNumber
+):
     _attr_has_entity_name = True
     _attr_translation_key = "scan_interval"
 
-    def __init__(self, coordinator, mac: str, model_name: str, entry_id: str) -> None:
+    def __init__(
+        self,
+        coordinator: BlueConnectCoordinator,
+        mac: str,
+        model_name: str,
+        entry_id: str,
+    ) -> None:
         super().__init__(coordinator)
         self._mac = mac
         self._entry_id = entry_id
@@ -109,8 +124,7 @@ class BlueConnectUpdateIntervalNumber(CoordinatorEntity, RestoreNumber):
         self._attr_native_step = 1
         self._attr_native_unit_of_measurement = "min"
         self._attr_entity_category = EntityCategory.CONFIG
-        self._attr_icon = "mdi:sync"
-        self._attr_mode = "box"
+        self._attr_mode = NumberMode.BOX
         self._attr_device_info = blue_connect_device_info(
             mac,
             model_name,
@@ -123,6 +137,25 @@ class BlueConnectUpdateIntervalNumber(CoordinatorEntity, RestoreNumber):
         if not self.coordinator.access_code:
             return False
         return super().available
+
+    @property
+    def native_value(self) -> float | None:
+        """Follow the coordinator, the source of truth.
+
+        The value also changes from the Configure screen, which writes to the
+        coordinator: a value cached on the entity would keep showing the old one.
+        """
+        val = self.coordinator.data.get(CONF_SCAN_INTERVAL)
+        if val is None:
+            return self._attr_native_value
+        try:
+            return _clamp(
+                round(float(val)),
+                self._attr_native_min_value,
+                self._attr_native_max_value,
+            )
+        except TypeError, ValueError:
+            return self._attr_native_value
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
@@ -150,26 +183,27 @@ class BlueConnectUpdateIntervalNumber(CoordinatorEntity, RestoreNumber):
         self.async_write_ha_state()
 
     async def async_set_native_value(self, value: float) -> None:
-        val = round(float(value))
+        val: float = round(float(value))
         val = max(self._attr_native_min_value, min(val, self._attr_native_max_value))
         self._attr_native_value = val
 
         self.coordinator.update_local_state({CONF_SCAN_INTERVAL: val})
 
 
-class BlueConnectWaterConfigNumber(CoordinatorEntity, RestoreNumber):
+class BlueConnectWaterConfigNumber(
+    CoordinatorEntity[BlueConnectCoordinator], RestoreNumber
+):
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator,
+        coordinator: BlueConnectCoordinator,
         mac: str,
         key: str,
         min_val: float,
         max_val: float,
         step: float,
         default_val: float,
-        icon: str,
         entry_id: str,
         model_name: str,
         unit: str,
@@ -184,9 +218,8 @@ class BlueConnectWaterConfigNumber(CoordinatorEntity, RestoreNumber):
         self._attr_native_max_value = max_val
         self._attr_native_step = step
         self._attr_native_unit_of_measurement = unit
-        self._attr_icon = icon
         self._default_val = default_val
-        self._attr_mode = "box"
+        self._attr_mode = NumberMode.BOX
         self._attr_entity_category = EntityCategory.CONFIG
         self._attr_device_info = blue_connect_device_info(
             mac,
@@ -212,6 +245,21 @@ class BlueConnectWaterConfigNumber(CoordinatorEntity, RestoreNumber):
                     )
             return val != "bromine"
         return True
+
+    @property
+    def native_value(self) -> float | None:
+        """Follow the coordinator (also updated by the Configure screen)."""
+        val = self.coordinator.data.get(self._key) if self.coordinator.data else None
+        if val is None:
+            return self._attr_native_value
+        try:
+            return _clamp(
+                float(val) if isinstance(val, str) else val,
+                self._attr_native_min_value,
+                self._attr_native_max_value,
+            )
+        except TypeError, ValueError:
+            return self._attr_native_value
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()

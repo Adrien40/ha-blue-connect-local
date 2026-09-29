@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "🧪 Úprava vody",
               "cya": "💧 Úroveň stabilizátoru / CyA (mg/l)"
+            },
+            "data_description": {
+              "chlorine_model": "Dezinfekce používaná ve vašem bazénu. Brom vypíná entitu CyA, která pro něj není relevantní. Uloženo pro budoucí použití: zatím na tom nezávisí žádná vypočtená hodnota.",
+              "cya": "Hladina kyseliny kyanurové (stabilizátoru) v mg/l; zadejte 0, pokud stabilizátor nepoužíváte. Uloženo pro budoucí použití: zatím na ní nezávisí žádná vypočtená hodnota."
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "🕒 Referenční čas (plánování)",
               "passive_measures": "📡 Interní analýzy Blue Connect (pasivní)",
               "ignore_echoes": "🚫 Ignorovat ozvěny analýz (pasivní)"
+            },
+            "data_description": {
+              "reference_time": "Referenční čas pro zarovnání naplánovaných analýz na pravidelné intervaly (např. 08:00, 10:00, 12:00... pro 2hodinový interval).",
+              "scan_interval": "Doba mezi dvěma plánovanými analýzami, od 5 do 1440 minut. Pouze v aktivním režimu (vyžaduje přístupový kód).",
+              "passive_measures": "Používá hodnoty, které sonda vysílá sama, zhruba jednu za hodinu. Funguje bez přístupového kódu.",
+              "ignore_echoes": "Ignoruje pasivní rámce, které sonda označí jako ozvěnu analýzy, aby nepřepisovaly poslední měření."
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "📏 Naměřená hodnota ORP (např. 650)",
               "orp_ref": "🎯 Cílový roztok ORP (např. 650)",
               "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
+              "ph_calib_4": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
+              "ph_ref_7": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
+              "ph_ref_4": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
+              "orp_calib": "Surová hodnota ORP (mV), kterou vaše sonda skutečně ukázala v referenčním roztoku.",
+              "orp_ref": "Hodnota ORP (mV) referenčního roztoku při jeho aktuální teplotě: závisí na teplotě, viz lahev. Použitá korekce je tato hodnota minus naměřená hodnota.",
+              "temp_offset": "Korekce v °C přičtená k teplotě naměřené sondou. Může být kladná i záporná."
             }
           }
+        },
+        "data_description": {
+          "access_code": "Naleznete na štítku pod krytem USB portu nebo na ochranném krytu sond. Vyžadováno pro analýzy na vyžádání; ponechte prázdné pro pouze pasivní naslouchání.",
+          "mac_address": "Vyberte Blue Connect zjištěný v okolí přes Bluetooth Home Assistantu. Pokud tam váš není, použijte pole níže.",
+          "manual_mac_address": "Potřebné jen tehdy, když vaše zařízení není v seznamu výše. Formát AA:BB:CC:DD:EE:FF, jak je zobrazen v nastavení Bluetooth Home Assistantu."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Znovu ověřit Blue Connect",
+        "description": "Přístupový kód pro {name} byl odmítnut. Zadejte nový 9místný přístupový kód.",
+        "data": {
+          "access_code": "Přístupový kód"
+        },
+        "data_description": {
+          "access_code": "Naleznete na štítku pod krytem USB portu nebo na ochranném krytu sond. Vyžadováno pro analýzy na vyžádání; ponechte prázdné pro pouze pasivní naslouchání."
+        }
+      },
+      "reconfigure": {
+        "title": "Aktualizovat zařízení Blue Connect",
+        "description": "Přiřaďte tento záznam k jinému fyzickému zařízení Blue Connect (např. po výměně zařízení), nebo opravte přístupový kód. Vaše možnosti, automatizace a historie entit zůstanou zachovány.",
+        "data": {
+          "mac_address": "✍️ Bluetooth MAC adresa",
+          "access_code": "🔑 Přístupový kód"
+        },
+        "data_description": {
+          "mac_address": "Bluetooth MAC adresa zařízení Blue Connect, které má tento záznam používat (AA:BB:CC:DD:EE:FF). Měňte ji jen po výměně zařízení.",
+          "access_code": "Naleznete na štítku pod krytem USB portu nebo na ochranném krytu sond. Vyžadováno pro analýzy na vyžádání; ponechte prázdné pro pouze pasivní naslouchání."
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "❌ Neplatný přístupový kód (9 alfanumerických znaků)."
     },
     "abort": {
-      "already_configured": "⚠️ Toto zařízení je již nakonfigurováno."
+      "already_configured": "⚠️ Toto zařízení je již nakonfigurováno.",
+      "reauth_successful": "Opětovné ověření bylo úspěšné"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "🔑 Přístupový kód (ponechte prázdné pro pasivní režim: 1 analýza za hodinu)",
               "chlorine_model": "🧪 Úprava vody",
               "cya": "💧 Úroveň stabilizátoru / CyA (mg/l)"
+            },
+            "data_description": {
+              "access_code": "Naleznete na štítku pod krytem USB portu nebo na ochranném krytu sond. Vyžadováno pro analýzy na vyžádání; ponechte prázdné pro pouze pasivní naslouchání.",
+              "chlorine_model": "Dezinfekce používaná ve vašem bazénu. Brom vypíná entitu CyA, která pro něj není relevantní. Uloženo pro budoucí použití: zatím na tom nezávisí žádná vypočtená hodnota.",
+              "cya": "Hladina kyseliny kyanurové (stabilizátoru) v mg/l; zadejte 0, pokud stabilizátor nepoužíváte. Uloženo pro budoucí použití: zatím na ní nezávisí žádná vypočtená hodnota."
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "🕒 Referenční čas (plánování)",
               "passive_measures": "📡 Interní analýzy Blue Connect (pasivní)",
               "ignore_echoes": "🚫 Ignorovat ozvěny analýz (pasivní)"
+            },
+            "data_description": {
+              "reference_time": "Referenční čas pro zarovnání naplánovaných analýz na pravidelné intervaly (např. 08:00, 10:00, 12:00... pro 2hodinový interval).",
+              "scan_interval": "Doba mezi dvěma plánovanými analýzami, od 5 do 1440 minut. Pouze v aktivním režimu (vyžaduje přístupový kód).",
+              "passive_measures": "Používá hodnoty, které sonda vysílá sama, zhruba jednu za hodinu. Funguje bez přístupového kódu.",
+              "ignore_echoes": "Ignoruje pasivní rámce, které sonda označí jako ozvěnu analýzy, aby nepřepisovaly poslední měření."
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "📏 Naměřená hodnota ORP (např. 650)",
               "orp_ref": "🎯 Cílový roztok ORP (např. 650)",
               "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
+              "ph_calib_4": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
+              "ph_ref_7": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
+              "ph_ref_4": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
+              "orp_calib": "Surová hodnota ORP (mV), kterou vaše sonda skutečně ukázala v referenčním roztoku.",
+              "orp_ref": "Hodnota ORP (mV) referenčního roztoku při jeho aktuální teplotě: závisí na teplotě, viz lahev. Použitá korekce je tato hodnota minus naměřená hodnota.",
+              "temp_offset": "Korekce v °C přičtená k teplotě naměřené sondou. Může být kladná i záporná."
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "Surové pH"
       },
+      "orp_raw": {
+        "name": "Surové ORP"
+      },
       "lsi": {
         "name": "Langelierův index"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "Referenční čas"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect nedostupný",
+      "description": "Sonda Blue Connect ({name}) neodpověděla {days} den/dní. Zkontrolujte napájení, dosah a pokrytí bazénu Bluetooth adaptérem nebo ESPHome proxy."
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "Blue Connect {mac} je mimo dosah Bluetooth a nejsou k dispozici žádná předchozí data."
+    },
+    "unreachable_no_history": {
+      "message": "Blue Connect je nedostupný a nejsou k dispozici žádná předchozí data: {error}"
     }
   }
 }

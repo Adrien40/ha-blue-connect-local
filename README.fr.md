@@ -3,6 +3,13 @@
 # Blue Connect Local pour Home Assistant 🐬
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![GitHub Release](https://img.shields.io/github/v/release/Adrien40/ha-blue-connect-local)](https://github.com/Adrien40/ha-blue-connect-local/releases)
+[![Licence : GPL v3](https://img.shields.io/badge/Licence-GPLv3-blue.svg)](LICENSE)
+[![Tests](https://img.shields.io/github/actions/workflow/status/Adrien40/ha-blue-connect-local/tests.yaml?branch=main&label=tests)](https://github.com/Adrien40/ha-blue-connect-local/actions/workflows/tests.yaml)
+[![HACS](https://img.shields.io/github/actions/workflow/status/Adrien40/ha-blue-connect-local/hacs.yaml?branch=main&label=hacs)](https://github.com/Adrien40/ha-blue-connect-local/actions/workflows/hacs.yaml)
+[![Hassfest](https://img.shields.io/github/actions/workflow/status/Adrien40/ha-blue-connect-local/hassfest.yaml?branch=main&label=hassfest)](https://github.com/Adrien40/ha-blue-connect-local/actions/workflows/hassfest.yaml)
+[![Linting](https://img.shields.io/github/actions/workflow/status/Adrien40/ha-blue-connect-local/ruff.yaml?branch=main&label=lint)](https://github.com/Adrien40/ha-blue-connect-local/actions/workflows/ruff.yaml)
+[![Typing](https://img.shields.io/github/actions/workflow/status/Adrien40/ha-blue-connect-local/mypy.yaml?branch=main&label=mypy%20--strict)](https://github.com/Adrien40/ha-blue-connect-local/actions/workflows/mypy.yaml)
+[![Quality Scale](https://img.shields.io/badge/HA%20Quality%20Scale-Platinum-e5e4e2)](custom_components/blue_connect_local/quality_scale.yaml)
 
 Si ce projet vous est utile, vous pouvez soutenir son développement 🙏
 
@@ -83,9 +90,10 @@ Blue Connect Local permet de remplacer le cloud par une solution de **local cont
 * 🚀 **Analyse en temps réel** : Lancez une mesure manuelle quand vous le souhaitez.
 * 🧪 **Intelligence Chimique Avancée** :
   * Calcul de l'**Indice de Langelier** (ISL) pour déterminer si l'eau est équilibrée, entartrante ou corrosive.
-* 🟤 **Support Multi-Traitements** : Prise en charge du **Brome** (désactive automatiquement l'entité CyA, non pertinente pour ce traitement) et des piscines sans stabilisant (CYA = 0).
+* 🟤 **Support Multi-Traitements** : Prise en charge du **Brome** (désactive automatiquement l'entité CyA, non pertinente pour ce traitement) et des piscines sans stabilisant (CYA = 0). Le type de traitement et le taux de CyA sont conservés pour un usage futur : **aucune valeur calculée n'en dépend pour le moment**.
 * ⚙️ **Configuration 100% UI** : Découverte automatique Bluetooth, calibrage des sondes et réglage des seuils d'alerte directement depuis l'interface Home Assistant (aucun YAML requis).
 * 🔄 **Modes de Synchronisation** : Mode Passif (écoute silencieuse préservant la batterie) et Mode Actif (analyses Bluetooth à la demande via le code d'accès).
+* ⏱️ **Analyses planifiées sur des créneaux fixes** (Mode Actif) : réglez un **Intervalle d'Analyse** et une **Heure de Référence** ; les analyses tombent aux mêmes heures chaque jour au lieu de suivre un intervalle glissant (voir *Analyses planifiées* plus bas).
 * 🌍 **Multi-langue** : Développé en Français 🇫🇷 et disponible en EN, ES, DE, IT, NL, PL, PT, PT-BR, SV, RU, ZH-HANS, ZH-HANT, CS, HU, EL, HR, DA, NB (Traduction via IA).
 
 ---
@@ -108,6 +116,15 @@ Copiez le dossier `custom_components/blue_connect_local` dans le dossier `custom
 
 ---
 
+### 🗑️ Suppression
+1. Allez dans **Paramètres** > **Appareils et services**, trouvez votre appareil Blue Connect, cliquez sur les 3 points et choisissez **Supprimer**. Cela retire toutes les entités et arrête l'écoute/l'interrogation Bluetooth.
+2. Si installé via HACS : ouvrez **HACS**, trouvez **Blue Connect Local**, cliquez sur les 3 points et choisissez **Supprimer**.
+3. Si installé manuellement : supprimez le dossier `custom_components/blue_connect_local`, puis redémarrez Home Assistant.
+
+La suppression de l'intégration efface aussi son historique stocké localement (dernières valeurs connues, points de référence de calibration, code d'accès). Si vous voulez seulement mettre les mesures en pause sans perdre ces données, utilisez plutôt l'interrupteur **Analyses Automatiques**
+
+---
+
 ### 📊 Capteurs et Contrôles disponibles
 | Entité | Unité / Type | Description |
 | :--- | :--- | :--- |
@@ -123,9 +140,13 @@ Copiez le dossier `custom_components/blue_connect_local` dans le dossier `custom
 | 🔵 **État Bluetooth** | Statut | État détaillé de la connexion (Connecté, En veille, Erreur...). |
 | ⏱️ **Prochaine Analyse** | Horodatage | Heure estimée de la prochaine relève de données. |
 | 🚀 **Nouvelle Analyse** | Bouton | **Lancer une analyse instantanée (~60s).** |
-| ⏸️ **Analyses Auto.** | Interrupteur | Activer/Désactiver la relève automatique (Mode Pause). |
+| ⏸️ **Analyses Automatiques** | Interrupteur | Activer/Désactiver la relève automatique (Mode Pause). |
+| 🔄 **Intervalle d'Analyse** | Réglage (min) | Durée entre deux analyses planifiées (5 – 1440), Mode Actif. |
+| 🕒 **Heure de Référence** | Réglage (heure) | Heure sur laquelle les créneaux d'analyse sont calés (08:00 par défaut). |
+| 📡 **Analyses Internes du Blue Connect (Passives)** | Interrupteur | Utiliser les relevés que la sonde émet d'elle-même. |
+| 💧 **TAC / TH / TDS / CyA** | Réglages (mg/L, ppm) | Paramètres de l'eau utilisés pour l'indice de Langelier et le pH d'équilibre (le CyA est conservé pour un usage futur). |
 
-> 🛠️ **Fiche appareil & Diagnostic** : Le **Numéro de Série**, le **Numéro de Modèle (SKU)** et l'**Adresse MAC** sont nativement intégrés dans l'en-tête de l'appareil Home Assistant. L'intégration expose également des capteurs de diagnostic avancés (pH brut, trame hexadécimale complète, statut de flottaison et alertes binaires).
+> 🛠️ **Fiche appareil & Diagnostic** : Le **Numéro de Série**, le **Numéro de Modèle (SKU)** et l'**Adresse MAC** sont nativement intégrés dans l'en-tête de l'appareil Home Assistant. L'intégration expose également des capteurs de diagnostic avancés (pH brut, Redox brut en mV, trame hexadécimale complète, statut de flottaison et alertes binaires).
 
 > ℹ️ **Sur Blue Connect Silver** (sans sonde de conductivité) : les entités Conductivité et Salinité sont désormais désactivées automatiquement. Si vous avez mis à jour une installation existante où Conductivité était déjà présente, l'intégration détecte le modèle Silver et désactive ces entités elle-même — aucune action manuelle requise.
 
@@ -158,6 +179,8 @@ Blue Connect Local permet une calibration « haute précision ». Contrairement 
 ---
 
 ## 🚀 Configuration
+> ⚠️ Nécessite **Home Assistant 2026.3.0 ou plus récent** (première version livrée avec Python 3.14). Testé sur 2026.3.0 et 2026.9.
+
 1. Allez dans **Paramètres** > **Appareils et services**.
 2. L'intégration devrait détecter automatiquement votre Blue Connect si votre antenne Bluetooth est à portée. Sinon, cliquez sur **Ajouter une intégration** et recherchez **Blue Connect Local**.
 3. Suivez les instructions à l'écran pour définir le type de traitement (Chlore, Brome) et le calibrage/décalage de vos sondes.
@@ -166,7 +189,27 @@ Blue Connect Local permet une calibration « haute précision ». Contrairement 
 Une fois l'appareil ajouté, vous pouvez cliquer sur **Configurer** ⚙️ pour :
 * Ajuster les valeurs de vos solutions de calibration (pH 4, pH 7, Redox).
 * Modifier les paramètres de votre eau (TAC, TH, TDS, Stabilisant) directement via les contrôles exposés.
+* Régler l'**Intervalle d'Analyse** et l'**Heure de Référence** (section ⏱️ *Synchronisation*), voir *Analyses planifiées* plus bas.
 * Définir vos **seuils d'alerte personnalisés** (pH Min/Max, ORP Min/Max, etc.) pour piloter vos propres automatisations.
+
+> Retrouvez la procédure pas à pas (pH brut / Redox brut, ajustement selon la température et Seuils d'Alerte) dans le **[Guide de Calibration](calibration_help.fr.md)**. Les notes de version sont dans le **[Journal des modifications](CHANGELOG.fr.md)**.
+
+### ⏱️ Analyses planifiées (Mode Actif)
+Quand un **Code d'Accès** est renseigné (Mode Actif), les analyses automatiques ne se déclenchent pas « toutes les N minutes après la précédente » : elles sont calées sur des **créneaux fixes**, ce qui donne des relevés à des heures prévisibles, quoi qu'il se soit passé avant (redémarrage, analyse manuelle, erreur).
+
+| Réglage | Défaut | Plage | Rôle |
+| :--- | :--- | :--- | :--- |
+| 🔄 **Intervalle d'Analyse** | 60 min | 5 – 1440 min | Durée entre deux analyses planifiées. |
+| 🕒 **Heure de Référence** | 08:00 | HH:MM | Heure sur laquelle les créneaux sont calés. |
+
+* **Exemple** : avec un intervalle de **120 min** et une heure de référence de **08:00**, les analyses ont lieu à 08:00, 10:00, 12:00, 14:00… (et 06:00, 04:00… avant).
+* **Où les modifier** : **Configurer** ⚙️ > section **⏱️ Synchronisation**, ou directement depuis les entités **Intervalle d'Analyse** et **Heure de Référence** de l'appareil (catégorie configuration), par exemple sur un tableau de bord.
+* **Prise en compte immédiate** : la prochaine analyse est replanifiée dès que vous changez l'un des deux réglages.
+* **Conseil** : choisissez un intervalle qui divise 24 h en parts égales (5, 10, 15, 20, 30, 60, 120, 180, 240, 360, 480, 720 ou 1440 min). Sinon les créneaux se décalent d'un jour à l'autre, car ils sont recalés chaque jour sur l'Heure de Référence.
+* Un créneau situé à moins de 10 secondes est ignoré au profit du suivant.
+* **Nouvelle Analyse** (nécessite un code d'accès) s'exécute immédiatement et ne modifie pas la planification.
+* **Analyses Automatiques** désactivées : les analyses planifiées sont ignorées. Les réactiver ne lance **pas** d'analyse par elles-mêmes ; la suivante a lieu au prochain créneau (ou appuyez sur **Nouvelle Analyse**).
+* **Sans code d'accès (Mode Passif)**, il n'y a pas de planification : Home Assistant utilise les relevés que la sonde émet d'elle-même, environ un par heure.
 
 ---
 
@@ -176,9 +219,64 @@ Une fois l'appareil ajouté, vous pouvez cliquer sur **Configurer** ⚙️ pour 
 <summary>⚠️ Voir les problèmes fréquents</summary>
   
 * **Erreurs Bluetooth fréquentes** : L'intégration gère automatiquement les tentatives de connexion. Si le capteur indique `Signal Perdu`, le Blue Connect est hors de portée. Rapprochez votre antenne ou [installez un Proxy Bluetooth ESPHome](https://esphome.github.io/bluetooth-proxies/) au plus près du bassin (nécessite juste un ESP32 (~10€) et un chargeur USB).
-* **Code d'Accès invalide** : L'intégration vérifie votre code d'accès dès la connexion, donc s'il est erroné vous verrez `Invalid access code` sur le capteur d'état Bluetooth en quelques secondes — inutile d'attendre le timeout complet de l'analyse. Corrigez-le simplement dans **Configurer ⚙️**, une analyse se déclenche automatiquement dès l'enregistrement.
+* **Code d'Accès invalide** : L'intégration vérifie votre code d'accès dès la connexion, donc s'il est erroné vous verrez `Invalid access code` sur le capteur d'état Bluetooth en quelques secondes — inutile d'attendre le timeout complet de l'analyse. Home Assistant vous propose aussi de le ressaisir via une notification **Ré-authentifier** ; vous pouvez également le corriger dans **Configurer ⚙️**, une analyse se déclenche automatiquement dès l'enregistrement.
 
 </details>
+
+---
+
+### 🎯 Cas d'usage
+* **Automatisation de sécurité piscine** : déclenchez une notification ou coupez la pompe de filtration si le pH ou le Redox sort de votre plage de sécurité, grâce aux capteurs binaires `Statut pH` / `Statut Redox (ORP)`.
+* **Protection contre le gel** : combinez le capteur binaire `Statut Température` avec une automatisation de chauffage ou de volet lorsque les températures d'hiver approchent de zéro.
+* **Rappels de dosage** : utilisez le capteur Statut de l'Indice de Langelier pour être prévenu quand votre eau devient corrosive ou entartrante, avant qu'elle n'abîme votre équipement.
+* **Surveillance passive seule** : sans code d'accès, Blue Connect Local fournit tout de même une lecture par heure à partir des émissions de la sonde — utile si vous ne souhaitez pas d'analyses à la demande.
+
+### 🤖 Exemples d'automatisations
+
+<details>
+<summary>📋 Notifier quand le pH sort de la plage</summary>
+
+```yaml
+automation:
+  - alias: "pH piscine hors plage"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.blue_connect_ph_status
+        to: "on"
+    action:
+      - action: notify.mobile_app_votre_telephone
+        data:
+          title: "⚠️ Alerte pH piscine"
+          message: "Le pH est actuellement {{ states('sensor.blue_connect_ph') }}, hors de la plage configurée."
+```
+</details>
+
+<details>
+<summary>📋 Alerter si la sonde n'a pas donné signe de vie depuis longtemps</summary>
+
+```yaml
+automation:
+  - alias: "Blue Connect injoignable trop longtemps"
+    trigger:
+      - platform: event
+        event_type: repairs_issue_registry_updated
+        event_data:
+          action: create
+          domain: blue_connect_local
+    action:
+      - action: notify.mobile_app_votre_telephone
+        data:
+          title: "🔌 Blue Connect injoignable"
+          message: "La sonde Blue Connect n'a pas répondu depuis un moment. Vérifiez sa pile et la portée Bluetooth."
+```
+</details>
+
+### ⚠️ Limitations connues
+* **Portée Bluetooth** : comme tout appareil BLE, le Blue Connect doit rester à portée d'un adaptateur Bluetooth ou d'un [proxy ESPHome](https://esphome.github.io/bluetooth-proxies/). Une bâche épaisse, la distance et les structures métalliques peuvent affaiblir le signal.
+* **Pas de notification poussée depuis la sonde** : hors analyses à la demande, les données sont rafraîchies selon les créneaux planifiés (Mode Actif) ou quand la sonde émet son propre relevé, environ une fois par heure (Mode Passif), pas en flux continu.
+* **Le Redox (ORP) n'est pas une mesure de chlore** : il reflète le pouvoir oxydant de l'eau (pH, température, stabilisant, vieillissement de la sonde), pas une concentration. Utilisez la valeur Redox brute avec vos propres seuils et un kit d'analyse pour le taux de chlore réel.
+* **Une sonde par entrée** : si vous possédez plusieurs Blue Connect, ajoutez chacune comme une entrée d'intégration distincte.
+* **Le matériel Blueriiot n'est pas supporté**, uniquement les ZODIAC Blue Connect Gold/Silver d'origine.
 
 ---
 

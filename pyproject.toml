@@ -1,0 +1,52 @@
+[tool.ruff]
+# Python 3.14 (Home Assistant 2026.3.0 minimum): `ruff format` writes `except A, B:` without
+# parentheses (PEP 758). This is valid and intentional, not a typo.
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "RUF"]
+ignore = [
+    "E501",   # long log strings are left to `ruff format`
+    "RUF001", # intentional Unicode characters (×, ÷, →, accents) in docs/logs
+    "RUF002",
+    "RUF003",
+    "RUF012", # class attributes _attr_options = [...]: Home Assistant convention
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["custom_components"]
+# Keep grouped "as X" re-exports (const.py's mypy --strict explicit-reexport
+# idiom) on one `from .model import (...)` block instead of one line each.
+combine-as-imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-p no:sugar"
+filterwarnings = [
+    # Benign upstream Hypothesis behavior: it registers a weakref to any
+    # random.Random instance it sees (e.g. from pytest-homeassistant-custom-component
+    # or a fixture), and that instance can be garbage-collected right after. Not
+    # caused by this integration's code and doesn't affect test correctness.
+    "ignore:It looks like `register_random` was passed an object:hypothesis.errors.HypothesisWarning",
+]
+
+[tool.coverage.run]
+source = ["custom_components/blue_connect_local"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+files = ["custom_components/blue_connect_local"]
+# strict-typing: done (quality_scale.yaml) - mypy --strict is 0 errors and
+# blocking in CI (.github/workflows/tests.yaml).
+
+[[tool.mypy.overrides]]
+module = ["bleak.*", "bleak_retry_connector.*"]
+ignore_missing_imports = true

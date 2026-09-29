@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "Water Treatment",
               "cya": "Stabilizer Level / CyA (mg/l)"
+            },
+            "data_description": {
+              "chlorine_model": "Sanitizer used in your pool. Bromine disables the CyA entity, which is not relevant for it. Kept for future use: no calculated value depends on it yet.",
+              "cya": "Cyanuric acid (stabilizer) level in mg/l; use 0 if you don't use a stabilizer. Kept for future use: no calculated value depends on it yet."
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "Reference Time (Scheduling)",
               "passive_measures": "Blue Connect Internal Analysis (Passive)",
               "ignore_echoes": "Ignore Analysis Echoes (Passive)"
+            },
+            "data_description": {
+              "reference_time": "Anchor time used to align scheduled analyses on regular slots (e.g. 08:00, 10:00, 12:00... for a 2-hour interval).",
+              "scan_interval": "Time between two scheduled analyses, from 5 to 1440 minutes. Active Mode only (requires the access code).",
+              "passive_measures": "Use the readings the probe broadcasts on its own, about one per hour. Works without an access code.",
+              "ignore_echoes": "Ignore the passive frames the probe flags as echoes of an analysis, so they don't overwrite the latest measurement."
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "ORP (Redox) Measured Value (e.g., 650)",
               "orp_ref": "ORP (Redox) Target Solution (e.g., 650)",
               "temp_offset": "Temperature Offset (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
+              "ph_calib_4": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
+              "ph_ref_7": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
+              "ph_ref_4": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
+              "orp_calib": "The raw ORP value (mV) your probe actually displayed while dipped in the reference solution.",
+              "orp_ref": "The ORP value (mV) of the reference solution at its current temperature: it varies with temperature, see the bottle. The correction applied is this value minus the measured one.",
+              "temp_offset": "Correction in °C added to the temperature measured by the probe. Can be positive or negative."
             }
           }
+        },
+        "data_description": {
+          "access_code": "Found on a sticker under the USB port cap, or on the probes' protection cap. Required for on-demand analyses; leave empty for passive-only listening.",
+          "mac_address": "Pick a Blue Connect detected nearby by Home Assistant's Bluetooth. If yours is not listed, use the field below.",
+          "manual_mac_address": "Only needed if your device is not listed above. Format AA:BB:CC:DD:EE:FF, as shown in Home Assistant's Bluetooth settings."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate Blue Connect",
+        "description": "The access code for {name} was rejected. Enter the new 9-character access code.",
+        "data": {
+          "access_code": "Access Code"
+        },
+        "data_description": {
+          "access_code": "Found on a sticker under the USB port cap, or on the probes' protection cap. Required for on-demand analyses; leave empty for passive-only listening."
+        }
+      },
+      "reconfigure": {
+        "title": "Update Blue Connect device",
+        "description": "Point this entry at a different physical Blue Connect (e.g. after replacing the device), or correct the access code. Your options, automations, and entity history are kept.",
+        "data": {
+          "mac_address": "✍️ Bluetooth MAC address",
+          "access_code": "🔑 Access Code"
+        },
+        "data_description": {
+          "mac_address": "Bluetooth MAC address of the Blue Connect this entry should use (AA:BB:CC:DD:EE:FF). Change it only after replacing the device.",
+          "access_code": "Found on a sticker under the USB port cap, or on the probes' protection cap. Required for on-demand analyses; leave empty for passive-only listening."
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "Invalid Access Code (9 alphanumeric characters)."
     },
     "abort": {
-      "already_configured": "This device is already configured."
+      "already_configured": "This device is already configured.",
+      "reauth_successful": "Re-authentication was successful"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "Access Code (Leave empty for Passive Mode: 1 Analysis per hour)",
               "chlorine_model": "Water Treatment",
               "cya": "Stabilizer Level / CyA (mg/l)"
+            },
+            "data_description": {
+              "access_code": "Found on a sticker under the USB port cap, or on the probes' protection cap. Required for on-demand analyses; leave empty for passive-only listening.",
+              "chlorine_model": "Sanitizer used in your pool. Bromine disables the CyA entity, which is not relevant for it. Kept for future use: no calculated value depends on it yet.",
+              "cya": "Cyanuric acid (stabilizer) level in mg/l; use 0 if you don't use a stabilizer. Kept for future use: no calculated value depends on it yet."
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "Reference Time (Scheduling)",
               "passive_measures": "Blue Connect Internal Analysis (Passive)",
               "ignore_echoes": "Ignore Analysis Echoes (Passive)"
+            },
+            "data_description": {
+              "reference_time": "Anchor time used to align scheduled analyses on regular slots (e.g. 08:00, 10:00, 12:00... for a 2-hour interval).",
+              "scan_interval": "Time between two scheduled analyses, from 5 to 1440 minutes. Active Mode only (requires the access code).",
+              "passive_measures": "Use the readings the probe broadcasts on its own, about one per hour. Works without an access code.",
+              "ignore_echoes": "Ignore the passive frames the probe flags as echoes of an analysis, so they don't overwrite the latest measurement."
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "ORP (Redox) Measured Value (e.g., 650)",
               "orp_ref": "ORP (Redox) Target Solution (e.g., 650)",
               "temp_offset": "Temperature Offset (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
+              "ph_calib_4": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
+              "ph_ref_7": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
+              "ph_ref_4": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
+              "orp_calib": "The raw ORP value (mV) your probe actually displayed while dipped in the reference solution.",
+              "orp_ref": "The ORP value (mV) of the reference solution at its current temperature: it varies with temperature, see the bottle. The correction applied is this value minus the measured one.",
+              "temp_offset": "Correction in °C added to the temperature measured by the probe. Can be positive or negative."
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "Raw pH"
       },
+      "orp_raw": {
+        "name": "Raw ORP"
+      },
       "lsi": {
         "name": "Langelier Index"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "Reference Time"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect unreachable",
+      "description": "The Blue Connect probe ({name}) has not responded for {days} day(s). Check that it is powered, in range, and that a Bluetooth adapter or ESPHome proxy covers the pool area."
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "Blue Connect {mac} is out of Bluetooth range and no previous data is available."
+    },
+    "unreachable_no_history": {
+      "message": "Blue Connect is unreachable and no previous data is available: {error}"
     }
   }
 }

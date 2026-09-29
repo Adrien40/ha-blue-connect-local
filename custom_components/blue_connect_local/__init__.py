@@ -2,6 +2,7 @@
 # This file is part of Blue Connect Local.
 
 import logging
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -13,8 +14,12 @@ from .coordinator import BlueConnectCoordinator, format_mac_safe, store_key
 
 _LOGGER = logging.getLogger(__name__)
 
+type BlueConnectConfigEntry = ConfigEntry[BlueConnectCoordinator]
 
-async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+
+async def async_migrate_entry(
+    hass: HomeAssistant, entry: BlueConnectConfigEntry
+) -> bool:
     _LOGGER.debug(
         "Checking Blue Connect entry %s.%s for migration",
         entry.version,
@@ -109,9 +114,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    hass.data.setdefault(DOMAIN, {})
-
+async def async_setup_entry(hass: HomeAssistant, entry: BlueConnectConfigEntry) -> bool:
     mac = entry.data[CONF_MAC_ADDRESS]
     safe_mac = format_mac_safe(mac)
 
@@ -122,29 +125,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = BlueConnectCoordinator(hass, entry, mac, safe_mac, access_code)
     await coordinator.async_initialize()
 
-    hass.data[DOMAIN][entry.entry_id] = coordinator
+    entry.runtime_data = coordinator
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(
+    hass: HomeAssistant, entry: BlueConnectConfigEntry
+) -> bool:
     ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     if ok:
-        coordinator: BlueConnectCoordinator | None = hass.data[DOMAIN].get(
-            entry.entry_id
-        )
+        coordinator = entry.runtime_data
         if coordinator:
             await coordinator.async_shutdown()
-        hass.data[DOMAIN].pop(entry.entry_id, None)
 
     return ok
 
 
-async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def async_remove_entry(
+    hass: HomeAssistant, entry: BlueConnectConfigEntry
+) -> None:
     mac = entry.data.get(CONF_MAC_ADDRESS)
     if mac:
-        store = Store(hass, 1, store_key(mac))
+        store: Store[dict[str, Any]] = Store(hass, 1, store_key(mac))
         await store.async_remove()

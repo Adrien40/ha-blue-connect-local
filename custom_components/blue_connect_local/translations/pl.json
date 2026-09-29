@@ -16,6 +16,10 @@
             "data": {
               "chlorine_model": "🧪 Uzdatnianie wody",
               "cya": "💧 Poziom stabilizatora / CyA (mg/l)"
+            },
+            "data_description": {
+              "chlorine_model": "Środek dezynfekujący używany w basenie. Brom wyłącza encję CyA, która nie ma dla niego znaczenia. Zapisywane na przyszłość: na razie żadna obliczana wartość od tego nie zależy.",
+              "cya": "Poziom kwasu cyjanurowego (stabilizatora) w mg/l; wpisz 0, jeśli nie używasz stabilizatora. Zapisywany na przyszłość: na razie żadna obliczana wartość od niego nie zależy."
             }
           },
           "synchronization": {
@@ -25,6 +29,12 @@
               "reference_time": "🕒 Czas odniesienia (harmonogram)",
               "passive_measures": "📡 Wewnętrzne analizy Blue Connect (pasywne)",
               "ignore_echoes": "🚫 Ignoruj echa analiz (pasywne)"
+            },
+            "data_description": {
+              "reference_time": "Czas odniesienia używany do dopasowania zaplanowanych analiz do regularnych interwałów (np. 08:00, 10:00, 12:00... dla interwału 2-godzinnego).",
+              "scan_interval": "Czas między dwiema zaplanowanymi analizami, od 5 do 1440 minut. Tylko w trybie aktywnym (wymaga kodu dostępu).",
+              "passive_measures": "Używa odczytów, które sonda wysyła samodzielnie, około jednego na godzinę. Działa bez kodu dostępu.",
+              "ignore_echoes": "Ignoruje ramki pasywne oznaczone przez sondę jako echo analizy, aby nie nadpisywały ostatniego pomiaru."
             }
           },
           "probes_calibration": {
@@ -37,8 +47,44 @@
               "orp_calib": "📏 Zmierzona wartość ORP (np. 650)",
               "orp_ref": "🎯 Roztwór wzorcowy ORP (np. 650)",
               "temp_offset": "🌡️ Przesunięcie temperatury (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
+              "ph_calib_4": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
+              "ph_ref_7": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
+              "ph_ref_4": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
+              "orp_calib": "Surowa wartość ORP (mV), którą Twoja sonda faktycznie pokazała w roztworze wzorcowym.",
+              "orp_ref": "Wartość ORP (mV) roztworu wzorcowego w jego aktualnej temperaturze: zależy od temperatury, zobacz butelkę. Stosowana korekta to ta wartość minus wartość zmierzona.",
+              "temp_offset": "Korekta w °C dodawana do temperatury zmierzonej przez sondę. Może być dodatnia lub ujemna."
             }
           }
+        },
+        "data_description": {
+          "access_code": "Znajduje się na naklejce pod pokrywą portu USB lub na osłonie ochronnej sond. Wymagane do analiz na żądanie; pozostaw puste dla trybu wyłącznie pasywnego.",
+          "mac_address": "Wybierz Blue Connect wykryty w pobliżu przez Bluetooth Home Assistanta. Jeśli Twojego nie ma na liście, użyj pola poniżej.",
+          "manual_mac_address": "Potrzebne tylko wtedy, gdy urządzenia nie ma na liście powyżej. Format AA:BB:CC:DD:EE:FF, jak w ustawieniach Bluetooth Home Assistanta."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Ponowne uwierzytelnienie Blue Connect",
+        "description": "Kod dostępu dla {name} został odrzucony. Wprowadź nowy 9-znakowy kod dostępu.",
+        "data": {
+          "access_code": "Kod Dostępu"
+        },
+        "data_description": {
+          "access_code": "Znajduje się na naklejce pod pokrywą portu USB lub na osłonie ochronnej sond. Wymagane do analiz na żądanie; pozostaw puste dla trybu wyłącznie pasywnego."
+        }
+      },
+      "reconfigure": {
+        "title": "Zaktualizuj urządzenie Blue Connect",
+        "description": "Powiąż ten wpis z innym fizycznym Blue Connect (np. po wymianie urządzenia), lub popraw kod dostępu. Twoje opcje, automatyzacje i historia encji zostają zachowane.",
+        "data": {
+          "mac_address": "✍️ Adres MAC Bluetooth",
+          "access_code": "🔑 Kod Dostępu"
+        },
+        "data_description": {
+          "mac_address": "Adres MAC Bluetooth urządzenia Blue Connect, którego ma używać ten wpis (AA:BB:CC:DD:EE:FF). Zmień go tylko po wymianie urządzenia.",
+          "access_code": "Znajduje się na naklejce pod pokrywą portu USB lub na osłonie ochronnej sond. Wymagane do analiz na żądanie; pozostaw puste dla trybu wyłącznie pasywnego."
         }
       }
     },
@@ -57,7 +103,8 @@
       "invalid_access_code": "❌ Nieprawidłowy kod dostępu (9 znaków alfanumerycznych)."
     },
     "abort": {
-      "already_configured": "⚠️ To urządzenie jest już skonfigurowane."
+      "already_configured": "⚠️ To urządzenie jest już skonfigurowane.",
+      "reauth_successful": "Ponowne uwierzytelnienie powiodło się"
     }
   },
   "options": {
@@ -73,6 +120,11 @@
               "access_code": "🔑 Kod dostępu (pozostaw puste dla trybu pasywnego: 1 analiza na godzinę)",
               "chlorine_model": "🧪 Uzdatnianie wody",
               "cya": "💧 Poziom stabilizatora / CyA (mg/l)"
+            },
+            "data_description": {
+              "access_code": "Znajduje się na naklejce pod pokrywą portu USB lub na osłonie ochronnej sond. Wymagane do analiz na żądanie; pozostaw puste dla trybu wyłącznie pasywnego.",
+              "chlorine_model": "Środek dezynfekujący używany w basenie. Brom wyłącza encję CyA, która nie ma dla niego znaczenia. Zapisywane na przyszłość: na razie żadna obliczana wartość od tego nie zależy.",
+              "cya": "Poziom kwasu cyjanurowego (stabilizatora) w mg/l; wpisz 0, jeśli nie używasz stabilizatora. Zapisywany na przyszłość: na razie żadna obliczana wartość od niego nie zależy."
             }
           },
           "synchronization": {
@@ -82,6 +134,12 @@
               "reference_time": "🕒 Czas odniesienia (harmonogram)",
               "passive_measures": "📡 Wewnętrzne analizy Blue Connect (pasywne)",
               "ignore_echoes": "🚫 Ignoruj echa analiz (pasywne)"
+            },
+            "data_description": {
+              "reference_time": "Czas odniesienia używany do dopasowania zaplanowanych analiz do regularnych interwałów (np. 08:00, 10:00, 12:00... dla interwału 2-godzinnego).",
+              "scan_interval": "Czas między dwiema zaplanowanymi analizami, od 5 do 1440 minut. Tylko w trybie aktywnym (wymaga kodu dostępu).",
+              "passive_measures": "Używa odczytów, które sonda wysyła samodzielnie, około jednego na godzinę. Działa bez kodu dostępu.",
+              "ignore_echoes": "Ignoruje ramki pasywne oznaczone przez sondę jako echo analizy, aby nie nadpisywały ostatniego pomiaru."
             }
           },
           "probes_calibration": {
@@ -94,6 +152,15 @@
               "orp_calib": "📏 Zmierzona wartość ORP (np. 650)",
               "orp_ref": "🎯 Roztwór wzorcowy ORP (np. 650)",
               "temp_offset": "🌡️ Przesunięcie temperatury (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_calib_7": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
+              "ph_calib_4": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
+              "ph_ref_7": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
+              "ph_ref_4": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
+              "orp_calib": "Surowa wartość ORP (mV), którą Twoja sonda faktycznie pokazała w roztworze wzorcowym.",
+              "orp_ref": "Wartość ORP (mV) roztworu wzorcowego w jego aktualnej temperaturze: zależy od temperatury, zobacz butelkę. Stosowana korekta to ta wartość minus wartość zmierzona.",
+              "temp_offset": "Korekta w °C dodawana do temperatury zmierzonej przez sondę. Może być dodatnia lub ujemna."
             }
           },
           "alert_thresholds": {
@@ -212,6 +279,9 @@
       "ph_raw": {
         "name": "Surowe pH"
       },
+      "orp_raw": {
+        "name": "Surowe ORP"
+      },
       "lsi": {
         "name": "Indeks Langeliera"
       },
@@ -275,6 +345,20 @@
       "reference_time": {
         "name": "Czas odniesienia"
       }
+    }
+  },
+  "issues": {
+    "device_unreachable": {
+      "title": "Blue Connect niedostępny",
+      "description": "Sonda Blue Connect ({name}) nie odpowiada od {days} dni. Sprawdź zasilanie, zasięg oraz czy adapter Bluetooth lub proxy ESPHome obejmuje obszar basenu."
+    }
+  },
+  "exceptions": {
+    "out_of_range_no_history": {
+      "message": "Blue Connect {mac} jest poza zasięgiem Bluetooth i brak wcześniejszych danych."
+    },
+    "unreachable_no_history": {
+      "message": "Blue Connect jest niedostępny i brak wcześniejszych danych: {error}"
     }
   }
 }
