@@ -1,4 +1,4 @@
-name: Tests
+name: Typing
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  pytest:
+  mypy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,5 +25,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements_test.txt
 
-      - name: Run tests with coverage
-        run: pytest --cov --cov-fail-under=95
+      # Platinum quality scale (strict-typing): the codebase must pass
+      # `mypy --strict` with zero errors. Keep it that way.
+      - name: Run mypy --strict
+        run: mypy --strict custom_components/blue_connect_local
