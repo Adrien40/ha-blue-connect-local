@@ -102,6 +102,16 @@ from .const import (
     model_has_conductivity,
 )
 from .protocol import extract_raw_payload, parse_raw_frame
+from .blueriott_protocol import parse_blueriott_frame
+from .blueriott_profile import (
+    BLUERIOTT_CHAR_AUTH_UUID,
+    BLUERIOTT_CHAR_TRIGGER_UUID,
+    BLUERIOTT_EXTRA_TRIGGER_UUIDS,
+    available_blueriott_notify_uuids,
+    is_blueriott_services,
+)
+
+BLUERIOTT_EXPECTED_FRAME_HEX_LEN = 24
 
 UUID_RAW_SENSORS = "70ea0005-7a29-4fdf-93d2-838665e72677"
 UUID_ACCELEROMETER = "70ea000a-7a29-4fdf-93d2-838665e72677"
@@ -524,8 +534,9 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 saved_data["sku"] = saved_data.pop("hw_version")
 
             rf = saved_data.get("raw_frame")
-            raw_frame_valid = (
-                isinstance(rf, str) and len(rf) == EXPECTED_FRAME_HEX_LEN_18
+            raw_frame_valid = isinstance(rf, str) and len(rf) in (
+                EXPECTED_FRAME_HEX_LEN_18,
+                BLUERIOTT_EXPECTED_FRAME_HEX_LEN,
             )
 
             if "raw_frame" in saved_data and not raw_frame_valid:
@@ -931,7 +942,11 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
             client: BleakClient | None = None
             notify_started = False
+            notify_started_uuids: list[str] = []
             received_payload: bytes | None = None
+            is_blueriott = False
+            active_auth_uuid = CHAR_AUTH_UUID
+            active_trigger_uuid = CHAR_TRIGGER_UUID
             loop = asyncio.get_running_loop()
 
             async with self.ble_lock:
@@ -949,6 +964,26 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                         timeout=TIMEOUT_BLE_CONN,
                     )
 
+                    services = client.services or await client.get_services()
+                    is_blueriott = is_blueriott_services(services)
+
+                    if is_blueriott:
+                        active_auth_uuid = BLUERIOTT_CHAR_AUTH_UUID
+                        active_trigger_uuid = BLUERIOTT_CHAR_TRIGGER_UUID
+                        self.data["device_type"] = "blueriott"
+
+                        _LOGGER.debug(
+                            "Blue Connect %s: BlueRiott GATT profile detected",
+                            self.safe_mac,
+                        )
+                    else:
+                        self.data["device_type"] = "zodiac"
+
+                        _LOGGER.debug(
+                            "Blue Connect %s: Zodiac GATT profile detected",
+                            self.safe_mac,
+                        )
+
                     received_data_queue: asyncio.Queue[bytes] = asyncio.Queue(maxsize=4)
 
                     def _put(data: bytes) -> None:
@@ -965,10 +1000,41 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     ) -> None:
                         loop.call_soon_threadsafe(_put, bytes(data))
 
-                    await asyncio.wait_for(
-                        client.start_notify(CHAR_NOTIFY_UUID, notification_handler),
-                        timeout=TIMEOUT_GATT_OP,
-                    )
+                    if is_blueriott:
+                        notify_uuids = available_blueriott_notify_uuids(
+                            services
+                        )
+
+                        if not notify_uuids:
+                            raise RuntimeError(
+                                "Aucune notification BlueRiott compatible"
+                            )
+                    else:
+                        notify_uuids = [CHAR_NOTIFY_UUID]
+
+                    for notify_uuid in notify_uuids:
+                        try:
+                            await asyncio.wait_for(
+                                client.start_notify(
+                                    notify_uuid,
+                                    notification_handler,
+                                ),
+                                timeout=TIMEOUT_GATT_OP,
+                            )
+
+                            notify_started_uuids.append(
+                                notify_uuid
+                            )
+
+                        except Exception:
+                            if not is_blueriott:
+                                raise
+
+                    if not notify_started_uuids:
+                        raise RuntimeError(
+                            "Aucune notification BLE utilisable"
+                        )
+
                     notify_started = True
 
                     for attempt in range(1, 3):
@@ -979,7 +1045,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                         try:
                             await asyncio.wait_for(
                                 client.write_gatt_char(
-                                    CHAR_AUTH_UUID,
+                                    active_auth_uuid,
                                     self.access_code.encode("ascii"),
                                     response=True,
                                 ),
@@ -1027,10 +1093,31 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             self._set_bt_status(BT_STATUS_REQUESTING)
                             await asyncio.wait_for(
                                 client.write_gatt_char(
-                                    CHAR_TRIGGER_UUID, bytearray([0x02]), response=True
+                                    active_trigger_uuid,
+                                    bytearray([0x02]),
+                                    response=True,
                                 ),
                                 timeout=TIMEOUT_GATT_OP,
                             )
+
+                            if is_blueriott:
+                                for extra_uuid in BLUERIOTT_EXTRA_TRIGGER_UUIDS:
+                                    try:
+                                        await asyncio.wait_for(
+                                            client.write_gatt_char(
+                                                extra_uuid,
+                                                bytearray([0x02]),
+                                                response=True,
+                                            ),
+                                            timeout=TIMEOUT_GATT_OP,
+                                        )
+
+                                    except Exception as err:
+                                        _LOGGER.debug(
+                                            "Trigger BlueRiott %s indisponible: %s",
+                                            extra_uuid,
+                                            err,
+                                        )
                         except _BLE_IO_ERRORS as write_err:
                             _LOGGER.warning(
                                 "GATT write failed on attempt %d: %s",
@@ -1153,19 +1240,51 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     )
                 finally:
                     if notify_started and client and client.is_connected:
-                        try:
-                            await asyncio.wait_for(
-                                client.stop_notify(CHAR_NOTIFY_UUID),
-                                timeout=TIMEOUT_GATT_OP,
-                            )
-                        except _BLE_IO_ERRORS as err:
-                            _LOGGER.debug("Ignored error during stop_notify: %s", err)
+                        for notify_uuid in notify_started_uuids:
+                            try:
+                                await asyncio.wait_for(
+                                    client.stop_notify(
+                                        notify_uuid
+                                    ),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+
+                            except _BLE_IO_ERRORS as err:
+                                _LOGGER.debug(
+                                    "Erreur stop_notify ignoree sur %s: %s",
+                                    notify_uuid,
+                                    err,
+                                )
+
                     await _safely_disconnect(client)
 
-            parsed_data = parse_raw_frame(received_payload)
+            if is_blueriott:
+                parsed_data = parse_blueriott_frame(
+                    received_payload
+                )
+                parser_name = "blueriott"
+            else:
+                parsed_data = parse_raw_frame(
+                    received_payload
+                )
+                parser_name = "zodiac"
 
             if not parsed_data:
-                return self._handle_ble_error("Payload parsing error", BT_STATUS_ERROR)
+                _LOGGER.warning(
+                    "Decoder %s rejected LEN=%s HEX=%s",
+                    parser_name,
+                    len(received_payload)
+                    if received_payload
+                    else 0,
+                    received_payload.hex().upper()
+                    if received_payload
+                    else "",
+                )
+
+                return self._handle_ble_error(
+                    "Payload parsing error",
+                    BT_STATUS_ERROR,
+                )
 
             # Only reset now: before, an invalid frame reset the counter
             # to 0 on every cycle and the retry budget never ran out.
