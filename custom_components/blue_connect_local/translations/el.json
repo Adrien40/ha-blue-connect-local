@@ -321,6 +321,18 @@
       "cloud_id": {
         "name": "Cloud ID / SN"
       },
+      "probe_serial_number": {
+        "name": "Σειριακός αριθμός αισθητήρα"
+      },
+      "first_connection": {
+        "name": "Πρώτη σύνδεση"
+      },
+      "probe_replacement": {
+        "name": "Ημερομηνία αντικατάστασης αισθητήρα"
+      },
+      "last_ph_calib": {
+        "name": "Τελευταία βαθμονόμηση pH"
+      },
       "rssi": {
         "name": "Σήμα Bluetooth"
       },

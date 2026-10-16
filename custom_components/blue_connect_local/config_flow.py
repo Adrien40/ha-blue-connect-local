@@ -51,7 +51,9 @@ from .const import (
     DEFAULT_PH_REF_7,
     DEFAULT_TEMP_MAX,
     DEFAULT_TEMP_MIN,
+    DEVICE_TYPE_BLUERIIOT,
     DOMAIN,
+    MODEL_BLUE_CONNECT_PLUS,
     get_blue_connect_model,
 )
 from .protocol import extract_raw_payload, parse_raw_frame
@@ -65,10 +67,34 @@ CHLORINE_MODEL_OPTIONS = ["chlorine", "bromine"]
 GENERIC_MODEL_NAME = "Blue Connect"
 
 
+def _schema(schema: dict[Any, Any]) -> Any:
+    """Build a form schema.
+
+    Returns Any on purpose: Home Assistant 2026.10+ types its forms with
+    probatio.Schema while older versions use voluptuous.Schema (both work at
+    runtime), so no single return type satisfies mypy on every version.
+    """
+    return vol.Schema(schema)
+
+
+# Bluetooth name prefixes of the probes this integration can drive: BC3 for
+# ZODIAC, B20 for Blueriiot. Keep in sync with manifest.json ("local_name"
+# matchers, checked by tests/test_manifest.py).
+BLUERIIOT_NAME_PREFIX = "B20"
+PROBE_NAME_PREFIXES = ("BC3", BLUERIIOT_NAME_PREFIX)
+
+
 def _model_from_service_info(
     info: BluetoothServiceInfoBleak,
 ) -> tuple[str, bool | None]:
-    """Infer Blue Connect model name (and has_conductivity) from broadcast frame."""
+    """Infer Blue Connect model name (and has_conductivity) from broadcast frame.
+
+    A Blueriiot probe (B20* name) never advertises a ZODIAC frame and its
+    model cannot be read from its advertisement: the B20 name identifies a
+    Blue Connect Plus, shown as such rather than as a generic "Blue Connect".
+    """
+    if (info.name or "").upper().startswith(BLUERIIOT_NAME_PREFIX):
+        return MODEL_BLUE_CONNECT_PLUS, None
     payload = extract_raw_payload(info.manufacturer_data, info.service_data)
     if payload:
         parsed = parse_raw_frame(payload)
@@ -87,6 +113,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._mac_address: str | None = None
         self._bt_name: str | None = None
         self._discovered_name: str = GENERIC_MODEL_NAME
+        self._detected_model: str = GENERIC_MODEL_NAME
         self._has_conductivity: bool | None = None
 
     def _get_display_name(self, bt_name: str | None, model: str) -> str:
@@ -110,6 +137,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         detected_model, self._has_conductivity = _model_from_service_info(
             discovery_info
         )
+        self._detected_model = detected_model
         self._discovered_name = self._get_display_name(self._bt_name, detected_model)
 
         self.context["title_placeholders"] = {"name": self._discovered_name}
@@ -151,7 +179,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=vol.Schema({vol.Required(CONF_ACCESS_CODE): str}),
+            data_schema=_schema({vol.Required(CONF_ACCESS_CODE): str}),
             description_placeholders={"name": reauth_entry.title},
             errors=errors,
         )
@@ -212,7 +240,13 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         bt_name = (
                             self._bt_name if final_mac == self._mac_address else None
                         )
-                        detected_model = GENERIC_MODEL_NAME
+                        # Same rule as has_conductivity below: reuse what
+                        # async_step_bluetooth saw when it is the same probe.
+                        detected_model = (
+                            self._detected_model
+                            if final_mac == self._mac_address
+                            else GENERIC_MODEL_NAME
+                        )
                         # Prefer the value captured in async_step_bluetooth:
                         # it was read directly off the advertisement HA had
                         # in hand at that exact moment, with no dependency
@@ -264,6 +298,11 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         # MACs the discovery scanner never saw).
                         if has_conductivity is not None:
                             entry_data["has_conductivity"] = has_conductivity
+                        # The B20* name identifies a Blueriiot-profile probe
+                        # (Blue Connect Plus): persist it so the device is
+                        # created with the right model and manufacturer.
+                        if detected_model == MODEL_BLUE_CONNECT_PLUS:
+                            entry_data["device_type"] = DEVICE_TYPE_BLUERIIOT
                         normalized_input.pop(CONF_MAC_ADDRESS, None)
                         normalized_input.pop(CONF_MANUAL_MAC, None)
                         normalized_input.pop("model", None)
@@ -277,7 +316,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         for info in async_discovered_service_info(self.hass, False):
             if info.name:
                 name_up = info.name.upper()
-                if name_up.startswith("BC3"):
+                if name_up.startswith(PROBE_NAME_PREFIXES):
                     model, _ = _model_from_service_info(info)
                     display = self._get_display_name(info.name, model)
                     entry = f"{display} ({info.address.upper()})"
@@ -315,7 +354,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Optional(CONF_ACCESS_CODE, default=""): str,
                 vol.Required("general"): section(
-                    vol.Schema(
+                    _schema(
                         {
                             vol.Required(
                                 CONF_CHLORINE_MODEL, default="chlorine"
@@ -340,7 +379,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     {"collapsed": False},
                 ),
                 vol.Required("synchronization"): section(
-                    vol.Schema(
+                    _schema(
                         {
                             vol.Required(
                                 CONF_SCAN_INTERVAL, default=60
@@ -366,7 +405,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     {"collapsed": True},
                 ),
                 vol.Required("probes_calibration"): section(
-                    vol.Schema(
+                    _schema(
                         {
                             vol.Required(
                                 CONF_PH_CALIB_7, default=DEFAULT_PH_CALIB_7
@@ -447,7 +486,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(schema),
+            data_schema=_schema(schema),
             errors=errors,
         )
 
@@ -498,7 +537,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=vol.Schema(
+            data_schema=_schema(
                 {
                     vol.Required(
                         CONF_MAC_ADDRESS,
@@ -671,10 +710,10 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
+            data_schema=_schema(
                 {
                     vol.Required("general"): section(
-                        vol.Schema(
+                        _schema(
                             {
                                 vol.Optional(
                                     CONF_ACCESS_CODE,
@@ -707,7 +746,7 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                         {"collapsed": False},
                     ),
                     vol.Required("synchronization"): section(
-                        vol.Schema(
+                        _schema(
                             {
                                 vol.Required(
                                     CONF_SCAN_INTERVAL, default=int(scan_interval)
@@ -734,7 +773,7 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                         {"collapsed": True},
                     ),
                     vol.Required("probes_calibration"): section(
-                        vol.Schema(
+                        _schema(
                             {
                                 vol.Required(
                                     CONF_PH_CALIB_7, default=float(c7)
@@ -811,7 +850,7 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                         {"collapsed": True},
                     ),
                     vol.Required("alert_thresholds"): section(
-                        vol.Schema(
+                        _schema(
                             {
                                 vol.Required(
                                     CONF_PH_MIN, default=float(ph_min)

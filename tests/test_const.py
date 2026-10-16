@@ -85,3 +85,24 @@ def test_model_has_salinity_is_an_alias_of_model_has_conductivity():
     # stay identical, not just equivalent - a future edit to one that
     # forgets the other should fail this test.
     assert model_has_salinity is model_has_conductivity
+
+
+def test_blueriiot_device_type_is_a_blue_connect_plus():
+    assert get_blue_connect_model(None, None, "blueriiot") == "Blue Connect Plus"
+    # Whatever the other signals say: a Blueriiot probe has no ZODIAC SKU.
+    assert get_blue_connect_model("WA000100", True, "blueriiot") == "Blue Connect Plus"
+
+
+def test_other_device_types_do_not_change_the_model():
+    assert get_blue_connect_model("WA000100", None, None) == "Blue Connect Gold"
+    assert get_blue_connect_model(None, False, "zodiac") == "Blue Connect Silver"
+
+
+def test_manufacturer_follows_the_model():
+    assert _model.get_manufacturer("Blue Connect Plus") == "Blueriiot"
+    for zodiac_model in (
+        "Blue Connect",
+        "Blue Connect Gold",
+        "Blue Connect Silver",
+    ):
+        assert _model.get_manufacturer(zodiac_model) == "Zodiac"

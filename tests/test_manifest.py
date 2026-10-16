@@ -48,5 +48,15 @@ def test_platinum_rules_are_present():
 def test_versions_agree_across_manifest_and_both_changelogs():
     for name in ("CHANGELOG.md", "CHANGELOG.fr.md"):
         text = (ROOT / name).read_text(encoding="utf-8")
-        first = re.search(r"^## (\d+\.\d+\.\d+)", text, re.MULTILINE)
+        first = re.search(r"^## (\d+\.\d+\.\d+\S*)", text, re.MULTILINE)
         assert first and first.group(1) == MANIFEST["version"], name
+
+
+def test_discovery_matchers_cover_the_probe_name_prefixes():
+    """manifest.json (auto-discovery) and the config flow's device list must
+    accept the same Bluetooth names, otherwise a probe is discovered but then
+    missing from the dropdown (or the other way round)."""
+    from custom_components.blue_connect_local.config_flow import PROBE_NAME_PREFIXES
+
+    matchers = {m["local_name"] for m in MANIFEST["bluetooth"]}
+    assert matchers == {f"{prefix}*" for prefix in PROBE_NAME_PREFIXES}

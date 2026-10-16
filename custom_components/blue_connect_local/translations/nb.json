@@ -321,6 +321,18 @@
       "cloud_id": {
         "name": "Cloud-ID / SN"
       },
+      "probe_serial_number": {
+        "name": "Sondens serienummer"
+      },
+      "first_connection": {
+        "name": "Første tilkobling"
+      },
+      "probe_replacement": {
+        "name": "Dato for utskifting av sonden"
+      },
+      "last_ph_calib": {
+        "name": "Siste pH-kalibrering"
+      },
       "rssi": {
         "name": "Bluetooth-signal"
       },

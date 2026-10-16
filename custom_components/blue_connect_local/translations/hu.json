@@ -321,6 +321,18 @@
       "cloud_id": {
         "name": "Cloud ID / SN"
       },
+      "probe_serial_number": {
+        "name": "Szonda sorozatszáma"
+      },
+      "first_connection": {
+        "name": "Első csatlakozás"
+      },
+      "probe_replacement": {
+        "name": "A szonda cseréjének dátuma"
+      },
+      "last_ph_calib": {
+        "name": "Utolsó pH-kalibráció"
+      },
       "rssi": {
         "name": "Bluetooth jel"
       },

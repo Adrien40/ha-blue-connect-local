@@ -21,6 +21,7 @@ If this project is useful to you, you can support its development 🙏
 - 🔌 100% local operation via Bluetooth (BLE)
 - 🏠 Compatible with Home Assistant (no cloud)
 - 🏷️ Automatic Model Detection (Gold / Silver)
+- 🔵 Blueriiot-profile probes (Blue Connect Plus) supported, with automatic discovery (see *Compatibility*)
 - 🌡️ Measurements: Temperature, pH, ORP Redox, Salinity, Conductivity, Battery
 - 🎯 Manual Analysis: Force a new water analysis on demand, remotely
 - ⚖️ Floating Status
@@ -74,12 +75,13 @@ Blue Connect Local replaces the cloud with a **local control** solution, while o
 ### ✅ Compatibility / Requirements
 * 🏷️ **Supported models**: ZODIAC Blue Connect (Gold / Silver) with **automatic detection and adaptation** of sensors (Conductivity and Salinity).
 * 🏅 **Tested on**: Validated on the **ZODIAC Blue Connect Gold and Silver**.
+* 🔵 **Blueriiot-profile probes (Blue Connect Plus)**: supported since **1.3.0**. The integration detects the Blueriiot GATT profile when it connects and decodes temperature, pH, ORP, conductivity, salinity and battery. **Active Mode only** (Access Code required). Confirmed by a contributor on a **Blue Connect Plus (firmware 2.3.0)**. These probes are auto-discovered when their Bluetooth name starts with **B20** (seen on a Blue Connect Plus); otherwise add them manually with their MAC address and access code.
 * 🔑 **Access Code (Optional)**: Your device's 9-character access code. It isn't required for passive listening, but it is **essential** for on-demand analyses.
 * 🛠️ **Required hardware**: Internal Bluetooth adapter, USB Bluetooth dongle, or an **ESPHome Bluetooth Proxy** (strongly recommended, [easy installation here](https://esphome.github.io/bluetooth-proxies/)).
 * 📶 **Signal quality**: A stable RSSI signal (ideally **above -75 dBm**) is essential to guarantee a reliable connection to the Blue Connect. Testing shows that a signal below -90 dBm causes frequent read failures.
 * ⏱️ **Real-time monitoring**: A `sensor.*_signal_bluetooth` entity uses Home Assistant's passive listening so you can watch signal strength live — all without draining the Blue Connect's battery!
 
-> ❌ **Not compatible**: Blueriiot versions are not supported.
+> 📡 **Using an ESPHome Bluetooth Proxy?** The ZODIAC diagnostic sensors need two extra settings on the proxy: see [ESPHome Bluetooth Proxy: settings for the diagnostic sensors](#-esphome-bluetooth-proxy-settings-for-the-diagnostic-sensors).
 
 ---
 
@@ -147,6 +149,8 @@ Removing the integration also deletes its locally stored history (last known val
 
 > 🛠️ **Device Info & Diagnostics**: **Serial Number**, **Model Number (SKU)**, and **MAC Address** are natively integrated into the Home Assistant device header. The integration also exposes advanced diagnostic sensors (raw pH, raw ORP in mV, full raw hex frame, floating status, and binary alerts).
 
+> 🔧 **ZODIAC diagnostic sensors (disabled by default)**: **Probe Serial Number**, **First Connection**, **Probe Replacement Date** and **Last pH Calibration**. They are read from the probe after an active analysis and kept across restarts; the hardware and firmware versions also appear in the device card. They are *unavailable* on Blueriiot probes. Behind an ESPHome Bluetooth proxy they may stay *unknown* until the proxy is set up as described [below](#-esphome-bluetooth-proxy-settings-for-the-diagnostic-sensors).
+
 > ℹ️ **On Blue Connect Silver** (no conductivity probe): the Conductivity and Salinity entities are automatically disabled. If you updated an existing installation where Conductivity was already present, the integration now detects the Silver model and disables these entities on its own — no manual action needed.
 
 ---
@@ -210,6 +214,35 @@ When an **Access Code** is set (Active Mode), automatic analyses are not run "ev
 * **Automatic Analysis** switched off: scheduled analyses are skipped. Switching it back on does **not** start an analysis by itself; the next one runs at the next slot (or press **New Analysis**).
 * **Without an access code (Passive Mode)** there is no schedule: Home Assistant uses the readings the probe broadcasts on its own, about one per hour.
 
+### 📡 ESPHome Bluetooth Proxy: settings for the diagnostic sensors
+Temperature, pH, ORP, conductivity and battery work with any proxy. The **ZODIAC diagnostic sensors** (*Probe Serial Number*, *First Connection*, *Probe Replacement Date*, *Last pH Calibration*) and the **hardware / firmware versions** of the device card can stay **unknown** behind an ESPHome proxy, because of a default limit on the proxy: ESP-IDF keeps at most **40 characteristics** when it discovers a device (`CONFIG_BT_GATTC_MAX_CACHE_CHAR`, default 40). The Blue Connect has more, so its GATT table is cut and `70ea0023` and the following characteristics are never seen. A direct Bluetooth adapter is not affected.
+
+**Fix, in the ESPHome YAML of your proxy** (ESP-IDF framework required):
+
+```yaml
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_BT_GATTC_MAX_CACHE_CHAR: "200"
+
+bluetooth_proxy:
+  active: true
+  cache_services: false
+```
+
+* `CONFIG_BT_GATTC_MAX_CACHE_CHAR: "200"` lets the proxy return the whole table.
+* `cache_services: false` turns off the proxy's service cache stored in flash: it may still hold the old, truncated table and give it back even with the higher limit. Services are then discovered at each connection, which can make connections slightly slower.
+* If your proxy YAML is split (a shared template included with `packages:` plus a small file per device), you can put these keys in the small file: they are merged with the template. With several proxies, apply them to each one (Home Assistant uses the proxy that receives the probe best).
+
+**Apply it:**
+1. In the ESPHome dashboard, click **Validate**, then **Install > Wirelessly** (the first build after an `sdkconfig` change is long).
+2. When the proxy is back online, **restart Home Assistant**.
+3. Run **New Analysis**. The sensors are disabled by default: enable them first in the device's entities, they are filled after the analysis.
+
+**Check it:** enable debug logging (`custom_components.blue_connect_local: debug`) and look for the line `GATT table (N characteristics)` during an analysis. With the fix it lists `70ea0023-…` up to `70ea0030-…`; without it, the list stops at `70ea0022-…`.
+
 ---
 
 ### 🐛 Troubleshooting
@@ -217,6 +250,7 @@ When an **Access Code** is set (Active Mode), automatic analyses are not run "ev
 <details>
 <summary>⚠️ See common issues</summary>
   
+* **The diagnostic sensors (probe serial number, dates) stay `unknown`**: they only exist on ZODIAC probes, need an access code and an active analysis, and must be enabled first. Behind an ESPHome proxy, apply the [proxy settings](#-esphome-bluetooth-proxy-settings-for-the-diagnostic-sensors).
 * **Frequent Bluetooth errors**: The integration automatically handles connection retries. If the sensor shows `Signal Lost`, the Blue Connect is out of range. Move your antenna closer, or [install an ESPHome Bluetooth Proxy](https://esphome.github.io/bluetooth-proxies/) as close to the pool as possible (all you need is an ESP32 (~€10) and a USB charger).
 * **Invalid access code**: The integration checks your access code as soon as it connects, so if it's wrong you'll see `Invalid access code` on the Bluetooth Status sensor within seconds — no need to wait for the full analysis timeout. Home Assistant will also prompt you to re-enter it via a **Re-authenticate** notification; you can also fix it manually in **Configure ⚙️**, which triggers a new analysis automatically once you save.
 
@@ -273,7 +307,7 @@ automation:
 * **No push notifications from the probe**: on-demand analyses aside, data is refreshed on the scheduled time slots (Active Mode) or when the probe broadcasts its own reading, about once an hour (Passive Mode), not a live continuous stream.
 * **ORP is not a chlorine measurement**: it reflects the oxidising strength of the water (pH, temperature, stabilizer, probe ageing), not a concentration. Use the raw ORP value with your own thresholds and a manual test kit for actual chlorine levels.
 * **One probe per config entry**: if you own multiple Blue Connect units, add each one as a separate integration entry.
-* **Blueriiot hardware is not supported**, only genuine ZODIAC Blue Connect Gold/Silver.
+* **Blueriiot hardware** (Blue Connect Plus): Active Mode only, with no serial number, model (SKU) or floating status, since those come from ZODIAC-specific characteristics. A wrong access code is only reported after the analysis timeout. Not tested by me on real hardware.
 
 ---
 

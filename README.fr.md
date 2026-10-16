@@ -21,6 +21,7 @@ Si ce projet vous est utile, vous pouvez soutenir son développement 🙏
 - 🔌 Fonctionnement 100 % local via Bluetooth (BLE)
 - 🏠 Compatible Home Assistant (sans cloud)
 - 🏷️ Détection Automatique du modèle (Gold / Silver)
+- 🔵 Sondes au profil Blueriiot (Blue Connect Plus) prises en charge, avec découverte automatique (voir *Compatibilité*)
 - 🌡️ Mesures : Température, pH, ORP Redox, Salinité, Conductivité, Batterie
 - 🎯 Analyse Manuelle : Possibilité de forcer une nouvelle analyse de l'eau à la demande, à distance
 - ⚖️ Statut de Flottaison
@@ -74,12 +75,13 @@ Blue Connect Local permet de remplacer le cloud par une solution de **local cont
 ### ✅ Compatibilité / Prérequis
 * 🏷️ **Modèles supportés** : ZODIAC Blue Connect (Gold / Silver) avec **détection et adaptation automatiques** des capteurs (Conductivité et Salinité).
 * 🏅 **Testé sur** : Validé sur le **ZODIAC Blue Connect Gold et Silver**.
+* 🔵 **Sondes au profil Blueriiot (Blue Connect Plus)** : prises en charge depuis **1.3.0**. L'intégration détecte le profil GATT Blueriiot lors de la connexion et décode la température, le pH, le Redox (ORP), la conductivité, la salinité et la batterie. **Mode Actif uniquement** (Code d'Accès requis). Confirmé par un contributeur sur un **Blue Connect Plus (firmware 2.3.0)**. Ces sondes sont découvertes automatiquement lorsque leur nom Bluetooth commence par **B20** (vu sur un Blue Connect Plus) ; sinon, ajoutez-les manuellement avec leur adresse MAC et leur code d'accès.
 * 🔑 **Code d'Accès (Optionnel)** : Le code d'accès à 9 caractères de votre appareil. S'il n'est pas obligatoire pour l'écoute passive, il est **indispensable** pour les analyses à la demande.
 * 🛠️ **Matériel requis** : Adaptateur Bluetooth interne, clé USB Bluetooth ou **Bluetooth Proxy ESPHome** (Fortement recommandé, [installation facile ici](https://esphome.github.io/bluetooth-proxies/)).
 * 📶 **Qualité du signal** : Un signal RSSI stable (idéalement **supérieur à -75 dBm**) est indispensable pour garantir la connexion au Blue Connect. Les tests montrent qu'un signal inférieur à -90 dBm entraîne des échecs de lecture fréquents.
 * ⏱️ **Surveillance en temps réel** : Une entité `sensor.*_signal_bluetooth` exploite l'écoute passive de Home Assistant pour vous permettre de surveiller la force du signal en direct, le tout sans drainer la batterie du Blue Connect !
 
-> ❌ **Non compatible** : Les versions Blueriiot ne sont pas supportées.
+> 📡 **Vous utilisez un Proxy Bluetooth ESPHome ?** Les capteurs de diagnostic ZODIAC demandent deux réglages supplémentaires sur le proxy : voir [Proxy Bluetooth ESPHome : réglages pour les capteurs de diagnostic](#-proxy-bluetooth-esphome--réglages-pour-les-capteurs-de-diagnostic).
 
 ---
 
@@ -148,6 +150,8 @@ La suppression de l'intégration efface aussi son historique stocké localement 
 
 > 🛠️ **Fiche appareil & Diagnostic** : Le **Numéro de Série**, le **Numéro de Modèle (SKU)** et l'**Adresse MAC** sont nativement intégrés dans l'en-tête de l'appareil Home Assistant. L'intégration expose également des capteurs de diagnostic avancés (pH brut, Redox brut en mV, trame hexadécimale complète, statut de flottaison et alertes binaires).
 
+> 🔧 **Capteurs de diagnostic ZODIAC (désactivés par défaut)** : **Numéro de série de la sonde**, **Première connexion**, **Date de remplacement de la sonde** et **Dernière calibration du pH**. Ils sont lus sur la sonde après une analyse active et conservés au redémarrage ; les versions matérielle et logicielle apparaissent aussi dans la fiche de l'appareil. Ils sont *indisponibles* sur les sondes Blueriiot. Derrière un proxy Bluetooth ESPHome, ils peuvent rester *inconnus* tant que le proxy n'est pas réglé comme [décrit plus bas](#-proxy-bluetooth-esphome--réglages-pour-les-capteurs-de-diagnostic).
+
 > ℹ️ **Sur Blue Connect Silver** (sans sonde de conductivité) : les entités Conductivité et Salinité sont désormais désactivées automatiquement. Si vous avez mis à jour une installation existante où Conductivité était déjà présente, l'intégration détecte le modèle Silver et désactive ces entités elle-même — aucune action manuelle requise.
 
 ---
@@ -211,6 +215,35 @@ Quand un **Code d'Accès** est renseigné (Mode Actif), les analyses automatique
 * **Analyses Automatiques** désactivées : les analyses planifiées sont ignorées. Les réactiver ne lance **pas** d'analyse par elles-mêmes ; la suivante a lieu au prochain créneau (ou appuyez sur **Nouvelle Analyse**).
 * **Sans code d'accès (Mode Passif)**, il n'y a pas de planification : Home Assistant utilise les relevés que la sonde émet d'elle-même, environ un par heure.
 
+### 📡 Proxy Bluetooth ESPHome : Réglages pour les capteurs de diagnostic
+La Température, le pH, le Redox, la Conductivité et la Batterie fonctionnent avec n'importe quel proxy. Les **capteurs de diagnostic ZODIAC** (*Numéro de série de la sonde*, *Première connexion*, *Date de remplacement de la sonde*, *Dernière calibration du pH*) et les **versions matérielle / logicielle** de la fiche appareil peuvent rester **inconnus** derrière un proxy ESPHome, à cause d'une limite par défaut du proxy : ESP-IDF garde au plus **40 caractéristiques** lors de la découverte d'un appareil (`CONFIG_BT_GATTC_MAX_CACHE_CHAR`, 40 par défaut). Le Blue Connect en a davantage, donc sa table GATT est coupée et `70ea0023` ainsi que les caractéristiques suivantes ne sont jamais vues. Un adaptateur Bluetooth direct n'est pas concerné.
+
+**Correction, dans le YAML ESPHome de votre Proxy** (Framework ESP-IDF requis) :
+
+```yaml
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_BT_GATTC_MAX_CACHE_CHAR: "200"
+
+bluetooth_proxy:
+  active: true
+  cache_services: false
+```
+
+* `CONFIG_BT_GATTC_MAX_CACHE_CHAR: "200"` permet au proxy de renvoyer la table complète.
+* `cache_services: false` désactive le cache de services du proxy, stocké en mémoire flash : il peut encore contenir l'ancienne table tronquée et la renvoyer malgré la limite relevée. Les services sont alors découverts à chaque connexion, ce qui peut rendre les connexions un peu plus lentes.
+* Si votre YAML de proxy est découpé (un modèle commun inclus avec `packages:` plus un petit fichier par appareil), vous pouvez mettre ces clés dans le petit fichier : elles sont fusionnées avec le modèle. Avec plusieurs proxys, appliquez-les à chacun (Home Assistant utilise celui qui reçoit le mieux la sonde).
+
+**Les appliquer :**
+1. Dans le tableau de bord ESPHome, cliquez sur **Valider**, puis **Installer > Sans fil** (la première compilation après un changement d'`sdkconfig` est longue).
+2. Quand le proxy est de nouveau en ligne, **redémarrez Home Assistant**.
+3. Lancez une **Nouvelle analyse**. Les capteurs sont désactivés par défaut : activez-les d'abord dans les entités de l'appareil, ils se remplissent après l'analyse.
+
+**Vérifier :** activez le journal de debug (`custom_components.blue_connect_local: debug`) et cherchez la ligne `GATT table (N characteristics)` pendant une analyse. Avec la correction, elle liste `70ea0023-…` jusqu'à `70ea0030-…` ; sans elle, la liste s'arrête à `70ea0022-…`.
+
 ---
 
 ### 🐛 Dépannage
@@ -218,6 +251,7 @@ Quand un **Code d'Accès** est renseigné (Mode Actif), les analyses automatique
 <details>
 <summary>⚠️ Voir les problèmes fréquents</summary>
   
+* **Les capteurs de diagnostic (numéro de série de la sonde, dates) restent `inconnus`** : ils n'existent que sur les sondes ZODIAC, demandent un code d'accès et une analyse active, et doivent d'abord être activés. Derrière un proxy ESPHome, appliquez les [réglages du proxy](#-proxy-bluetooth-esphome--réglages-pour-les-capteurs-de-diagnostic).
 * **Erreurs Bluetooth fréquentes** : L'intégration gère automatiquement les tentatives de connexion. Si le capteur indique `Signal Perdu`, le Blue Connect est hors de portée. Rapprochez votre antenne ou [installez un Proxy Bluetooth ESPHome](https://esphome.github.io/bluetooth-proxies/) au plus près du bassin (nécessite juste un ESP32 (~10€) et un chargeur USB).
 * **Code d'Accès invalide** : L'intégration vérifie votre code d'accès dès la connexion, donc s'il est erroné vous verrez `Invalid access code` sur le capteur d'état Bluetooth en quelques secondes — inutile d'attendre le timeout complet de l'analyse. Home Assistant vous propose aussi de le ressaisir via une notification **Ré-authentifier** ; vous pouvez également le corriger dans **Configurer ⚙️**, une analyse se déclenche automatiquement dès l'enregistrement.
 
@@ -276,7 +310,7 @@ automation:
 * **Pas de notification poussée depuis la sonde** : hors analyses à la demande, les données sont rafraîchies selon les créneaux planifiés (Mode Actif) ou quand la sonde émet son propre relevé, environ une fois par heure (Mode Passif), pas en flux continu.
 * **Le Redox (ORP) n'est pas une mesure de chlore** : il reflète le pouvoir oxydant de l'eau (pH, température, stabilisant, vieillissement de la sonde), pas une concentration. Utilisez la valeur Redox brute avec vos propres seuils et un kit d'analyse pour le taux de chlore réel.
 * **Une sonde par entrée** : si vous possédez plusieurs Blue Connect, ajoutez chacune comme une entrée d'intégration distincte.
-* **Le matériel Blueriiot n'est pas supporté**, uniquement les ZODIAC Blue Connect Gold/Silver d'origine.
+* **Matériel Blueriiot** (Blue Connect Plus) : Mode Actif uniquement, sans numéro de série, modèle (SKU) ni état du flotteur, car ils viennent de caractéristiques propres aux ZODIAC. Un code d'accès erroné n'est signalé qu'après le délai d'attente de l'analyse. Non testé par moi-même sur du vrai matériel.
 
 ---
 

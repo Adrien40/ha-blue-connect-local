@@ -1,5 +1,35 @@
 # Blue Connect Local - Changelog
 
+## 1.3.0
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
+### ✨ New features
+- **Blueriiot support (Blue Connect Plus)**: the profile is detected on each connection and the probe is decoded like a ZODIAC one (temperature, pH, ORP, conductivity, salinity, battery). Active Mode only (access code required).
+- **Automatic discovery** of Blueriiot probes whose Bluetooth name starts with `B20`, shown as *Blue Connect Plus* by Blueriiot.
+- **Hardware and firmware versions** in the device card, and **4 new diagnostic sensors**, disabled by default (ZODIAC): *Probe Serial Number*, *First Connection*, *Probe Replacement Date* and *Last pH Calibration*.
+- Translations in all supported languages.
+
+### 🛡️ ZODIAC safety
+- ZODIAC probes keep the same Bluetooth sequence as in 1.2.0 up to the measurement. After it, up to 7 diagnostic reads are added (2 on every analysis, the others only once), so the connection lasts slightly longer. The ZODIAC-only sensors are *unavailable* on Blueriiot probes.
+
+### 🐛 Bug fixes
+- The *Battery ADC* sensor no longer shows `0` after the derived values are recomputed.
+
+### ⚠️ Known limits
+- I could not validate Blueriiot support on real hardware (tested by a contributor on a Blue Connect Plus, firmware 2.3.0). No serial number, SKU or floating status, and a wrong access code ends with a timeout.
+- Behind an **ESPHome Bluetooth proxy**, the new diagnostic sensors stay *unknown* unless the proxy is set up (`CONFIG_BT_GATTC_MAX_CACHE_CHAR: "200"` and `cache_services: false`): see the README.
+
+### 🧰 Maintenance
+- Diagnostics also redact the probe serial number, like the device serial number.
+- Typing: `mypy --strict` passes again with Home Assistant 2026.10 (forms now typed with `probatio`), with no change in behaviour.
+- The GATT table received from the probe is logged at debug level. Tests added for Blueriiot and for the diagnostic reads.
+
+### 🙏 Acknowledgements
+- Thanks to [@vinzgithub](https://github.com/vinzgithub), contributor, for his pull request [#5](https://github.com/Adrien40/ha-blue-connect-local/pull/5) (leads on the Blueriiot protocol) and for testing on his Blue Connect Plus.
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
 ## 1.2.0
 
 🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬

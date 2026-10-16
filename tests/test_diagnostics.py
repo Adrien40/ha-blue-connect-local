@@ -1,4 +1,4 @@
-"""diagnostics.py: presence of expected data; MAC, access code, serial, cloud ID and title redacted."""
+"""diagnostics.py: presence of expected data; MAC, access code, serials, cloud ID and title redacted."""
 
 from __future__ import annotations
 
@@ -27,8 +27,9 @@ async def test_diagnostics_includes_coordinator_state(hass, coordinator, entry):
 
 
 async def test_diagnostics_redacts_device_identifiers(hass, coordinator, entry):
-    """Serial number, cloud ID and title are redacted; the SKU stays visible."""
+    """Serial numbers, cloud ID and title are redacted; the SKU stays visible."""
     coordinator.data["serial_number"] = "SN1234567"
+    coordinator.data["probe_serial_number"] = "PSN9876"
     coordinator.data["cloud_id"] = "CLOUD-ABC-123"
     coordinator.data["sku"] = "WA000100"
     hass.config_entries.async_update_entry(entry, title="Blue Connect (BC3-EEFF)")
@@ -36,6 +37,7 @@ async def test_diagnostics_redacts_device_identifiers(hass, coordinator, entry):
     result = await async_get_config_entry_diagnostics(hass, entry)
 
     assert "SN1234567" not in str(result)
+    assert "PSN9876" not in str(result)
     assert "CLOUD-ABC-123" not in str(result)
     assert "EEFF" not in str(result)
     assert result["entry"]["title"] == "**REDACTED**"

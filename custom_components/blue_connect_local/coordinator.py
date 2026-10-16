@@ -61,7 +61,14 @@ from .const import (
     BT_STATUS_WRITE_FAILED,
     CHAR_AUTH_STATUS_UUID,
     CHAR_AUTH_UUID,
+    CHAR_ESP32_FW_UUID,
+    CHAR_FIRST_CONNECTION_UUID,
+    CHAR_HW_VERSION_UUID,
+    CHAR_LAST_PH_CALIB_UUID,
     CHAR_NOTIFY_UUID,
+    CHAR_NRF_FW_UUID,
+    CHAR_PROBE_REPLACEMENT_UUID,
+    CHAR_PROBE_SERIAL_UUID,
     CHAR_TRIGGER_UUID,
     CONF_ACCESS_CODE,
     CONF_CHLORINE_MODEL,
@@ -99,9 +106,23 @@ from .const import (
     TIMEOUT_GATT_OP,
     TIMEOUT_NOTIFICATION_WAIT,
     get_blue_connect_model,
+    get_manufacturer,
     model_has_conductivity,
 )
+from .profile_blueriiot import (
+    BLUERIIOT_CHAR_AUTH_UUID,
+    BLUERIIOT_CHAR_TRIGGER_UUID,
+    blueriiot_extra_trigger_uuids,
+    blueriiot_notify_uuids,
+    describe_gatt_characteristics,
+    is_blueriiot_services,
+)
 from .protocol import extract_raw_payload, parse_raw_frame
+from .protocol_blueriiot import (
+    FRAME_HEX_LEN as BLUERIIOT_FRAME_HEX_LEN,
+    is_blueriiot_frame,
+    parse_blueriiot_frame,
+)
 
 UUID_RAW_SENSORS = "70ea0005-7a29-4fdf-93d2-838665e72677"
 UUID_ACCELEROMETER = "70ea000a-7a29-4fdf-93d2-838665e72677"
@@ -254,6 +275,12 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         seeded_has_conductivity = entry.data.get("has_conductivity")
         if seeded_has_conductivity is not None:
             self.data["has_conductivity"] = seeded_has_conductivity
+        # Same idea for the GATT profile: a Blueriiot probe discovered by its
+        # B20* name is registered as Blue Connect Plus / Blueriiot right away,
+        # before the first GATT connection confirms the profile.
+        seeded_device_type = entry.data.get("device_type")
+        if seeded_device_type is not None:
+            self.data["device_type"] = seeded_device_type
 
         self.update_schedule()
 
@@ -290,12 +317,16 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         device_entry = find_device(device_registry, (DOMAIN, self.mac), self.entry_id)
         if device_entry:
             sku = self.data.get("sku")
-            model_name = get_blue_connect_model(sku, self.data.get("has_conductivity"))
+            model_name = get_blue_connect_model(
+                sku, self.data.get("has_conductivity"), self.data.get("device_type")
+            )
             device_registry.async_update_device(
                 device_entry.id,
+                manufacturer=get_manufacturer(model_name),
                 model=model_name,
                 model_id=sku,
-                hw_version=None,
+                hw_version=self.data.get("hardware_version"),
+                sw_version=self.data.get("firmware_version"),
                 serial_number=self.data.get("serial_number"),
             )
 
@@ -524,8 +555,9 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 saved_data["sku"] = saved_data.pop("hw_version")
 
             rf = saved_data.get("raw_frame")
-            raw_frame_valid = (
-                isinstance(rf, str) and len(rf) == EXPECTED_FRAME_HEX_LEN_18
+            raw_frame_valid = isinstance(rf, str) and len(rf) in (
+                EXPECTED_FRAME_HEX_LEN_18,
+                BLUERIIOT_FRAME_HEX_LEN,
             )
 
             if "raw_frame" in saved_data and not raw_frame_valid:
@@ -562,9 +594,28 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             if "sw_version" in saved_data:
                 saved_data["cloud_id"] = saved_data.pop("sw_version")
 
-            for static_key in ("serial_number", "sku", "cloud_id"):
+            # Static values read once from GATT: drop empty stored values so
+            # they are read again on the next cycle.
+            for static_key in (
+                "serial_number",
+                "sku",
+                "cloud_id",
+                "hardware_version",
+                "firmware_version",
+                "probe_serial_number",
+            ):
                 if static_key in saved_data and not saved_data[static_key]:
                     saved_data.pop(static_key, None)
+
+            # Dates are stored as ISO strings: parse them back, and drop
+            # anything unreadable rather than showing a wrong date.
+            for date_key in ("first_connection", "probe_replacement", "last_ph_calib"):
+                if date_key in saved_data and isinstance(saved_data[date_key], str):
+                    parsed_dt = dt_util.parse_datetime(saved_data[date_key])
+                    if parsed_dt:
+                        saved_data[date_key] = parsed_dt
+                    else:
+                        saved_data.pop(date_key, None)
 
             if saved_data:
                 self.data.update(saved_data)
@@ -637,9 +688,16 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
     async def async_save_to_disk(self) -> None:
         data_to_save = dict(self.data)
-        ts_val = data_to_save.get("last_received")
-        if ts_val is not None and hasattr(ts_val, "isoformat"):
-            data_to_save["last_received"] = ts_val.isoformat()
+        # datetime values are not JSON serializable: store them as ISO strings.
+        for key in (
+            "last_received",
+            "first_connection",
+            "probe_replacement",
+            "last_ph_calib",
+        ):
+            val = data_to_save.get(key)
+            if val is not None and hasattr(val, "isoformat"):
+                data_to_save[key] = val.isoformat()
         for transient in ("bluetooth_status", "action_running"):
             data_to_save.pop(transient, None)
         # Never persist the secret outside the config entry.
@@ -854,11 +912,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 "temp_raw": raw_temp,
                 "ph_raw": raw_ph,
                 "orp_raw": raw_orp,
-                "conductivity": self.data.get("conductivity", 0),
-                "salinity": self.data.get("salinity", 0),
                 "battery_percent": self.data.get("battery_percent", 0),
-                "battery_adc": self.data.get("battery_adc", 0),
-                "battery": self.data.get("battery", 0),
             }
 
             updates = self._apply_new_measurements(parsed_data, hex_frame)
@@ -930,8 +984,15 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 )
 
             client: BleakClient | None = None
-            notify_started = False
+            started_notify_uuids: list[str] = []
             received_payload: bytes | None = None
+            # Zodiac GATT profile by default; switched to Blueriiot below only
+            # when the connected device exposes the Blueriiot characteristics.
+            is_blueriiot = False
+            auth_uuid = CHAR_AUTH_UUID
+            trigger_uuid = CHAR_TRIGGER_UUID
+            notify_uuids = [CHAR_NOTIFY_UUID]
+            extra_trigger_uuids: list[str] = []
             loop = asyncio.get_running_loop()
 
             async with self.ble_lock:
@@ -949,6 +1010,45 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                         timeout=TIMEOUT_BLE_CONN,
                     )
 
+                    # bleak raises when service discovery is not available (and
+                    # for an empty collection): detecting the profile must never
+                    # break a ZODIAC cycle, which never needed the services.
+                    # Deliberately broad (not _BLE_IO_ERRORS): this is a
+                    # best-effort detection added on top of the original
+                    # ZODIAC sequence, which never needed `services`. Any
+                    # failure here, whatever the backend raises, must fall
+                    # back to ZODIAC, not fail the cycle.
+                    try:
+                        services = client.services
+                    except Exception as services_err:
+                        _LOGGER.debug(
+                            "Blue Connect %s: GATT services unreadable (%s), "
+                            "assuming the ZODIAC profile",
+                            self.safe_mac,
+                            services_err,
+                        )
+                        services = None
+                    # Full GATT table as received (through a Bluetooth proxy
+                    # it can be shorter than what the probe really exposes).
+                    gatt_table = describe_gatt_characteristics(services)
+                    if gatt_table:
+                        _LOGGER.debug(
+                            "Blue Connect %s: GATT table (%d characteristics): %s",
+                            self.safe_mac,
+                            len(gatt_table),
+                            "; ".join(gatt_table),
+                        )
+                    is_blueriiot = is_blueriiot_services(services)
+                    if is_blueriiot:
+                        _LOGGER.debug(
+                            "Blue Connect %s: Blueriiot GATT profile detected",
+                            self.safe_mac,
+                        )
+                        auth_uuid = BLUERIIOT_CHAR_AUTH_UUID
+                        trigger_uuid = BLUERIIOT_CHAR_TRIGGER_UUID
+                        notify_uuids = blueriiot_notify_uuids(services)
+                        extra_trigger_uuids = blueriiot_extra_trigger_uuids(services)
+
                     received_data_queue: asyncio.Queue[bytes] = asyncio.Queue(maxsize=4)
 
                     def _put(data: bytes) -> None:
@@ -963,13 +1063,37 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                     def notification_handler(
                         _sender: BleakGATTCharacteristic, data: bytearray
                     ) -> None:
+                        # Blueriiot probes notify on several characteristics:
+                        # only a measurement frame must reach the queue.
+                        if is_blueriiot and not is_blueriiot_frame(data):
+                            _LOGGER.debug(
+                                "Blue Connect %s: ignoring Blueriiot notification "
+                                "(len=%d)",
+                                self.safe_mac,
+                                len(data),
+                            )
+                            return
                         loop.call_soon_threadsafe(_put, bytes(data))
 
-                    await asyncio.wait_for(
-                        client.start_notify(CHAR_NOTIFY_UUID, notification_handler),
-                        timeout=TIMEOUT_GATT_OP,
-                    )
-                    notify_started = True
+                    for notify_uuid in notify_uuids:
+                        try:
+                            await asyncio.wait_for(
+                                client.start_notify(notify_uuid, notification_handler),
+                                timeout=TIMEOUT_GATT_OP,
+                            )
+                        except _BLE_IO_ERRORS as notify_err:
+                            if not is_blueriiot:
+                                raise
+                            _LOGGER.debug(
+                                "Blue Connect %s: cannot subscribe to %s: %s",
+                                self.safe_mac,
+                                notify_uuid,
+                                notify_err,
+                            )
+                            continue
+                        started_notify_uuids.append(notify_uuid)
+                    if not started_notify_uuids:
+                        raise BleakError("No usable Blueriiot notification")
 
                     for attempt in range(1, 3):
                         while not received_data_queue.empty():
@@ -979,7 +1103,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                         try:
                             await asyncio.wait_for(
                                 client.write_gatt_char(
-                                    CHAR_AUTH_UUID,
+                                    auth_uuid,
                                     self.access_code.encode("ascii"),
                                     response=True,
                                 ),
@@ -987,30 +1111,36 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             )
                             await asyncio.sleep(AUTH_SETTLE_DELAY)
 
-                            try:
-                                auth_status = await asyncio.wait_for(
-                                    client.read_gatt_char(CHAR_AUTH_STATUS_UUID),
-                                    timeout=TIMEOUT_GATT_OP,
-                                )
-                                # Some BLE proxies or slower firmwares might need
-                                # an extra moment to flip the characteristic byte.
-                                if auth_status and auth_status[0] == 0x00:
-                                    await asyncio.sleep(AUTH_STATUS_RETRY_DELAY)
+                            # The auth status characteristic only exists on the
+                            # Zodiac profile: skip it on Blueriiot probes.
+                            auth_status = None
+                            if not is_blueriiot:
+                                try:
                                     auth_status = await asyncio.wait_for(
                                         client.read_gatt_char(CHAR_AUTH_STATUS_UUID),
                                         timeout=TIMEOUT_GATT_OP,
                                     )
-                            except _BLE_IO_ERRORS as status_err:
-                                # Some firmware/backends may not expose this
-                                # characteristic reliably. Fall back to the
-                                # old behavior (wait for the measurement
-                                # notification) rather than failing the
-                                # whole update over it.
-                                _LOGGER.debug(
-                                    "Failed to read auth status (1fb20002): %s",
-                                    status_err,
-                                )
-                                auth_status = None
+                                    # Some BLE proxies or slower firmwares might
+                                    # need an extra moment to flip the byte.
+                                    if auth_status and auth_status[0] == 0x00:
+                                        await asyncio.sleep(AUTH_STATUS_RETRY_DELAY)
+                                        auth_status = await asyncio.wait_for(
+                                            client.read_gatt_char(
+                                                CHAR_AUTH_STATUS_UUID
+                                            ),
+                                            timeout=TIMEOUT_GATT_OP,
+                                        )
+                                except _BLE_IO_ERRORS as status_err:
+                                    # Some firmware/backends may not expose this
+                                    # characteristic reliably. Fall back to the
+                                    # old behavior (wait for the measurement
+                                    # notification) rather than failing the
+                                    # whole update over it.
+                                    _LOGGER.debug(
+                                        "Failed to read auth status (1fb20002): %s",
+                                        status_err,
+                                    )
+                                    auth_status = None
 
                             if auth_status and auth_status[0] == 0x00:
                                 _LOGGER.warning(
@@ -1027,10 +1157,25 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                             self._set_bt_status(BT_STATUS_REQUESTING)
                             await asyncio.wait_for(
                                 client.write_gatt_char(
-                                    CHAR_TRIGGER_UUID, bytearray([0x02]), response=True
+                                    trigger_uuid, bytearray([0x02]), response=True
                                 ),
                                 timeout=TIMEOUT_GATT_OP,
                             )
+                            for extra_uuid in extra_trigger_uuids:
+                                try:
+                                    await asyncio.wait_for(
+                                        client.write_gatt_char(
+                                            extra_uuid, bytearray([0x02]), response=True
+                                        ),
+                                        timeout=TIMEOUT_GATT_OP,
+                                    )
+                                except _BLE_IO_ERRORS as extra_err:
+                                    _LOGGER.debug(
+                                        "Blue Connect %s: extra trigger %s failed: %s",
+                                        self.safe_mac,
+                                        extra_uuid,
+                                        extra_err,
+                                    )
                         except _BLE_IO_ERRORS as write_err:
                             _LOGGER.warning(
                                 "GATT write failed on attempt %d: %s",
@@ -1065,104 +1210,248 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
                     self._clear_stale_issue()
 
-                    try:
-                        raw_0005 = await asyncio.wait_for(
-                            client.read_gatt_char(UUID_RAW_SENSORS),
-                            timeout=TIMEOUT_GATT_OP,
-                        )
-                        self.data["raw_frame_0005"] = raw_0005.hex().upper()
-                    except _BLE_IO_ERRORS as err:
-                        _LOGGER.debug(
-                            "Failed to read raw sensors frame (0x0005): %s", err
-                        )
-
-                    try:
-                        raw_accel = await asyncio.wait_for(
-                            client.read_gatt_char(UUID_ACCELEROMETER),
-                            timeout=TIMEOUT_GATT_OP,
-                        )
-                        if len(raw_accel) >= 6:
-                            x = int.from_bytes(
-                                raw_accel[0:2], byteorder="big", signed=True
-                            )
-                            y = int.from_bytes(
-                                raw_accel[2:4], byteorder="big", signed=True
-                            )
-                            z = int.from_bytes(
-                                raw_accel[4:6], byteorder="big", signed=True
-                            )
-
-                            self.data["accelerometer"] = f"X: {x} | Y: {y} | Z: {z}"
-
-                            if y > ACCEL_THRESHOLD:
-                                self.data["float_status"] = "vertical"
-                            elif y < -ACCEL_THRESHOLD:
-                                self.data["float_status"] = "upside_down"
-                            elif abs(x) > ACCEL_THRESHOLD or abs(z) > ACCEL_THRESHOLD:
-                                self.data["float_status"] = "horizontal"
-                            else:
-                                self.data["float_status"] = "tilted"
-                    except _BLE_IO_ERRORS as err:
-                        _LOGGER.debug("Failed to read accelerometer data: %s", err)
-
-                    if not self.data.get("serial_number"):
+                    # These reads target Zodiac-only characteristics: on a
+                    # Blueriiot probe they just fail and add noise.
+                    if not is_blueriiot:
                         try:
-                            sn = await asyncio.wait_for(
-                                client.read_gatt_char(UUID_SERIAL_NUMBER),
+                            raw_0005 = await asyncio.wait_for(
+                                client.read_gatt_char(UUID_RAW_SENSORS),
                                 timeout=TIMEOUT_GATT_OP,
                             )
-                            val = sn.decode("ascii").replace("\x00", "").strip()
-                            if val:
-                                self.data["serial_number"] = val
-                        except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
-                            _LOGGER.debug("Failed to read serial number: %s", err)
+                            self.data["raw_frame_0005"] = raw_0005.hex().upper()
+                        except _BLE_IO_ERRORS as err:
+                            _LOGGER.debug(
+                                "Failed to read raw sensors frame (0x0005): %s", err
+                            )
 
-                    if not self.data.get("sku"):
                         try:
-                            # UUID_HW_VERSION is the GATT characteristic's own
-                            # name (Bluetooth SIG naming), but the value it
-                            # returns is actually the commercial SKU.
-                            hw = await asyncio.wait_for(
-                                client.read_gatt_char(UUID_HW_VERSION),
+                            raw_accel = await asyncio.wait_for(
+                                client.read_gatt_char(UUID_ACCELEROMETER),
                                 timeout=TIMEOUT_GATT_OP,
                             )
-                            val = hw.decode("ascii").replace("\x00", "").strip()
-                            if val:
-                                self.data["sku"] = val
-                        except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
-                            _LOGGER.debug("Failed to read SKU: %s", err)
+                            if len(raw_accel) >= 6:
+                                x = int.from_bytes(
+                                    raw_accel[0:2], byteorder="big", signed=True
+                                )
+                                y = int.from_bytes(
+                                    raw_accel[2:4], byteorder="big", signed=True
+                                )
+                                z = int.from_bytes(
+                                    raw_accel[4:6], byteorder="big", signed=True
+                                )
 
-                    if not self.data.get("cloud_id"):
+                                self.data["accelerometer"] = f"X: {x} | Y: {y} | Z: {z}"
+
+                                if y > ACCEL_THRESHOLD:
+                                    self.data["float_status"] = "vertical"
+                                elif y < -ACCEL_THRESHOLD:
+                                    self.data["float_status"] = "upside_down"
+                                elif (
+                                    abs(x) > ACCEL_THRESHOLD or abs(z) > ACCEL_THRESHOLD
+                                ):
+                                    self.data["float_status"] = "horizontal"
+                                else:
+                                    self.data["float_status"] = "tilted"
+                        except _BLE_IO_ERRORS as err:
+                            _LOGGER.debug("Failed to read accelerometer data: %s", err)
+
+                        if not self.data.get("serial_number"):
+                            try:
+                                sn = await asyncio.wait_for(
+                                    client.read_gatt_char(UUID_SERIAL_NUMBER),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                val = sn.decode("ascii").replace("\x00", "").strip()
+                                if val:
+                                    self.data["serial_number"] = val
+                            except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
+                                _LOGGER.debug("Failed to read serial number: %s", err)
+
+                        if not self.data.get("sku"):
+                            try:
+                                # UUID_HW_VERSION is the GATT characteristic's own
+                                # name (Bluetooth SIG naming), but the value it
+                                # returns is actually the commercial SKU.
+                                hw = await asyncio.wait_for(
+                                    client.read_gatt_char(UUID_HW_VERSION),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                val = hw.decode("ascii").replace("\x00", "").strip()
+                                if val:
+                                    self.data["sku"] = val
+                            except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
+                                _LOGGER.debug("Failed to read SKU: %s", err)
+
+                        if not self.data.get("cloud_id"):
+                            try:
+                                # UUID_SW_VERSION is the GATT characteristic's own
+                                # name, but the value it returns is the device's
+                                # Cloud ID, not a firmware version.
+                                sw = await asyncio.wait_for(
+                                    client.read_gatt_char(UUID_SW_VERSION),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                val = sw.decode("ascii").replace("\x00", "").strip()
+                                if val:
+                                    self.data["cloud_id"] = val
+                            except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
+                                _LOGGER.debug("Failed to read Cloud ID: %s", err)
+
+                        # Diagnostic characteristics (hardware revision, firmware versions,
+                        # dates, probe serial number). Each read is best-effort: a failure only
+                        # leaves the matching sensor unknown and never fails the cycle. The
+                        # static values are read once and then kept (like the serial number,
+                        # SKU and Cloud ID); only the two dates that can change are read on
+                        # every analysis.
+                        if not self.data.get("hardware_version"):
+                            try:
+                                hw_ver_raw = await asyncio.wait_for(
+                                    client.read_gatt_char(CHAR_HW_VERSION_UUID),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                if len(hw_ver_raw) >= 4:
+                                    self.data["hardware_version"] = (
+                                        f"{hw_ver_raw[2]}.{hw_ver_raw[1]}.{hw_ver_raw[0]}"
+                                    )
+                            except _BLE_IO_ERRORS as err:
+                                _LOGGER.debug(
+                                    "Failed to read hardware version: %s", err
+                                )
+
+                        # Stored under "firmware_version", not "sw_version": that legacy
+                        # storage key held the Cloud ID and is migrated to "cloud_id" on load.
+                        if not self.data.get("firmware_version"):
+                            nrf_fw = ""
+                            try:
+                                nrf_raw = await asyncio.wait_for(
+                                    client.read_gatt_char(CHAR_NRF_FW_UUID),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                if len(nrf_raw) >= 4:
+                                    nrf_fw = f"{nrf_raw[2]}.{nrf_raw[1]}.{nrf_raw[0]}"
+                            except _BLE_IO_ERRORS as err:
+                                _LOGGER.debug(
+                                    "Failed to read NRF firmware version: %s", err
+                                )
+
+                            esp_fw = ""
+                            try:
+                                esp_raw = await asyncio.wait_for(
+                                    client.read_gatt_char(CHAR_ESP32_FW_UUID),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                if len(esp_raw) >= 4:
+                                    esp_fw = f"{esp_raw[2]}.{esp_raw[1]}.{esp_raw[0]}"
+                            except _BLE_IO_ERRORS as err:
+                                _LOGGER.debug(
+                                    "Failed to read ESP32 firmware version: %s", err
+                                )
+
+                            # Only the chips that answered, without a dangling separator.
+                            fw_parts = [
+                                part
+                                for part in (
+                                    f"NRF {nrf_fw}" if nrf_fw else "",
+                                    f"ESP32 {esp_fw}" if esp_fw else "",
+                                )
+                                if part
+                            ]
+                            if fw_parts:
+                                self.data["firmware_version"] = " / ".join(fw_parts)
+
+                        if not self.data.get("first_connection"):
+                            try:
+                                fc_raw = await asyncio.wait_for(
+                                    client.read_gatt_char(CHAR_FIRST_CONNECTION_UUID),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                if len(fc_raw) >= 4:
+                                    ts = int.from_bytes(fc_raw[:4], byteorder="big")
+                                    if ts > 0:
+                                        self.data["first_connection"] = (
+                                            dt_util.utc_from_timestamp(ts)
+                                        )
+                            except _BLE_IO_ERRORS as err:
+                                _LOGGER.debug(
+                                    "Failed to read first connection date: %s", err
+                                )
+
+                        prev_replacement = self.data.get("probe_replacement")
                         try:
-                            # UUID_SW_VERSION is the GATT characteristic's own
-                            # name, but the value it returns is the device's
-                            # Cloud ID, not a firmware version.
-                            sw = await asyncio.wait_for(
-                                client.read_gatt_char(UUID_SW_VERSION),
+                            pr_raw = await asyncio.wait_for(
+                                client.read_gatt_char(CHAR_PROBE_REPLACEMENT_UUID),
                                 timeout=TIMEOUT_GATT_OP,
                             )
-                            val = sw.decode("ascii").replace("\x00", "").strip()
-                            if val:
-                                self.data["cloud_id"] = val
-                        except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
-                            _LOGGER.debug("Failed to read Cloud ID: %s", err)
+                            if len(pr_raw) >= 4:
+                                ts = int.from_bytes(pr_raw[:4], byteorder="big")
+                                # 0 = never replaced: reset a previously stored date.
+                                self.data["probe_replacement"] = (
+                                    dt_util.utc_from_timestamp(ts) if ts > 0 else None
+                                )
+                        except _BLE_IO_ERRORS as err:
+                            _LOGGER.debug(
+                                "Failed to read probe replacement date: %s", err
+                            )
+
+                        try:
+                            cal_raw = await asyncio.wait_for(
+                                client.read_gatt_char(CHAR_LAST_PH_CALIB_UUID),
+                                timeout=TIMEOUT_GATT_OP,
+                            )
+                            if len(cal_raw) >= 4:
+                                ts = int.from_bytes(cal_raw[:4], byteorder="big")
+                                if ts > 0:
+                                    self.data["last_ph_calib"] = (
+                                        dt_util.utc_from_timestamp(ts)
+                                    )
+                        except _BLE_IO_ERRORS as err:
+                            _LOGGER.debug(
+                                "Failed to read last pH calibration date: %s", err
+                            )
+
+                        # A replaced probe has a new serial number: read it again then.
+                        if (
+                            not self.data.get("probe_serial_number")
+                            or self.data.get("probe_replacement") != prev_replacement
+                        ):
+                            try:
+                                psn_raw = await asyncio.wait_for(
+                                    client.read_gatt_char(CHAR_PROBE_SERIAL_UUID),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                                val = (
+                                    psn_raw.decode("ascii").replace("\x00", "").strip()
+                                )
+                                if val:
+                                    self.data["probe_serial_number"] = val
+                            except (*_BLE_IO_ERRORS, UnicodeDecodeError) as err:
+                                _LOGGER.debug(
+                                    "Failed to read probe serial number: %s", err
+                                )
 
                 except (*_BLE_IO_ERRORS, ValueError, RuntimeError) as err:
                     return self._handle_ble_error(
                         f"Communication error: {err}", BT_STATUS_ERROR
                     )
                 finally:
-                    if notify_started and client and client.is_connected:
-                        try:
-                            await asyncio.wait_for(
-                                client.stop_notify(CHAR_NOTIFY_UUID),
-                                timeout=TIMEOUT_GATT_OP,
-                            )
-                        except _BLE_IO_ERRORS as err:
-                            _LOGGER.debug("Ignored error during stop_notify: %s", err)
+                    if client and client.is_connected:
+                        for notify_uuid in started_notify_uuids:
+                            try:
+                                await asyncio.wait_for(
+                                    client.stop_notify(notify_uuid),
+                                    timeout=TIMEOUT_GATT_OP,
+                                )
+                            except _BLE_IO_ERRORS as err:
+                                _LOGGER.debug(
+                                    "Ignored error during stop_notify: %s", err
+                                )
                     await _safely_disconnect(client)
 
-            parsed_data = parse_raw_frame(received_payload)
+            parsed_data = (
+                parse_blueriiot_frame(received_payload)
+                if is_blueriiot
+                else parse_raw_frame(received_payload)
+            )
 
             if not parsed_data:
                 return self._handle_ble_error("Payload parsing error", BT_STATUS_ERROR)
@@ -1192,6 +1481,13 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
     def _handle_ble_error(
         self, error_msg: str, status: str = BT_STATUS_ERROR
     ) -> dict[str, Any]:
+        _LOGGER.debug(
+            "Blue Connect %s: %s (status=%s, retry=%d)",
+            self.safe_mac,
+            error_msg,
+            status,
+            self.retry_count,
+        )
         if status in (BT_STATUS_ERROR, BT_STATUS_WRITE_FAILED) and self.retry_count < 2:
             self.retry_count += 1
             self._set_bt_status(BT_STATUS_ERROR_RETRY)

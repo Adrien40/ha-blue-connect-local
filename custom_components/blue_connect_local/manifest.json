@@ -4,6 +4,9 @@
   "bluetooth": [
     {
       "local_name": "BC3*"
+    },
+    {
+      "local_name": "B20*"
     }
   ],
   "codeowners": [
@@ -22,5 +25,5 @@
     "bleak>=0.21.1",
     "bleak-retry-connector>=4.0.0"
   ],
-  "version": "1.2.0"
+  "version": "1.3.0"
 }

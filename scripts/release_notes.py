@@ -2,7 +2,7 @@
 """Build the GitHub release notes of a version from the changelogs.
 
 Usage:
-    python3 scripts/release_notes.py 1.2.0 \
+    python3 scripts/release_notes.py 1.3.0 \
         --manifest custom_components/<domain>/manifest.json > release_notes.md
 
 Takes the "## <version>" section of CHANGELOG.md (English) and, when present,

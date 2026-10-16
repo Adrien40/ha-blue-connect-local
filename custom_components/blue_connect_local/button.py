@@ -34,7 +34,9 @@ async def async_setup_entry(
     mac = entry.data[CONF_MAC_ADDRESS]
     sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
-    model_name = get_blue_connect_model(sku, has_conductivity)
+    model_name = get_blue_connect_model(
+        sku, has_conductivity, coordinator.data.get("device_type")
+    )
 
     async_add_entities([BlueConnectForceAnalysisButton(coordinator, mac, model_name)])
 

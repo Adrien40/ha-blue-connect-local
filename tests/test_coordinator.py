@@ -158,6 +158,7 @@ async def test_device_registry_gets_model_and_serial(hass, coordinator):
         dr.async_get(hass), ("blue_connect_local", MAC), coordinator.entry_id
     )
     assert device.model == "Blue Connect Gold"
+    assert device.manufacturer == "Zodiac"
     assert device.model_id == "WA000100"
     assert device.serial_number == "SN12345"
 

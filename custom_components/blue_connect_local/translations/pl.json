@@ -321,6 +321,18 @@
       "cloud_id": {
         "name": "Cloud ID / SN"
       },
+      "probe_serial_number": {
+        "name": "Numer seryjny sondy"
+      },
+      "first_connection": {
+        "name": "Pierwsze połączenie"
+      },
+      "probe_replacement": {
+        "name": "Data wymiany sondy"
+      },
+      "last_ph_calib": {
+        "name": "Ostatnia kalibracja pH"
+      },
       "rssi": {
         "name": "Sygnał Bluetooth"
       },

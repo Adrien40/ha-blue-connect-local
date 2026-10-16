@@ -40,7 +40,9 @@ async def async_setup_entry(
     entry_id = entry.entry_id
     sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
-    model_name = get_blue_connect_model(sku, has_conductivity)
+    model_name = get_blue_connect_model(
+        sku, has_conductivity, coordinator.data.get("device_type")
+    )
 
     async_add_entities(
         [

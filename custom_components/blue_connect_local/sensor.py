@@ -42,6 +42,7 @@ from .const import (
     BT_STATUS_WAITING,
     BT_STATUS_WRITE_FAILED,
     CONF_MAC_ADDRESS,
+    DEVICE_TYPE_BLUERIIOT,
     blue_connect_device_info,
     get_blue_connect_model,
     model_has_conductivity,
@@ -65,7 +66,9 @@ async def async_setup_entry(
     mac_address = entry.data[CONF_MAC_ADDRESS]
     sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
-    model_name = get_blue_connect_model(sku, has_conductivity)
+    model_name = get_blue_connect_model(
+        sku, has_conductivity, coordinator.data.get("device_type")
+    )
 
     sensors = [
         BlueConnectSensor(
@@ -251,6 +254,46 @@ async def async_setup_entry(
         BlueConnectSensor(
             coordinator,
             mac_address,
+            "probe_serial_number",
+            None,
+            None,
+            category=EntityCategory.DIAGNOSTIC,
+            model_name=model_name,
+            enabled_default=False,
+        ),
+        BlueConnectSensor(
+            coordinator,
+            mac_address,
+            "first_connection",
+            SensorDeviceClass.TIMESTAMP,
+            None,
+            category=EntityCategory.DIAGNOSTIC,
+            model_name=model_name,
+            enabled_default=False,
+        ),
+        BlueConnectSensor(
+            coordinator,
+            mac_address,
+            "probe_replacement",
+            SensorDeviceClass.TIMESTAMP,
+            None,
+            category=EntityCategory.DIAGNOSTIC,
+            model_name=model_name,
+            enabled_default=False,
+        ),
+        BlueConnectSensor(
+            coordinator,
+            mac_address,
+            "last_ph_calib",
+            SensorDeviceClass.TIMESTAMP,
+            None,
+            category=EntityCategory.DIAGNOSTIC,
+            model_name=model_name,
+            enabled_default=False,
+        ),
+        BlueConnectSensor(
+            coordinator,
+            mac_address,
             "receive_method",
             SensorDeviceClass.ENUM,
             None,
@@ -315,6 +358,8 @@ class BlueConnectSensor(CoordinatorEntity[BlueConnectCoordinator], SensorEntity)
             model_name,
             model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
+            hw_version=coordinator.data.get("hardware_version"),
+            sw_version=coordinator.data.get("firmware_version"),
         )
 
     @property
@@ -325,16 +370,20 @@ class BlueConnectSensor(CoordinatorEntity[BlueConnectCoordinator], SensorEntity)
 
     @property
     def available(self) -> bool:
-        if (
-            self._key
-            in (
-                "raw_frame_0005",
-                "accelerometer",
-                "float_status",
-                "cloud_id",
-            )
-            and not self.coordinator.access_code
-        ):
+        is_blueriiot = self.coordinator.data.get("device_type") == DEVICE_TYPE_BLUERIIOT
+        if self._key in (
+            "raw_frame_0005",
+            "accelerometer",
+            "float_status",
+            "cloud_id",
+            "probe_serial_number",
+            "first_connection",
+            "probe_replacement",
+            "last_ph_calib",
+        ) and (not self.coordinator.access_code or is_blueriiot):
+            return False
+        # Zodiac-only characteristic: never exposed by the Blueriiot profile.
+        if self._key == "battery_adc" and is_blueriiot:
             return False
         return super().available
 
@@ -374,6 +423,8 @@ class BlueConnectBluetoothStatusSensor(
             model_name,
             model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
+            hw_version=coordinator.data.get("hardware_version"),
+            sw_version=coordinator.data.get("firmware_version"),
         )
 
     @property
@@ -417,6 +468,8 @@ class BlueConnectRealTimeRSSISensor(
             model_name,
             model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
+            hw_version=coordinator.data.get("hardware_version"),
+            sw_version=coordinator.data.get("firmware_version"),
         )
         self._attr_native_value = None
 
@@ -479,6 +532,8 @@ class BlueConnectNextAnalysisSensor(
             model_name,
             model_id=coordinator.data.get("sku"),
             serial_number=coordinator.data.get("serial_number"),
+            hw_version=coordinator.data.get("hardware_version"),
+            sw_version=coordinator.data.get("firmware_version"),
         )
 
     @property

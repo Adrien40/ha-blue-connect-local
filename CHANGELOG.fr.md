@@ -1,5 +1,35 @@
 # Blue Connect Local - Journal des modifications
 
+## 1.3.0
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
+### ✨ Nouveautés
+- **Support Blueriiot (Blue Connect Plus)** : le profil est détecté à chaque connexion et la sonde est décodée comme une ZODIAC (température, pH, Redox, conductivité, salinité, batterie). Mode Actif uniquement (code d'accès requis).
+- **Découverte Automatique** des sondes Blueriiot dont le nom Bluetooth commence par `B20`, affichées comme *Blue Connect Plus* de Blueriiot.
+- **Versions matérielle et logicielle** dans la fiche de l'appareil, et **4 nouveaux capteurs de diagnostic** désactivés par défaut (ZODIAC) : *Numéro de série de la sonde*, *Première connexion*, *Date de remplacement de la sonde* et *Dernière calibration du pH*.
+- Traductions dans toutes les langues prises en charge.
+
+### 🛡️ Sécurité pour les ZODIAC
+- Les sondes ZODIAC gardent la même séquence Bluetooth qu'en 1.2.0 jusqu'à la mesure. Ensuite, jusqu'à 7 lectures de diagnostic sont ajoutées (2 à chaque analyse, les autres une seule fois) : la connexion dure donc un peu plus longtemps. Les capteurs propres aux ZODIAC sont *indisponibles* sur les sondes Blueriiot.
+
+### 🐛 Corrections
+- Le capteur *Batterie ADC* n'affiche plus `0` après le recalcul des valeurs dérivées.
+
+### ⚠️ Limites connues
+- Je n'ai pas pu valider le support Blueriiot sur du vrai matériel (testé par un contributeur sur un Blue Connect Plus, firmware 2.3.0). Pas de numéro de série, de SKU ni d'état du flotteur, et un code d'accès erroné se termine par un délai d'attente dépassé.
+- Derrière un **proxy Bluetooth ESPHome**, les nouveaux capteurs de diagnostic restent *inconnus* tant que le proxy n'est pas réglé (`CONFIG_BT_GATTC_MAX_CACHE_CHAR: "200"` et `cache_services: false`) : voir le README.
+
+### 🧰 Maintenance
+- Les diagnostics masquent aussi le numéro de série de la sonde, comme celui de l'appareil.
+- Typage : `mypy --strict` repasse avec Home Assistant 2026.10 (formulaires désormais typés avec `probatio`), sans changement de comportement.
+- La table GATT reçue de la sonde est loggée en debug. Tests ajoutés pour Blueriiot et pour les lectures de diagnostic.
+
+### 🙏 Remerciements
+- Merci à [@vinzgithub](https://github.com/vinzgithub), contributeur, pour sa pull request [#5](https://github.com/Adrien40/ha-blue-connect-local/pull/5) (pistes sur le protocole Blueriiot) et pour ses tests sur son Blue Connect Plus.
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
 ## 1.2.0
 
 🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬

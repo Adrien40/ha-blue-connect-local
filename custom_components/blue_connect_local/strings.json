@@ -321,6 +321,18 @@
       "cloud_id": {
         "name": "Cloud ID / SN"
       },
+      "probe_serial_number": {
+        "name": "Probe Serial Number"
+      },
+      "first_connection": {
+        "name": "First Connection"
+      },
+      "probe_replacement": {
+        "name": "Probe Replacement Date"
+      },
+      "last_ph_calib": {
+        "name": "Last pH Calibration"
+      },
       "rssi": {
         "name": "Bluetooth Signal"
       },

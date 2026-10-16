@@ -770,3 +770,101 @@ async def test_options_form_prefers_the_live_coordinator_values(
     assert str(defaults[CONF_REFERENCE_TIME]).startswith("09:30")
     assert defaults[CONF_PASSIVE_MEASURES] is False
     assert defaults[CONF_IGNORE_ECHOES] is False
+
+
+async def test_blueriiot_probe_is_discovered_and_listed(hass):
+    """A Blueriiot probe (name B20...) is discovered as a Blue Connect Plus:
+    its 11-byte advertisement is not a ZODIAC frame."""
+    name = "B202005C07"
+    info = _info(bytes.fromhex("19EA037C07DE4D30FE8905"), name=name)
+    with patch(DISCOVERED, return_value=[info]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=info
+        )
+        assert result["type"] is FlowResultType.FORM
+        selection = _default_of(result, CONF_MAC_ADDRESS)
+        assert MAC in selection and name in selection
+        assert "Blue Connect Plus" in selection
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MAC_ADDRESS: selection, CONF_ACCESS_CODE: ACCESS_CODE, **_sections()},
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_MAC_ADDRESS] == MAC
+    assert "has_conductivity" not in result["data"]
+    assert result["title"] == f"Blue Connect Plus ({name})"
+    # The profile is persisted so the device is a Blue Connect Plus by
+    # Blueriiot from its creation, before any GATT connection.
+    assert result["data"]["device_type"] == "blueriiot"
+
+
+async def test_blueriiot_model_survives_an_expired_discovery_cache(hass):
+    """The model seen in the advertisement is kept between the discovery and
+    the submit of the form, even if Home Assistant forgot the advertisement."""
+    name = "B202005C07"
+    info = _info(bytes.fromhex("19EA037C07DE4D30FE8905"), name=name)
+    with patch(DISCOVERED, return_value=[info]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=info
+        )
+        selection = _default_of(result, CONF_MAC_ADDRESS)
+    with patch(DISCOVERED, return_value=[]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MAC_ADDRESS: selection, CONF_ACCESS_CODE: ACCESS_CODE, **_sections()},
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["title"] == f"Blue Connect Plus ({name})"
+    assert result["data"]["device_type"] == "blueriiot"
+
+
+async def test_another_probe_picked_in_a_blueriiot_flow_is_not_a_blue_connect_plus(
+    hass,
+):
+    """The model remembered from the discovery only applies to that probe."""
+    other_mac = "AA:BB:CC:DD:EE:01"
+    discovered = _info(name="B202005C07")
+    other = _info(name="BC3-OTHER")
+    other.address = other_mac
+    with (
+        patch(DISCOVERED, return_value=[discovered, other]),
+        patch(SETUP, return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=discovered
+        )
+        options = result["data_schema"].schema[CONF_MAC_ADDRESS].config["options"]
+        labels = [o if isinstance(o, str) else o["value"] for o in options]
+        selection = next(label for label in labels if other_mac in label)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MAC_ADDRESS: selection, CONF_ACCESS_CODE: ACCESS_CODE, **_sections()},
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_MAC_ADDRESS] == other_mac
+    assert "device_type" not in result["data"]
+    assert result["title"] == "Blue Connect (BC3-OTHER)"
+
+
+async def test_unrelated_bluetooth_names_are_not_listed(hass):
+    """Only BC3* and B20* names reach the dropdown of the manual-entry form."""
+    other = _info(name="B30-OTHER")
+    with patch(DISCOVERED, return_value=[other]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "user"}
+        )
+    schema_keys = [str(key) for key in result["data_schema"].schema]
+    assert CONF_MAC_ADDRESS not in schema_keys
+
+
+async def test_blueriiot_probe_in_the_manual_list_is_a_blue_connect_plus(hass):
+    """Same naming in the dropdown of the manual-entry form."""
+    name = "B202005C07"
+    with patch(DISCOVERED, return_value=[_info(name=name)]):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": "user"}
+        )
+    options = result["data_schema"].schema[CONF_MAC_ADDRESS].config["options"]
+    labels = [o if isinstance(o, str) else o["label"] for o in options]
+    assert labels == [f"Blue Connect Plus ({name}) ({MAC})"]

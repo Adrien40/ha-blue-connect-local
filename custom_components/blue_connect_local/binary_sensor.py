@@ -1,10 +1,8 @@
 # Copyright (c) 2026 Adrien40
 # This file is part of Blue Connect Local.
 
-from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
-    BinarySensorEntity,
-)
+from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor.const import BinarySensorDeviceClass
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -53,7 +51,9 @@ async def async_setup_entry(
     mac = entry.data[CONF_MAC_ADDRESS]
     sku = coordinator.data.get("sku")
     has_conductivity = coordinator.data.get("has_conductivity")
-    model_name = get_blue_connect_model(sku, has_conductivity)
+    model_name = get_blue_connect_model(
+        sku, has_conductivity, coordinator.data.get("device_type")
+    )
 
     async_add_entities(
         [

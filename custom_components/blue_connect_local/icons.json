@@ -31,6 +31,18 @@
       "cloud_id": {
         "default": "mdi:cloud"
       },
+      "probe_serial_number": {
+        "default": "mdi:identifier"
+      },
+      "first_connection": {
+        "default": "mdi:calendar-start"
+      },
+      "probe_replacement": {
+        "default": "mdi:calendar-sync"
+      },
+      "last_ph_calib": {
+        "default": "mdi:calendar-check"
+      },
       "receive_method": {
         "default": "mdi:signal-variant"
       },

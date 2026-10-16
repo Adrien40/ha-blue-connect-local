@@ -10,9 +10,16 @@ from . import BlueConnectConfigEntry
 from .const import CONF_ACCESS_CODE, CONF_MAC_ADDRESS
 
 # The title embeds the BLE name (model + end of the MAC), and serial_number /
-# cloud_id identify one specific probe: none of them must end up in a public
-# issue. `sku` stays visible: it is useful for support and not identifying.
-TO_REDACT = {CONF_MAC_ADDRESS, CONF_ACCESS_CODE, "serial_number", "cloud_id"}
+# probe_serial_number / cloud_id identify one specific device or probe: none of
+# them must end up in a public issue. `sku` stays visible: it is useful for
+# support and not identifying.
+TO_REDACT = {
+    CONF_MAC_ADDRESS,
+    CONF_ACCESS_CODE,
+    "serial_number",
+    "probe_serial_number",
+    "cloud_id",
+}
 
 
 async def async_get_config_entry_diagnostics(

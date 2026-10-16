@@ -321,6 +321,18 @@
       "cloud_id": {
         "name": "Cloud ID / SN"
       },
+      "probe_serial_number": {
+        "name": "Серийный номер зонда"
+      },
+      "first_connection": {
+        "name": "Первое подключение"
+      },
+      "probe_replacement": {
+        "name": "Дата замены зонда"
+      },
+      "last_ph_calib": {
+        "name": "Последняя калибровка pH"
+      },
       "rssi": {
         "name": "Сигнал Bluetooth"
       },

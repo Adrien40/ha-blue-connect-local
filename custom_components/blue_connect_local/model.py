@@ -6,6 +6,12 @@ from __future__ import annotations
 SKU_SILVER = "WA000099"
 SKU_GOLD = "WA000100"
 
+DEVICE_TYPE_BLUERIIOT = "blueriiot"
+MODEL_BLUE_CONNECT_PLUS = "Blue Connect Plus"
+
+MANUFACTURER_ZODIAC = "Zodiac"
+MANUFACTURER_BLUERIIOT = "Blueriiot"
+
 KNOWN_MODELS = {
     SKU_GOLD: "Blue Connect Gold",
     SKU_SILVER: "Blue Connect Silver",
@@ -13,7 +19,9 @@ KNOWN_MODELS = {
 
 
 def get_blue_connect_model(
-    sku: str | None, has_conductivity: bool | None = None
+    sku: str | None,
+    has_conductivity: bool | None = None,
+    device_type: str | None = None,
 ) -> str:
     """Return the commercial model name based on the SKU.
 
@@ -22,7 +30,13 @@ def get_blue_connect_model(
     authenticated read has happened yet - has_conductivity (derived from
     passive BLE frames, no access_code required) is used as a fallback
     signal instead of guessing.
+
+    A Blueriiot-profile probe (device_type "blueriiot") is a Blue Connect
+    Plus: it has no ZODIAC SKU nor passive frame to look at.
     """
+    if device_type == DEVICE_TYPE_BLUERIIOT:
+        return MODEL_BLUE_CONNECT_PLUS
+
     if sku:
         sku_upper = sku.upper()
         for sku_candidate, model_name in KNOWN_MODELS.items():
@@ -62,3 +76,10 @@ def model_has_conductivity(
 # separate name at call sites (clearer than gating a salinity entity on
 # "model_has_conductivity") even though the logic is identical.
 model_has_salinity = model_has_conductivity
+
+
+def get_manufacturer(model_name: str) -> str:
+    """Brand of the probe: only the Blue Connect Plus is a Blueriiot probe."""
+    if model_name == MODEL_BLUE_CONNECT_PLUS:
+        return MANUFACTURER_BLUERIIOT
+    return MANUFACTURER_ZODIAC

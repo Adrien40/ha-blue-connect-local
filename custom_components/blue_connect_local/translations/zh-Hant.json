@@ -321,6 +321,18 @@
       "cloud_id": {
         "name": "雲端 ID / SN"
       },
+      "probe_serial_number": {
+        "name": "探頭序號"
+      },
+      "first_connection": {
+        "name": "首次連線"
+      },
+      "probe_replacement": {
+        "name": "探頭更換日期"
+      },
+      "last_ph_calib": {
+        "name": "上次 pH 校準"
+      },
       "rssi": {
         "name": "藍牙訊號"
       },
