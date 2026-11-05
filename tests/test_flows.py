@@ -58,6 +58,8 @@ DISCOVERED = (
 )
 SETUP = "custom_components.blue_connect_local.async_setup_entry"
 PARSE = "custom_components.blue_connect_local.config_flow.parse_raw_frame"
+# Blue Connect Plus (Blueriiot) "Access key": 8 characters, unlike ZODIAC's 9.
+BLUERIIOT_KEY = "01AB23CD"
 
 
 def _info(
@@ -200,8 +202,11 @@ async def test_discovered_device_disappears_from_cache_before_form_renders(hass)
     assert MAC in selection and "Gold" in selection
 
 
-@pytest.mark.parametrize("code", ["short", "TOOLONG1234", "ABCDEFGH!", "ÉÉÉÉÉÉÉÉÉ"])
+@pytest.mark.parametrize(
+    "code", ["short", "TOOLONG1234", "ABCDEFGH!", "ÉÉÉÉÉÉÉÉÉ", BLUERIIOT_KEY]
+)
 async def test_invalid_access_code_is_rejected(hass, code):
+    """A ZODIAC probe (BC3 name) needs exactly 9 characters, not 8."""
     with patch(DISCOVERED, return_value=[_info()]), patch(SETUP, return_value=True):
         result = await _start_discovery(hass)
         result = await hass.config_entries.flow.async_configure(
@@ -213,7 +218,7 @@ async def test_invalid_access_code_is_rejected(hass, code):
             },
         )
     assert result["type"] is FlowResultType.FORM
-    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code"}
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code_9"}
 
 
 async def test_invalid_calibration_shows_error(hass):
@@ -788,7 +793,11 @@ async def test_blueriiot_probe_is_discovered_and_listed(hass):
 
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {CONF_MAC_ADDRESS: selection, CONF_ACCESS_CODE: ACCESS_CODE, **_sections()},
+            {
+                CONF_MAC_ADDRESS: selection,
+                CONF_ACCESS_CODE: BLUERIIOT_KEY,
+                **_sections(),
+            },
         )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_MAC_ADDRESS] == MAC
@@ -812,7 +821,11 @@ async def test_blueriiot_model_survives_an_expired_discovery_cache(hass):
     with patch(DISCOVERED, return_value=[]), patch(SETUP, return_value=True):
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"],
-            {CONF_MAC_ADDRESS: selection, CONF_ACCESS_CODE: ACCESS_CODE, **_sections()},
+            {
+                CONF_MAC_ADDRESS: selection,
+                CONF_ACCESS_CODE: BLUERIIOT_KEY,
+                **_sections(),
+            },
         )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert result["title"] == f"Blue Connect Plus ({name})"
@@ -868,3 +881,374 @@ async def test_blueriiot_probe_in_the_manual_list_is_a_blue_connect_plus(hass):
     options = result["data_schema"].schema[CONF_MAC_ADDRESS].config["options"]
     labels = [o if isinstance(o, str) else o["label"] for o in options]
     assert labels == [f"Blue Connect Plus ({name}) ({MAC})"]
+
+
+# ---------------------------------------------------------------------------
+# Access code length per probe family (issue #6): a ZODIAC probe needs exactly
+# 9 characters; a Blueriiot probe (Blue Connect Plus) shows 8 or 9 characters in
+# its app, so both are accepted, and so are they when the family is unknown
+# (never-seen manual MAC).
+# ---------------------------------------------------------------------------
+B20_NAME = "B202005C07"
+B20_FRAME = bytes.fromhex("19EA037C07DE4D30FE8905")
+BAD_CODES = ["1234567", "ABCDEFGHIJ", "ABCDEFG!", "ÉÉÉÉÉÉÉÉ"]
+
+
+@pytest.fixture
+def no_setup():
+    """A successful reauth/reconfigure reloads the entry: skip the real setup."""
+    with patch(SETUP, return_value=True):
+        yield
+
+
+def _probe_entry(mac: str = MAC, **extra) -> MockConfigEntry:
+    return MockConfigEntry(
+        domain=DOMAIN,
+        unique_id=mac,
+        title="Blue Connect",
+        version=1,
+        minor_version=4,
+        data={CONF_MAC_ADDRESS: mac, **extra},
+    )
+
+
+def _live(**data):
+    """Stand-in for a running coordinator exposing only its data dict."""
+    return SimpleNamespace(data=data)
+
+
+# (entry data, live coordinator data or None)
+BLUERIIOT_PROBES = [
+    pytest.param({"device_type": "blueriiot"}, None, id="from-entry"),
+    pytest.param({}, {"device_type": "blueriiot"}, id="detected-on-connection"),
+]
+ZODIAC_PROBES = [
+    pytest.param({"has_conductivity": True}, None, id="from-entry"),
+    pytest.param({}, {"has_conductivity": False}, id="from-live-frame"),
+    pytest.param({}, {"sku": "WA000100"}, id="from-live-sku"),
+]
+
+
+def _entry_for(hass, data, live):
+    entry = _probe_entry(**data)
+    entry.add_to_hass(hass)
+    if live is not None:
+        entry.runtime_data = _live(**live)
+    return entry
+
+
+# ---- ZODIAC: exactly 9 -----------------------------------------------------
+@pytest.mark.parametrize(("data", "live"), ZODIAC_PROBES)
+async def test_zodiac_reauth_requires_nine_characters(hass, no_setup, data, live):
+    entry = _entry_for(hass, data, live)
+    flow_id = await _start_reauth(hass, entry)
+
+    result = await hass.config_entries.flow.async_configure(
+        flow_id, {CONF_ACCESS_CODE: BLUERIIOT_KEY}
+    )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code_9"}
+    if live is not None:
+        return  # a success would reload the entry around the fake coordinator
+
+    result = await hass.config_entries.flow.async_configure(
+        flow_id, {CONF_ACCESS_CODE: ACCESS_CODE}
+    )
+    assert result["reason"] == "reauth_successful"
+    assert entry.data[CONF_ACCESS_CODE] == ACCESS_CODE
+
+
+@pytest.mark.parametrize(("data", "live"), ZODIAC_PROBES)
+async def test_zodiac_reconfigure_requires_nine_characters(hass, no_setup, data, live):
+    entry = _entry_for(hass, data, live)
+    result = await _start_reconfigure(hass, entry)
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_MAC_ADDRESS: MAC, CONF_ACCESS_CODE: BLUERIIOT_KEY}
+    )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code_9"}
+    if live is not None:
+        return
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_MAC_ADDRESS: MAC, CONF_ACCESS_CODE: ACCESS_CODE}
+    )
+    assert result["reason"] == "reconfigure_successful"
+
+
+async def test_zodiac_options_require_nine_characters(hass):
+    entry = _probe_entry(has_conductivity=True)
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], _options_input(access_code=BLUERIIOT_KEY)
+    )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code_9"}
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], _options_input(access_code=ACCESS_CODE)
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+
+
+@pytest.mark.parametrize("live", [{"has_conductivity": False}, {"sku": "WA000099"}])
+async def test_zodiac_options_use_the_live_family(hass, live):
+    entry = _probe_entry()
+    entry.add_to_hass(hass)
+    entry.runtime_data = _live(**live)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], _options_input(access_code=BLUERIIOT_KEY)
+    )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code_9"}
+
+
+# ---- Blueriiot: 8 or 9 -----------------------------------------------------
+@pytest.mark.parametrize("code", [BLUERIIOT_KEY, ACCESS_CODE])
+@pytest.mark.parametrize(("data", "live"), BLUERIIOT_PROBES)
+async def test_blueriiot_reauth_accepts_eight_or_nine(hass, no_setup, data, live, code):
+    entry = _entry_for(hass, data, live)
+    flow_id = await _start_reauth(hass, entry)
+
+    result = await hass.config_entries.flow.async_configure(
+        flow_id, {CONF_ACCESS_CODE: code}
+    )
+    if live is not None:
+        assert result["type"] is not FlowResultType.FORM  # accepted
+        return
+    assert result["reason"] == "reauth_successful"
+    assert entry.data[CONF_ACCESS_CODE] == code
+
+
+@pytest.mark.parametrize("code", BAD_CODES)
+@pytest.mark.parametrize(("data", "live"), BLUERIIOT_PROBES)
+async def test_blueriiot_reauth_rejects_other_lengths(hass, data, live, code):
+    entry = _entry_for(hass, data, live)
+    flow_id = await _start_reauth(hass, entry)
+
+    result = await hass.config_entries.flow.async_configure(
+        flow_id, {CONF_ACCESS_CODE: code}
+    )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code"}
+
+
+@pytest.mark.parametrize("code", [BLUERIIOT_KEY, ACCESS_CODE])
+async def test_blueriiot_reconfigure_accepts_eight_or_nine(hass, no_setup, code):
+    entry = _probe_entry(device_type="blueriiot")
+    entry.add_to_hass(hass)
+    result = await _start_reconfigure(hass, entry)
+
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"], {CONF_MAC_ADDRESS: MAC, CONF_ACCESS_CODE: code}
+    )
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_ACCESS_CODE] == code
+
+
+@pytest.mark.parametrize("code", [BLUERIIOT_KEY, ACCESS_CODE])
+async def test_blueriiot_options_accept_eight_or_nine(hass, code):
+    entry = _probe_entry(device_type="blueriiot")
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], _options_input(access_code=code)
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_ACCESS_CODE] == code
+
+
+async def test_blueriiot_options_reject_other_lengths(hass):
+    entry = _probe_entry(device_type="blueriiot")
+    entry.add_to_hass(hass)
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], _options_input(access_code="1234567")
+    )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code"}
+
+
+@pytest.mark.parametrize("code", [BLUERIIOT_KEY, ACCESS_CODE])
+async def test_discovered_blueriiot_accepts_eight_or_nine(hass, code):
+    info = _info(B20_FRAME, name=B20_NAME)
+    with patch(DISCOVERED, return_value=[info]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=info
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_MAC_ADDRESS: _default_of(result, CONF_MAC_ADDRESS),
+                CONF_ACCESS_CODE: code,
+                **_sections(),
+            },
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_ACCESS_CODE] == code
+
+
+@pytest.mark.parametrize("code", BAD_CODES)
+async def test_discovered_blueriiot_rejects_other_lengths(hass, code):
+    info = _info(B20_FRAME, name=B20_NAME)
+    with patch(DISCOVERED, return_value=[info]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_BLUETOOTH}, data=info
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_MAC_ADDRESS: _default_of(result, CONF_MAC_ADDRESS),
+                CONF_ACCESS_CODE: code,
+                **_sections(),
+            },
+        )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code"}
+
+
+# ---- Family unknown: 8 or 9 ------------------------------------------------
+@pytest.mark.parametrize("code", [BLUERIIOT_KEY, ACCESS_CODE])
+async def test_unknown_family_accepts_either_length(hass, no_setup, code):
+    """Entry never seen on Bluetooth nor connected: nothing to be strict about."""
+    entry = _probe_entry()
+    entry.add_to_hass(hass)
+    flow_id = await _start_reauth(hass, entry)
+
+    result = await hass.config_entries.flow.async_configure(
+        flow_id, {CONF_ACCESS_CODE: code}
+    )
+    assert result["reason"] == "reauth_successful"
+    assert entry.data[CONF_ACCESS_CODE] == code
+
+
+@pytest.mark.parametrize("code", BAD_CODES)
+async def test_unknown_family_still_rejects_other_lengths_and_characters(hass, code):
+    entry = _probe_entry()
+    entry.add_to_hass(hass)
+    flow_id = await _start_reauth(hass, entry)
+
+    result = await hass.config_entries.flow.async_configure(
+        flow_id, {CONF_ACCESS_CODE: code}
+    )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code"}
+
+
+@pytest.mark.parametrize(
+    ("code", "ok"), [(BLUERIIOT_KEY, True), (ACCESS_CODE, True), ("1234567", False)]
+)
+async def test_manual_never_seen_mac_accepts_either_length(hass, code, ok):
+    with patch(DISCOVERED, return_value=[]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {"manual_mac_address": MAC, CONF_ACCESS_CODE: code, **_sections()},
+        )
+    if ok:
+        assert result["type"] is FlowResultType.CREATE_ENTRY
+    else:
+        assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code"}
+
+
+@pytest.mark.parametrize("code", [BLUERIIOT_KEY, ACCESS_CODE])
+async def test_manual_mac_seen_with_an_unrecognised_advertisement_accepts_either(
+    hass, code
+):
+    """Seen on Bluetooth, but neither a B20/BC3 name nor a ZODIAC frame."""
+    with (
+        patch(DISCOVERED, return_value=[_info(name="Blue Connect")]),
+        patch(SETUP, return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {"manual_mac_address": MAC, CONF_ACCESS_CODE: code, **_sections()},
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+
+
+# ---- Family read from the scan for a typed MAC -----------------------------
+@pytest.mark.parametrize("code", [BLUERIIOT_KEY, ACCESS_CODE])
+async def test_manual_mac_of_a_scanned_blueriiot_accepts_eight_or_nine(hass, code):
+    with (
+        patch(DISCOVERED, return_value=[_info(name=B20_NAME)]),
+        patch(SETUP, return_value=True),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {"manual_mac_address": MAC, CONF_ACCESS_CODE: code, **_sections()},
+        )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+
+
+@pytest.mark.parametrize(
+    "info",
+    [_info(build_frame(conductivity=1200)), _info(name="BC3-1234")],
+    ids=["zodiac-frame", "zodiac-name-only"],
+)
+async def test_manual_mac_of_a_scanned_zodiac_requires_nine(hass, info):
+    with patch(DISCOVERED, return_value=[info]), patch(SETUP, return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+        wrong = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                "manual_mac_address": MAC,
+                CONF_ACCESS_CODE: BLUERIIOT_KEY,
+                **_sections(),
+            },
+        )
+        assert wrong["errors"] == {CONF_ACCESS_CODE: "invalid_access_code_9"}
+        right = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {"manual_mac_address": MAC, CONF_ACCESS_CODE: ACCESS_CODE, **_sections()},
+        )
+    assert right["type"] is FlowResultType.CREATE_ENTRY
+
+
+# ---- Reconfigure to another probe: the new MAC decides ---------------------
+async def test_reconfigure_to_a_scanned_blueriiot_accepts_eight(hass, no_setup):
+    """A ZODIAC entry swapped for a Blue Connect Plus: 8 is fine for the new one."""
+    entry = _probe_entry(NEW_MAC, has_conductivity=True)  # ZODIAC today
+    entry.add_to_hass(hass)
+    with patch(DISCOVERED, return_value=[_info(name=B20_NAME)]):  # MAC is a B20
+        result = await _start_reconfigure(hass, entry)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MAC_ADDRESS: MAC, CONF_ACCESS_CODE: BLUERIIOT_KEY},
+        )
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_MAC_ADDRESS] == MAC
+
+
+async def test_reconfigure_to_a_scanned_zodiac_requires_nine(hass):
+    """A Blueriiot entry swapped for a ZODIAC: the new probe needs 9."""
+    entry = _probe_entry(NEW_MAC, device_type="blueriiot")
+    entry.add_to_hass(hass)
+    with patch(DISCOVERED, return_value=[_info(build_frame(conductivity=1200))]):
+        result = await _start_reconfigure(hass, entry)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MAC_ADDRESS: MAC, CONF_ACCESS_CODE: BLUERIIOT_KEY},
+        )
+    assert result["errors"] == {CONF_ACCESS_CODE: "invalid_access_code_9"}
+
+
+async def test_reconfigure_to_a_never_seen_mac_accepts_either_length(hass, no_setup):
+    entry = _probe_entry(has_conductivity=True)  # ZODIAC today
+    entry.add_to_hass(hass)
+    with patch(DISCOVERED, return_value=[]):
+        result = await _start_reconfigure(hass, entry)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {CONF_MAC_ADDRESS: NEW_MAC, CONF_ACCESS_CODE: BLUERIIOT_KEY},
+        )
+    assert result["reason"] == "reconfigure_successful"

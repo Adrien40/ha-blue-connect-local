@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Blue Connect-konfiguration",
-        "description": "Om Blue Connect inte upptäcks automatiskt, lägg till dess Bluetooth MAC-adress.\n\n**Åtkomstkoden är inte obligatorisk.** Om du vill aktivera analyser på begäran, ange de 9 alfanumeriska tecknen (t.ex. B93XXXXXX). Den finns under enhetens USB-portlucka, eller på sondernas skyddslock!\n\n⚠️ Utan kod fungerar enheten endast i passivt läge: 1 analys i timmen.",
+        "description": "Om Blue Connect inte upptäcks automatiskt, lägg till dess Bluetooth MAC-adress.\n\n**Åtkomstkoden är inte obligatorisk.** Om du vill aktivera analyser på begäran, ange åtkomstkoden: 9 alfanumeriska tecken (t.ex. B93XXXXXX), som finns under enhetens USB-portlucka eller på sondernas skyddslock; på en Blue Connect Plus är det nyckeln som visas i Blueriiot-appen (8 eller 9 tecken)!\n\n⚠️ Utan kod fungerar enheten endast i passivt läge: 1 analys i timmen.",
         "data": {
           "mac_address": "🔎 Upptäckt enhet",
           "manual_mac_address": "✍️ Eller ange MAC-adressen direkt (t.ex. AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Autentisera Blue Connect igen",
-        "description": "Åtkomstkoden för {name} avvisades. Ange den nya 9-teckens åtkomstkoden.",
+        "description": "Åtkomstkoden för {name} avvisades. Ange den nya åtkomstkoden.",
         "data": {
           "access_code": "Åtkomstkod"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ Minsta pH måste vara lägre än högsta pH",
       "orp_threshold_error": "❌ Minsta ORP måste vara lägre än högsta ORP",
       "temp_threshold_error": "❌ Minimitemperaturen måste vara lägre än maximitemperaturen",
-      "invalid_access_code": "❌ Ogiltig åtkomstkod (9 alfanumeriska tecken)."
+      "invalid_access_code": "❌ Ogiltig åtkomstkod (8 eller 9 alfanumeriska tecken).",
+      "invalid_access_code_9": "❌ Ogiltig åtkomstkod: åtkomstkoden till en Blue Connect har 9 alfanumeriska tecken (t.ex. B93XXXXXX)."
     },
     "abort": {
       "already_configured": "⚠️ Den här enheten är redan konfigurerad.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ Minsta pH måste vara lägre än högsta pH",
       "orp_threshold_error": "❌ Minsta ORP måste vara lägre än högsta ORP",
       "temp_threshold_error": "❌ Minimitemperaturen måste vara lägre än maximitemperaturen",
-      "invalid_access_code": "❌ Ogiltig åtkomstkod (9 alfanumeriska tecken).",
+      "invalid_access_code": "❌ Ogiltig åtkomstkod (8 eller 9 alfanumeriska tecken).",
+      "invalid_access_code_9": "❌ Ogiltig åtkomstkod: åtkomstkoden till en Blue Connect har 9 alfanumeriska tecken (t.ex. B93XXXXXX).",
       "ph_calibration_equal": "❌ pH-kalibreringsvärdena måste vara olika",
       "ph_slope_mismatch": "❌ Logiskt fel: Kalibreringslutningen är inkonsekvent",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"

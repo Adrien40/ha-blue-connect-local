@@ -35,11 +35,13 @@ If this project is useful to you, you can support its development 🙏
 ### 📊 Visualization
 
 <p align="center">
-  <img src="docs/screenshots/dashboard_overview.png" width="600">
+  <img src="docs/screenshots/dashboard_overview.png" width="700">
 </p>
 
 <p align="center">
   <em>📊 Overview of pool data in Home Assistant</em>
+  <br>
+  👉 <a href="docs/dashboard_example.md"><strong>Get the dashboard YAML</strong></a>
 </p>
 
 ---
@@ -75,8 +77,8 @@ Blue Connect Local replaces the cloud with a **local control** solution, while o
 ### ✅ Compatibility / Requirements
 * 🏷️ **Supported models**: ZODIAC Blue Connect (Gold / Silver) with **automatic detection and adaptation** of sensors (Conductivity and Salinity).
 * 🏅 **Tested on**: Validated on the **ZODIAC Blue Connect Gold and Silver**.
-* 🔵 **Blueriiot-profile probes (Blue Connect Plus)**: supported since **1.3.0**. The integration detects the Blueriiot GATT profile when it connects and decodes temperature, pH, ORP, conductivity, salinity and battery. **Active Mode only** (Access Code required). Confirmed by a contributor on a **Blue Connect Plus (firmware 2.3.0)**. These probes are auto-discovered when their Bluetooth name starts with **B20** (seen on a Blue Connect Plus); otherwise add them manually with their MAC address and access code.
-* 🔑 **Access Code (Optional)**: Your device's 9-character access code. It isn't required for passive listening, but it is **essential** for on-demand analyses.
+* 🔵 **Blueriiot-profile probes (Blue Connect Plus)**: supported since **1.3.0**. The integration detects the Blueriiot GATT profile when it connects and decodes temperature, pH, ORP, conductivity, salinity and battery. **Active Mode only** (Access Code required). Confirmed by a contributor on a **Blue Connect Plus (firmware 2.3.0)**. These probes are auto-discovered when their Bluetooth name starts with **B20** (seen on a Blue Connect Plus); otherwise add them manually with their MAC address and access code. On a Blue Connect Plus, the access code is the key shown in the Blueriiot app (*Access key*, 8 or 9 characters).
+* 🔑 **Access Code (Optional)**: Your device's access code: **9 characters** on a Blue Connect (ZODIAC), **8 or 9 characters** on a Blue Connect Plus (Blueriiot, shown in its app). It isn't required for passive listening, but it is **essential** for on-demand analyses.
 * 🛠️ **Required hardware**: Internal Bluetooth adapter, USB Bluetooth dongle, or an **ESPHome Bluetooth Proxy** (strongly recommended, [easy installation here](https://esphome.github.io/bluetooth-proxies/)).
 * 📶 **Signal quality**: A stable RSSI signal (ideally **above -75 dBm**) is essential to guarantee a reliable connection to the Blue Connect. Testing shows that a signal below -90 dBm causes frequent read failures.
 * ⏱️ **Real-time monitoring**: A `sensor.*_signal_bluetooth` entity uses Home Assistant's passive listening so you can watch signal strength live — all without draining the Blue Connect's battery!
@@ -97,7 +99,6 @@ Blue Connect Local replaces the cloud with a **local control** solution, while o
 * 🔄 **Sync Modes**: Passive Mode (silent, battery-saving listening) and Active Mode (on-demand Bluetooth analyses via the access code).
 * ⏱️ **Scheduled Analyses on Fixed Time Slots** (Active Mode): set an **Analysis Interval** and a **Reference Time**; analyses run at the same times every day instead of on a rolling interval (see *Scheduled Analyses* below).
 * 🌍 **Multi-language**: Developed in French 🇫🇷 and available in EN, ES, DE, IT, NL, PL, PT, PT-BR, SV, RU, ZH-HANS, ZH-HANT, CS, HU, EL, HR, DA, NB (AI-translated).
-* 📡 Turns your Blue Connect into a true **BLE sensor** for Home Assistant
 
 ---
 
@@ -195,7 +196,7 @@ Once the device has been added, you can click **Configure** ⚙️ to:
 * Set the **Analysis Interval** and the **Reference Time** (⏱️ *Synchronization* section), see *Scheduled Analyses* below.
 * Set your own **custom alert thresholds** (pH Min/Max, ORP Min/Max, etc.) to drive your own automations.
 
-> Find the step-by-step procedure (raw pH / raw ORP, temperature compensation, and Alert Thresholds) in the **[Calibration Guide](calibration_help.md)**. Release notes are in the **[Changelog](CHANGELOG.md)**.
+> Find the step-by-step procedure (raw pH / raw ORP, temperature compensation, and Alert Thresholds) in the **[Calibration Guide](docs/calibration_help.md)**. Release notes are in the **[Changelog](CHANGELOG.md)**.
 
 ### ⏱️ Scheduled Analyses (Active Mode)
 When an **Access Code** is set (Active Mode), automatic analyses are not run "every N minutes since the last one": they are aligned on **fixed time slots**, so you get readings at predictable times, whatever happened before (restart, manual analysis, error).

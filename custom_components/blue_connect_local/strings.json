@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Blue Connect Configuration",
-        "description": "If the Blue Connect is not detected automatically, add its Bluetooth MAC address.\n\n**The Access Code is not mandatory.** If you want to enable on-demand analyses, enter the 9 alphanumeric characters (e.g., B93XXXXXX). It is located under the USB port cap of the device, or on the probes' protection cap!\n\nWithout a code, the device will operate in Passive Mode only: 1 Analysis per hour.",
+        "description": "If the Blue Connect is not detected automatically, add its Bluetooth MAC address.\n\n**The Access Code is not mandatory.** If you want to enable on-demand analyses, enter the Access Code: 9 alphanumeric characters (e.g., B93XXXXXX), located under the USB port cap of the device or on the probes' protection cap; or, for a Blue Connect Plus, the Access key shown in the Blueriiot app (8 or 9 characters)!\n\nWithout a code, the device will operate in Passive Mode only: 1 Analysis per hour.",
         "data": {
           "mac_address": "Discovered Device",
           "manual_mac_address": "Or enter the MAC address directly (e.g., AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Re-authenticate Blue Connect",
-        "description": "The access code for {name} was rejected. Enter the new 9-character access code.",
+        "description": "The access code for {name} was rejected. Enter the new access code.",
         "data": {
           "access_code": "Access Code"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "Minimum pH must be less than maximum pH",
       "orp_threshold_error": "Minimum ORP (Redox) must be less than maximum ORP",
       "temp_threshold_error": "Minimum temperature must be less than maximum temperature",
-      "invalid_access_code": "Invalid Access Code (9 alphanumeric characters)."
+      "invalid_access_code": "Invalid Access Code (8 or 9 alphanumeric characters).",
+      "invalid_access_code_9": "Invalid Access Code: a Blue Connect access code has 9 alphanumeric characters (e.g., B93XXXXXX)."
     },
     "abort": {
       "already_configured": "This device is already configured.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "Minimum pH must be less than maximum pH",
       "orp_threshold_error": "Minimum ORP (Redox) must be less than maximum ORP",
       "temp_threshold_error": "Minimum temperature must be less than maximum temperature",
-      "invalid_access_code": "Invalid Access Code (9 alphanumeric characters).",
+      "invalid_access_code": "Invalid Access Code (8 or 9 alphanumeric characters).",
+      "invalid_access_code_9": "Invalid Access Code: a Blue Connect access code has 9 alphanumeric characters (e.g., B93XXXXXX).",
       "ph_calibration_equal": "pH calibration values must be different",
       "ph_slope_mismatch": "Logical error: The calibration slope is inconsistent",
       "ph_ref_out_of_range": "pH 4: 2.5-5.5, pH 7: 6.5-7.5"

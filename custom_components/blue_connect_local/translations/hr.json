@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Konfiguracija Blue Connect uređaja",
-        "description": "Ako Blue Connect nije automatski otkriven, dodajte njegovu Bluetooth MAC adresu.\n\n**Pristupni kod nije obavezan.** Ako želite omogućiti analize na zahtjev, unesite 9 alfanumeričkih znakova (npr. B93XXXXXX). Nalazi se ispod poklopca USB priključka uređaja ili na zaštitnom poklopcu sondi!\n\n⚠️ Bez koda, uređaj će raditi samo u pasivnom načinu rada: 1 analiza na sat.",
+        "description": "Ako Blue Connect nije automatski otkriven, dodajte njegovu Bluetooth MAC adresu.\n\n**Pristupni kod nije obavezan.** Ako želite omogućiti analize na zahtjev, unesite pristupni kod: 9 alfanumeričkih znakova (npr. B93XXXXXX) koji se nalaze ispod poklopca USB priključka uređaja ili na zaštitnom poklopcu sondi; kod uređaja Blue Connect Plus to je pristupni ključ prikazan u aplikaciji Blueriiot (8 ili 9 znakova)!\n\n⚠️ Bez koda, uređaj će raditi samo u pasivnom načinu rada: 1 analiza na sat.",
         "data": {
           "mac_address": "🔎 Otkriveni uređaj",
           "manual_mac_address": "✍️ Ili izravno unesite MAC adresu (npr. AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Ponovna autentifikacija Blue Connect",
-        "description": "Pristupni kod za {name} je odbijen. Unesite novi pristupni kod od 9 znakova.",
+        "description": "Pristupni kod za {name} je odbijen. Unesite novi pristupni kod.",
         "data": {
           "access_code": "Pristupni Kod"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ Minimalni pH mora biti manji od maksimalnog pH",
       "orp_threshold_error": "❌ Minimalni ORP mora biti manji od maksimalnog ORP",
       "temp_threshold_error": "❌ Minimalna temperatura mora biti niža od maksimalne temperature",
-      "invalid_access_code": "❌ Nevažeći pristupni kod (9 alfanumeričkih znakova)."
+      "invalid_access_code": "❌ Nevažeći pristupni kod (8 ili 9 alfanumeričkih znakova).",
+      "invalid_access_code_9": "❌ Nevažeći pristupni kod: pristupni kod uređaja Blue Connect ima 9 alfanumeričkih znakova (npr. B93XXXXXX)."
     },
     "abort": {
       "already_configured": "⚠️ Ovaj uređaj je već konfiguriran.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ Minimalni pH mora biti manji od maksimalnog pH",
       "orp_threshold_error": "❌ Minimalni ORP mora biti manji od maksimalnog ORP",
       "temp_threshold_error": "❌ Minimalna temperatura mora biti niža od maksimalne temperature",
-      "invalid_access_code": "❌ Nevažeći pristupni kod (9 alfanumeričkih znakova).",
+      "invalid_access_code": "❌ Nevažeći pristupni kod (8 ili 9 alfanumeričkih znakova).",
+      "invalid_access_code_9": "❌ Nevažeći pristupni kod: pristupni kod uređaja Blue Connect ima 9 alfanumeričkih znakova (npr. B93XXXXXX).",
       "ph_calibration_equal": "❌ Vrijednosti kalibracije pH moraju biti različite",
       "ph_slope_mismatch": "❌ Logička pogreška: Nagib kalibracije je nedosljedan",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"

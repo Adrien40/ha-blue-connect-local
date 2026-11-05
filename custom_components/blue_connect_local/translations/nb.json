@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Blue Connect-konfigurasjon",
-        "description": "Hvis Blue Connect ikke oppdages automatisk, legg til Bluetooth MAC-adressen.\n\n**Tilgangskoden er ikke obligatorisk.** Hvis du vil aktivere analyser på forespørsel, skriv inn de 9 alfanumeriske tegnene (f.eks. B93XXXXXX). Den finnes under USB-portdekselet på enheten, eller på beskyttelsesdekselet til sondene!\n\n⚠️ Uten kode fungerer enheten kun i passiv modus: 1 analyse i timen.",
+        "description": "Hvis Blue Connect ikke oppdages automatisk, legg til Bluetooth MAC-adressen.\n\n**Tilgangskoden er ikke obligatorisk.** Hvis du vil aktivere analyser på forespørsel, skriv inn tilgangskoden: 9 alfanumeriske tegn (f.eks. B93XXXXXX), som finnes under USB-portdekselet på enheten eller på beskyttelsesdekselet til sondene; på en Blue Connect Plus er det nøkkelen som vises i Blueriiot-appen (8 eller 9 tegn)!\n\n⚠️ Uten kode fungerer enheten kun i passiv modus: 1 analyse i timen.",
         "data": {
           "mac_address": "🔎 Oppdaget enhet",
           "manual_mac_address": "✍️ Eller angi MAC-adressen direkte (f.eks. AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Re-autentiser Blue Connect",
-        "description": "Tilgangskoden for {name} ble avvist. Skriv inn den nye 9-tegns tilgangskoden.",
+        "description": "Tilgangskoden for {name} ble avvist. Skriv inn den nye tilgangskoden.",
         "data": {
           "access_code": "Tilgangskode"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ Minimum pH må være lavere enn maksimum pH",
       "orp_threshold_error": "❌ Minimum ORP må være lavere enn maksimum ORP",
       "temp_threshold_error": "❌ Minimumstemperaturen må være lavere enn maksimumstemperaturen",
-      "invalid_access_code": "❌ Ugyldig tilgangskode (9 alfanumeriske tegn)."
+      "invalid_access_code": "❌ Ugyldig tilgangskode (8 eller 9 alfanumeriske tegn).",
+      "invalid_access_code_9": "❌ Ugyldig tilgangskode: tilgangskoden til en Blue Connect har 9 alfanumeriske tegn (f.eks. B93XXXXXX)."
     },
     "abort": {
       "already_configured": "⚠️ Denne enheten er allerede konfigurert.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ Minimum pH må være lavere enn maksimum pH",
       "orp_threshold_error": "❌ Minimum ORP må være lavere enn maksimum ORP",
       "temp_threshold_error": "❌ Minimumstemperaturen må være lavere enn maksimumstemperaturen",
-      "invalid_access_code": "❌ Ugyldig tilgangskode (9 alfanumeriske tegn).",
+      "invalid_access_code": "❌ Ugyldig tilgangskode (8 eller 9 alfanumeriske tegn).",
+      "invalid_access_code_9": "❌ Ugyldig tilgangskode: tilgangskoden til en Blue Connect har 9 alfanumeriske tegn (f.eks. B93XXXXXX).",
       "ph_calibration_equal": "❌ pH-kalibreringsverdiene må være forskjellige",
       "ph_slope_mismatch": "❌ Logisk feil: Kalibreringshellingen er inkonsekvent",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"

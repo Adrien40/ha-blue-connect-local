@@ -35,11 +35,13 @@ Si ce projet vous est utile, vous pouvez soutenir son développement 🙏
 ### 📊 Visualisation
 
 <p align="center">
-  <img src="docs/screenshots/dashboard_overview.png" width="600">
+  <img src="docs/screenshots/dashboard_overview.png" width="700">
 </p>
 
 <p align="center">
   <em>📊 Vue d’ensemble des données de la piscine dans Home Assistant</em>
+  <br>
+  👉 <a href="docs/dashboard_example.fr.md"><strong>Obtenir le YAML du dashboard</strong></a>
 </p>
 
 ---
@@ -75,8 +77,8 @@ Blue Connect Local permet de remplacer le cloud par une solution de **local cont
 ### ✅ Compatibilité / Prérequis
 * 🏷️ **Modèles supportés** : ZODIAC Blue Connect (Gold / Silver) avec **détection et adaptation automatiques** des capteurs (Conductivité et Salinité).
 * 🏅 **Testé sur** : Validé sur le **ZODIAC Blue Connect Gold et Silver**.
-* 🔵 **Sondes au profil Blueriiot (Blue Connect Plus)** : prises en charge depuis **1.3.0**. L'intégration détecte le profil GATT Blueriiot lors de la connexion et décode la température, le pH, le Redox (ORP), la conductivité, la salinité et la batterie. **Mode Actif uniquement** (Code d'Accès requis). Confirmé par un contributeur sur un **Blue Connect Plus (firmware 2.3.0)**. Ces sondes sont découvertes automatiquement lorsque leur nom Bluetooth commence par **B20** (vu sur un Blue Connect Plus) ; sinon, ajoutez-les manuellement avec leur adresse MAC et leur code d'accès.
-* 🔑 **Code d'Accès (Optionnel)** : Le code d'accès à 9 caractères de votre appareil. S'il n'est pas obligatoire pour l'écoute passive, il est **indispensable** pour les analyses à la demande.
+* 🔵 **Sondes au profil Blueriiot (Blue Connect Plus)** : prises en charge depuis **1.3.0**. L'intégration détecte le profil GATT Blueriiot lors de la connexion et décode la température, le pH, le Redox (ORP), la conductivité, la salinité et la batterie. **Mode Actif uniquement** (Code d'Accès requis). Confirmé par un contributeur sur un **Blue Connect Plus (firmware 2.3.0)**. Ces sondes sont découvertes automatiquement lorsque leur nom Bluetooth commence par **B20** (vu sur un Blue Connect Plus) ; sinon, ajoutez-les manuellement avec leur adresse MAC et leur code d'accès. Sur un Blue Connect Plus, le code d'accès est la clé affichée dans l'application Blueriiot (*Clé d'accès*, 8 ou 9 caractères).
+* 🔑 **Code d'Accès (Optionnel)** : Le code d'accès de votre appareil : **9 caractères** sur un Blue Connect (ZODIAC), **8 ou 9 caractères** sur un Blue Connect Plus (Blueriiot, affiché dans son application). S'il n'est pas obligatoire pour l'écoute passive, il est **indispensable** pour les analyses à la demande.
 * 🛠️ **Matériel requis** : Adaptateur Bluetooth interne, clé USB Bluetooth ou **Bluetooth Proxy ESPHome** (Fortement recommandé, [installation facile ici](https://esphome.github.io/bluetooth-proxies/)).
 * 📶 **Qualité du signal** : Un signal RSSI stable (idéalement **supérieur à -75 dBm**) est indispensable pour garantir la connexion au Blue Connect. Les tests montrent qu'un signal inférieur à -90 dBm entraîne des échecs de lecture fréquents.
 * ⏱️ **Surveillance en temps réel** : Une entité `sensor.*_signal_bluetooth` exploite l'écoute passive de Home Assistant pour vous permettre de surveiller la force du signal en direct, le tout sans drainer la batterie du Blue Connect !
@@ -196,7 +198,7 @@ Une fois l'appareil ajouté, vous pouvez cliquer sur **Configurer** ⚙️ pour 
 * Régler l'**Intervalle d'Analyse** et l'**Heure de Référence** (section ⏱️ *Synchronisation*), voir *Analyses planifiées* plus bas.
 * Définir vos **seuils d'alerte personnalisés** (pH Min/Max, ORP Min/Max, etc.) pour piloter vos propres automatisations.
 
-> Retrouvez la procédure pas à pas (pH brut / Redox brut, ajustement selon la température et Seuils d'Alerte) dans le **[Guide de Calibration](calibration_help.fr.md)**. Les notes de version sont dans le **[Journal des modifications](CHANGELOG.fr.md)**.
+> Retrouvez la procédure pas à pas (pH brut / Redox brut, ajustement selon la température et Seuils d'Alerte) dans le **[Guide de Calibration](docs/calibration_help.fr.md)**. Les notes de version sont dans le **[Journal des modifications](CHANGELOG.fr.md)**.
 
 ### ⏱️ Analyses planifiées (Mode Actif)
 Quand un **Code d'Accès** est renseigné (Mode Actif), les analyses automatiques ne se déclenchent pas « toutes les N minutes après la précédente » : elles sont calées sur des **créneaux fixes**, ce qui donne des relevés à des heures prévisibles, quoi qu'il se soit passé avant (redémarrage, analyse manuelle, erreur).

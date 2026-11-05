@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Blue Connect konfiguráció",
-        "description": "Ha a Blue Connect nem érzékelhető automatikusan, adja meg a Bluetooth MAC-címét.\n\n**A hozzáférési kód nem kötelező.** Ha szeretné engedélyezni az igény szerinti elemzéseket, adja meg a 9 alfanumerikus karaktert (pl. B93XXXXXX). Az eszköz USB-portjának fedele alatt, vagy a szondák védőkupakján található!\n\n⚠️ Kód nélkül az eszköz csak passzív módban működik: óránként 1 elemzés.",
+        "description": "Ha a Blue Connect nem érzékelhető automatikusan, adja meg a Bluetooth MAC-címét.\n\n**A hozzáférési kód nem kötelező.** Ha szeretné engedélyezni az igény szerinti elemzéseket, adja meg a hozzáférési kódot: 9 alfanumerikus karakter (pl. B93XXXXXX), amely az eszköz USB-portjának fedele alatt vagy a szondák védőkupakján található; Blue Connect Plus esetén a Blueriiot alkalmazásban megjelenő hozzáférési kulcs (8 vagy 9 karakter)!\n\n⚠️ Kód nélkül az eszköz csak passzív módban működik: óránként 1 elemzés.",
         "data": {
           "mac_address": "🔎 Felfedezett eszköz",
           "manual_mac_address": "✍️ Vagy adja meg közvetlenül a MAC-címet (pl. AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Blue Connect újrahitelesítése",
-        "description": "A(z) {name} hozzáférési kódja elutasításra került. Adja meg az új 9 karakteres hozzáférési kódot.",
+        "description": "A(z) {name} hozzáférési kódja elutasításra került. Adja meg az új hozzáférési kódot.",
         "data": {
           "access_code": "Hozzáférési Kód"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ A minimum pH-nak kisebbnek kell lennie, mint a maximum pH",
       "orp_threshold_error": "❌ A minimum ORP-nek kisebbnek kell lennie, mint a maximum ORP",
       "temp_threshold_error": "❌ A minimum hőmérsékletnek alacsonyabbnak kell lennie, mint a maximum hőmérséklet",
-      "invalid_access_code": "❌ Érvénytelen hozzáférési kód (9 alfanumerikus karakter)."
+      "invalid_access_code": "❌ Érvénytelen hozzáférési kód (8 vagy 9 alfanumerikus karakter).",
+      "invalid_access_code_9": "❌ Érvénytelen hozzáférési kód: a Blue Connect hozzáférési kódja 9 alfanumerikus karakterből áll (pl. B93XXXXXX)."
     },
     "abort": {
       "already_configured": "⚠️ Ez az eszköz már konfigurálva van.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ A minimum pH-nak kisebbnek kell lennie, mint a maximum pH",
       "orp_threshold_error": "❌ A minimum ORP-nek kisebbnek kell lennie, mint a maximum ORP",
       "temp_threshold_error": "❌ A minimum hőmérsékletnek alacsonyabbnak kell lennie, mint a maximum hőmérséklet",
-      "invalid_access_code": "❌ Érvénytelen hozzáférési kód (9 alfanumerikus karakter).",
+      "invalid_access_code": "❌ Érvénytelen hozzáférési kód (8 vagy 9 alfanumerikus karakter).",
+      "invalid_access_code_9": "❌ Érvénytelen hozzáférési kód: a Blue Connect hozzáférési kódja 9 alfanumerikus karakterből áll (pl. B93XXXXXX).",
       "ph_calibration_equal": "❌ A pH kalibrációs értékeinek különbözniük kell",
       "ph_slope_mismatch": "❌ Logikai hiba: A kalibrációs meredekség nem konzisztens",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"

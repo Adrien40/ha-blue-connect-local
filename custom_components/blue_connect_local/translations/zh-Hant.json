@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Blue Connect 設定",
-        "description": "如果未自動偵測到 Blue Connect，請新增其藍牙 MAC 位址。\n\n**存取碼並非必填。** 如果您想啟用隨選分析，請輸入 9 位英數字元（例如 B93XXXXXX）。它位於裝置 USB 連接埠蓋下方，或探頭保護蓋上！\n\n⚠️ 若沒有存取碼，裝置將僅以被動模式運作：每小時 1 次分析。",
+        "description": "如果未自動偵測到 Blue Connect，請新增其藍牙 MAC 位址。\n\n**存取碼並非必填。** 如果您想啟用隨選分析，請輸入存取碼：9 位英數字元（例如 B93XXXXXX），位於裝置 USB 連接埠蓋下方或探頭保護蓋上；Blue Connect Plus 則為 Blueriiot 應用程式中顯示的存取金鑰（8 位或 9 位）！\n\n⚠️ 若沒有存取碼，裝置將僅以被動模式運作：每小時 1 次分析。",
         "data": {
           "mac_address": "🔎 已發現的裝置",
           "manual_mac_address": "✍️ 或直接輸入 MAC 位址（例如 AA:BB:CC:DD:EE:FF）",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "重新驗證 Blue Connect",
-        "description": "{name} 的存取代碼被拒絕。請輸入新的9位存取代碼。",
+        "description": "{name} 的存取代碼被拒絕。請輸入新的存取代碼。",
         "data": {
           "access_code": "存取代碼"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ 最小 pH 必須小於最大 pH",
       "orp_threshold_error": "❌ 最小 ORP 必須小於最大 ORP",
       "temp_threshold_error": "❌ 最低溫度必須低於最高溫度",
-      "invalid_access_code": "❌ 存取碼無效（9 位英數字元）。"
+      "invalid_access_code": "❌ 存取碼無效（8 位或 9 位英數字元）。",
+      "invalid_access_code_9": "❌ 存取碼無效：Blue Connect 的存取碼為 9 位英數字元（例如 B93XXXXXX）。"
     },
     "abort": {
       "already_configured": "⚠️ 此裝置已完成設定。",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ 最小 pH 必須小於最大 pH",
       "orp_threshold_error": "❌ 最小 ORP 必須小於最大 ORP",
       "temp_threshold_error": "❌ 最低溫度必須低於最高溫度",
-      "invalid_access_code": "❌ 存取碼無效（9 位英數字元）。",
+      "invalid_access_code": "❌ 存取碼無效（8 位或 9 位英數字元）。",
+      "invalid_access_code_9": "❌ 存取碼無效：Blue Connect 的存取碼為 9 位英數字元（例如 B93XXXXXX）。",
       "ph_calibration_equal": "❌ pH 校準值必須不同",
       "ph_slope_mismatch": "❌ 邏輯錯誤：校準斜率不一致",
       "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5"

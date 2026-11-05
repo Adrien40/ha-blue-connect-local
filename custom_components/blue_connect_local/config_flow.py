@@ -11,7 +11,7 @@ from homeassistant.components.bluetooth import (
     async_discovered_service_info,
 )
 from homeassistant.config_entries import ConfigFlowResult
-from homeassistant.core import callback
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import section
 from homeassistant.helpers import selector
 from homeassistant.helpers.typing import UNDEFINED
@@ -104,6 +104,76 @@ def _model_from_service_info(
     return GENERIC_MODEL_NAME, None
 
 
+# Access-code length per probe family. A ZODIAC Blue Connect uses exactly 9
+# characters (e.g. B93XXXXXX, under the USB cap). A Blueriiot-profile probe
+# (Blue Connect Plus) shows its "Access key" in the Blueriiot app: 8 characters
+# on some units (issue #6), 9 on others (working in 1.2.x), so both are
+# accepted. The same goes for a probe whose family is not known yet (a MAC
+# typed by hand and never seen over Bluetooth).
+FAMILY_ZODIAC = "zodiac"
+FAMILY_BLUERIIOT = "blueriiot"
+ACCESS_CODE_LENGTH_ZODIAC = 9
+ACCESS_CODE_LENGTHS_OTHER = (8, 9)
+
+
+def _family_from_service_info(info: BluetoothServiceInfoBleak) -> str | None:
+    """Return the probe family seen in an advertisement, None if undetermined."""
+    model, has_conductivity = _model_from_service_info(info)
+    if model == MODEL_BLUE_CONNECT_PLUS:
+        return FAMILY_BLUERIIOT
+    if has_conductivity is not None or (info.name or "").upper().startswith("BC3"):
+        return FAMILY_ZODIAC
+    return None
+
+
+def _family_from_mac(hass: HomeAssistant, mac: str) -> str | None:
+    """Look a MAC up in the Bluetooth discovery cache and return its family."""
+    for info in async_discovered_service_info(hass, False):
+        if info.address.upper() == mac.upper():
+            return _family_from_service_info(info)
+    return None
+
+
+def _family_from_entry(entry: BlueConnectConfigEntry) -> str | None:
+    """Return the family of a configured probe, None if not known yet.
+
+    A Blueriiot probe is flagged at discovery (entry data) or when the GATT
+    profile is detected on connection (live coordinator data); a ZODIAC one by
+    its advertised frame (has_conductivity) or its SKU.
+    """
+    coordinator = getattr(entry, "runtime_data", None)
+    live: dict[str, Any] = coordinator.data if coordinator and coordinator.data else {}
+    if DEVICE_TYPE_BLUERIIOT in (
+        entry.data.get("device_type"),
+        live.get("device_type"),
+    ):
+        return FAMILY_BLUERIIOT
+    if (
+        entry.data.get("has_conductivity") is not None
+        or live.get("has_conductivity") is not None
+        or live.get("sku")
+    ):
+        return FAMILY_ZODIAC
+    return None
+
+
+def _access_code_error(access_code: str, family: str | None) -> str | None:
+    """Return the translation key of an access code error, None when valid."""
+    if family == FAMILY_ZODIAC:
+        lengths: tuple[int, ...] = (ACCESS_CODE_LENGTH_ZODIAC,)
+        error = "invalid_access_code_9"
+    else:
+        lengths = ACCESS_CODE_LENGTHS_OTHER
+        error = "invalid_access_code"
+    if (
+        len(access_code) not in lengths
+        or not access_code.isascii()
+        or not access_code.isalnum()
+    ):
+        return error
+    return None
+
+
 class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     MINOR_VERSION = 4
@@ -115,6 +185,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._discovered_name: str = GENERIC_MODEL_NAME
         self._detected_model: str = GENERIC_MODEL_NAME
         self._has_conductivity: bool | None = None
+        self._family: str | None = None
 
     def _get_display_name(self, bt_name: str | None, model: str) -> str:
         if (
@@ -138,6 +209,7 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             discovery_info
         )
         self._detected_model = detected_model
+        self._family = _family_from_service_info(discovery_info)
         self._discovered_name = self._get_display_name(self._bt_name, detected_model)
 
         self.context["title_placeholders"] = {"name": self._discovered_name}
@@ -156,12 +228,10 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             access_code = user_input[CONF_ACCESS_CODE].strip()
-            if (
-                len(access_code) != 9
-                or not access_code.isascii()
-                or not access_code.isalnum()
+            if error := _access_code_error(
+                access_code, _family_from_entry(reauth_entry)
             ):
-                errors[CONF_ACCESS_CODE] = "invalid_access_code"
+                errors[CONF_ACCESS_CODE] = error
             else:
                 # The options flow stores the access code in `options`, and
                 # async_setup_entry gives `options` priority over `data`:
@@ -217,12 +287,15 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "mac_conflict"
 
             access_code = flat_input.get(CONF_ACCESS_CODE, "").strip()
-            if access_code and (
-                len(access_code) != 9
-                or not access_code.isascii()
-                or not access_code.isalnum()
-            ):
-                errors[CONF_ACCESS_CODE] = "invalid_access_code"
+            candidate_mac = dropdown_mac or manual_mac
+            if candidate_mac and candidate_mac == self._mac_address:
+                family = self._family
+            else:
+                family = None
+            if family is None and candidate_mac:
+                family = _family_from_mac(self.hass, candidate_mac)
+            if access_code and (error := _access_code_error(access_code, family)):
+                errors[CONF_ACCESS_CODE] = error
 
             if not errors:
                 validation = validate_calibration(flat_input)
@@ -509,11 +582,14 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             if not MAC_PATTERN.match(mac_raw):
                 errors[CONF_MAC_ADDRESS] = "invalid_mac"
             elif access_code and (
-                len(access_code) != 9
-                or not access_code.isascii()
-                or not access_code.isalnum()
+                error := _access_code_error(
+                    access_code,
+                    _family_from_entry(reconfigure_entry)
+                    if mac_raw.upper() == reconfigure_entry.data.get(CONF_MAC_ADDRESS)
+                    else _family_from_mac(self.hass, mac_raw),
+                )
             ):
-                errors[CONF_ACCESS_CODE] = "invalid_access_code"
+                errors[CONF_ACCESS_CODE] = error
             else:
                 final_mac = mac_raw.upper()
                 if final_mac != reconfigure_entry.data.get(CONF_MAC_ADDRESS):
@@ -580,11 +656,9 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
 
             access_code = flat_input.get(CONF_ACCESS_CODE, "").strip()
             if access_code and (
-                len(access_code) != 9
-                or not access_code.isascii()
-                or not access_code.isalnum()
+                error := _access_code_error(access_code, _family_from_entry(entry))
             ):
-                errors[CONF_ACCESS_CODE] = "invalid_access_code"
+                errors[CONF_ACCESS_CODE] = error
 
             if not errors:
                 validation = validate_calibration(flat_input)

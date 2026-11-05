@@ -1,5 +1,27 @@
 # Blue Connect Local - Changelog
 
+## 1.3.1
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
+### 🐛 Bug fixes
+- **Blue Connect Plus: an 8-character access key is now accepted** ([#6](https://github.com/Adrien40/ha-blue-connect-local/issues/6)). Version 1.3.0 required exactly 9 characters. On a Plus, the key is the *Access key* shown in the Blueriiot app.
+
+### ✨ Improvements
+- Access code length checked per probe family: 9 characters for ZODIAC, 8 or 9 for Blueriiot (Blue Connect Plus), either one when the family is unknown. Applies to the setup, re-authentication, reconfiguration and options forms.
+- Shorter, more precise form hints and error messages, in all supported languages.
+
+### 📚 Documentation
+- New **dashboard example** page ([EN](docs/dashboard_example.md) / [FR](docs/dashboard_example.fr.md)): the YAML of the dashboard shown in the README.
+
+### 🧰 Maintenance
+- Tests: 565 (514 before), 100 % coverage, run on Home Assistant 2026.10.2 with Python 3.14.
+
+### 🙏 Acknowledgements
+- Thanks to [@tomvleminckx-cmd](https://github.com/tomvleminckx-cmd) for his report ([#6](https://github.com/Adrien40/ha-blue-connect-local/issues/6)) and for testing on his Blue Connect Plus.
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
 ## 1.3.0
 
 🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬

@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Konfigurace Blue Connect",
-        "description": "Pokud není Blue Connect zjištěn automaticky, přidejte jeho MAC adresu Bluetooth.\n\n**Přístupový kód není povinný.** Pokud chcete povolit analýzy na vyžádání, zadejte 9 alfanumerických znaků (např. B93XXXXXX). Najdete jej pod krytkou USB portu zařízení nebo na ochranném krytu sond!\n\n⚠️ Bez kódu bude zařízení fungovat pouze v pasivním režimu: 1 analýza za hodinu.",
+        "description": "Pokud není Blue Connect zjištěn automaticky, přidejte jeho MAC adresu Bluetooth.\n\n**Přístupový kód není povinný.** Pokud chcete povolit analýzy na vyžádání, zadejte přístupový kód: 9 alfanumerických znaků (např. B93XXXXXX), který najdete pod krytkou USB portu zařízení nebo na ochranném krytu sond; u Blue Connect Plus je to přístupový klíč zobrazený v aplikaci Blueriiot (8 nebo 9 znaků)!\n\n⚠️ Bez kódu bude zařízení fungovat pouze v pasivním režimu: 1 analýza za hodinu.",
         "data": {
           "mac_address": "🔎 Nalezené zařízení",
           "manual_mac_address": "✍️ Nebo zadejte MAC adresu přímo (např. AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Znovu ověřit Blue Connect",
-        "description": "Přístupový kód pro {name} byl odmítnut. Zadejte nový 9místný přístupový kód.",
+        "description": "Přístupový kód pro {name} byl odmítnut. Zadejte nový přístupový kód.",
         "data": {
           "access_code": "Přístupový kód"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ Minimální pH musí být nižší než maximální pH",
       "orp_threshold_error": "❌ Minimální ORP musí být nižší než maximální ORP",
       "temp_threshold_error": "❌ Minimální teplota musí být nižší než maximální teplota",
-      "invalid_access_code": "❌ Neplatný přístupový kód (9 alfanumerických znaků)."
+      "invalid_access_code": "❌ Neplatný přístupový kód (8 nebo 9 alfanumerických znaků).",
+      "invalid_access_code_9": "❌ Neplatný přístupový kód: přístupový kód Blue Connect má 9 alfanumerických znaků (např. B93XXXXXX)."
     },
     "abort": {
       "already_configured": "⚠️ Toto zařízení je již nakonfigurováno.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ Minimální pH musí být nižší než maximální pH",
       "orp_threshold_error": "❌ Minimální ORP musí být nižší než maximální ORP",
       "temp_threshold_error": "❌ Minimální teplota musí být nižší než maximální teplota",
-      "invalid_access_code": "❌ Neplatný přístupový kód (9 alfanumerických znaků).",
+      "invalid_access_code": "❌ Neplatný přístupový kód (8 nebo 9 alfanumerických znaků).",
+      "invalid_access_code_9": "❌ Neplatný přístupový kód: přístupový kód Blue Connect má 9 alfanumerických znaků (např. B93XXXXXX).",
       "ph_calibration_equal": "❌ Kalibrační hodnoty pH musí být odlišné",
       "ph_slope_mismatch": "❌ Logická chyba: Kalibrační sklon je nekonzistentní",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"

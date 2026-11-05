@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Blue Connect-configuratie",
-        "description": "Als de Blue Connect niet automatisch wordt gedetecteerd, voeg dan het Bluetooth MAC-adres toe.\n\n**De toegangscode is niet verplicht.** Als u analyses op aanvraag wilt inschakelen, voer dan de 9 alfanumerieke tekens in (bijv. B93XXXXXX). Deze bevindt zich onder het klepje van de USB-poort van het apparaat, of op de beschermkap van de sondes!\n\n⚠️ Zonder code werkt het apparaat alleen in de passieve modus: 1 analyse per uur.",
+        "description": "Als de Blue Connect niet automatisch wordt gedetecteerd, voeg dan het Bluetooth MAC-adres toe.\n\n**De toegangscode is niet verplicht.** Als u analyses op aanvraag wilt inschakelen, voer dan de toegangscode in: 9 alfanumerieke tekens (bijv. B93XXXXXX) die u vindt onder het klepje van de USB-poort van het apparaat of op de beschermkap van de sondes; bij een Blue Connect Plus is dat de toegangssleutel die in de Blueriiot-app staat (8 of 9 tekens)!\n\n⚠️ Zonder code werkt het apparaat alleen in de passieve modus: 1 analyse per uur.",
         "data": {
           "mac_address": "🔎 Gevonden apparaat",
           "manual_mac_address": "✍️ Of voer het MAC-adres rechtstreeks in (bijv. AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Blue Connect opnieuw verifiëren",
-        "description": "De toegangscode voor {name} is geweigerd. Voer de nieuwe toegangscode van 9 tekens in.",
+        "description": "De toegangscode voor {name} is geweigerd. Voer de nieuwe toegangscode in.",
         "data": {
           "access_code": "Toegangscode"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ Minimum pH moet lager zijn dan maximum pH",
       "orp_threshold_error": "❌ Minimum ORP moet lager zijn dan maximum ORP",
       "temp_threshold_error": "❌ De minimumtemperatuur moet lager zijn dan de maximumtemperatuur",
-      "invalid_access_code": "❌ Ongeldige toegangscode (9 alfanumerieke tekens)."
+      "invalid_access_code": "❌ Ongeldige toegangscode (8 of 9 alfanumerieke tekens).",
+      "invalid_access_code_9": "❌ Ongeldige toegangscode: de toegangscode van een Blue Connect bestaat uit 9 alfanumerieke tekens (bijv. B93XXXXXX)."
     },
     "abort": {
       "already_configured": "⚠️ Dit apparaat is al geconfigureerd.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ Minimum pH moet lager zijn dan maximum pH",
       "orp_threshold_error": "❌ Minimum ORP moet lager zijn dan maximum ORP",
       "temp_threshold_error": "❌ De minimumtemperatuur moet lager zijn dan de maximumtemperatuur",
-      "invalid_access_code": "❌ Ongeldige toegangscode (9 alfanumerieke tekens).",
+      "invalid_access_code": "❌ Ongeldige toegangscode (8 of 9 alfanumerieke tekens).",
+      "invalid_access_code_9": "❌ Ongeldige toegangscode: de toegangscode van een Blue Connect bestaat uit 9 alfanumerieke tekens (bijv. B93XXXXXX).",
       "ph_calibration_equal": "❌ De pH-kalibratiewaarden moeten verschillend zijn",
       "ph_slope_mismatch": "❌ Logische fout: De kalibratiehelling is inconsistent",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"

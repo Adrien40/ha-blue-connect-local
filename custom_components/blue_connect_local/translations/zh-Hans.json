@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Blue Connect 配置",
-        "description": "如果未自动检测到 Blue Connect，请添加其蓝牙 MAC 地址。\n\n**访问代码不是必填项。** 如果您想启用按需分析，请输入 9 位字母数字字符（例如 B93XXXXXX）。它位于设备 USB 端口盖下方，或探头保护盖上！\n\n⚠️ 如果没有代码，设备将仅以被动模式运行：每小时 1 次分析。",
+        "description": "如果未自动检测到 Blue Connect，请添加其蓝牙 MAC 地址。\n\n**访问代码不是必填项。** 如果您想启用按需分析，请输入访问代码：9 位字母数字字符（例如 B93XXXXXX），位于设备 USB 端口盖下方或探头保护盖上；Blue Connect Plus 则为 Blueriiot 应用中显示的访问密钥（8 位或 9 位）！\n\n⚠️ 如果没有代码，设备将仅以被动模式运行：每小时 1 次分析。",
         "data": {
           "mac_address": "🔎 已发现的设备",
           "manual_mac_address": "✍️ 或直接输入 MAC 地址（例如 AA:BB:CC:DD:EE:FF）",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "重新验证 Blue Connect",
-        "description": "{name} 的访问代码被拒绝。请输入新的9位访问代码。",
+        "description": "{name} 的访问代码被拒绝。请输入新的访问代码。",
         "data": {
           "access_code": "访问代码"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ 最小 pH 必须小于最大 pH",
       "orp_threshold_error": "❌ 最小 ORP 必须小于最大 ORP",
       "temp_threshold_error": "❌ 最低温度必须低于最高温度",
-      "invalid_access_code": "❌ 访问代码无效（9 位字母数字字符）。"
+      "invalid_access_code": "❌ 访问代码无效（8 位或 9 位字母数字字符）。",
+      "invalid_access_code_9": "❌ 访问代码无效：Blue Connect 的访问代码为 9 位字母数字字符（例如 B93XXXXXX）。"
     },
     "abort": {
       "already_configured": "⚠️ 此设备已配置。",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ 最小 pH 必须小于最大 pH",
       "orp_threshold_error": "❌ 最小 ORP 必须小于最大 ORP",
       "temp_threshold_error": "❌ 最低温度必须低于最高温度",
-      "invalid_access_code": "❌ 访问代码无效（9 位字母数字字符）。",
+      "invalid_access_code": "❌ 访问代码无效（8 位或 9 位字母数字字符）。",
+      "invalid_access_code_9": "❌ 访问代码无效：Blue Connect 的访问代码为 9 位字母数字字符（例如 B93XXXXXX）。",
       "ph_calibration_equal": "❌ pH 校准值必须不同",
       "ph_slope_mismatch": "❌ 逻辑错误：校准斜率不一致",
       "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5"

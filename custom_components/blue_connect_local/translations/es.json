@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "⚙️ Configuración de Blue Connect",
-        "description": "Si el Blue Connect no se detecta automáticamente, añada su dirección MAC Bluetooth.\n\n**El Código de Acceso no es obligatorio.** Si desea habilitar los análisis a demanda, introduzca los 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX). Se encuentra bajo la tapa del puerto USB del dispositivo, o en la tapa de protección de las sondas.\n\n⚠️ Sin código, el dispositivo funcionará únicamente en Modo Pasivo: 1 análisis por hora.",
+        "description": "Si el Blue Connect no se detecta automáticamente, añada su dirección MAC Bluetooth.\n\n**El Código de Acceso no es obligatorio.** Si desea habilitar los análisis a demanda, introduzca el Código de Acceso: 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX), que se encuentran bajo la tapa del puerto USB del dispositivo o en la tapa de protección de las sondas; en un Blue Connect Plus, la clave de acceso que muestra la aplicación Blueriiot (8 o 9 caracteres).\n\n⚠️ Sin código, el dispositivo funcionará únicamente en Modo Pasivo: 1 análisis por hora.",
         "data": {
           "mac_address": "🔎 Dispositivo Detectado",
           "manual_mac_address": "✍️ O introduzca la dirección MAC directamente (por ejemplo, AA:BB:CC:DD:EE:FF)",
@@ -67,7 +67,7 @@
       },
       "reauth_confirm": {
         "title": "Reautenticar Blue Connect",
-        "description": "Se rechazó el código de acceso de {name}. Introduzca el nuevo código de acceso de 9 caracteres.",
+        "description": "Se rechazó el código de acceso de {name}. Introduzca el nuevo código de acceso.",
         "data": {
           "access_code": "Código de Acceso"
         },
@@ -100,7 +100,8 @@
       "ph_threshold_error": "❌ El pH mínimo debe ser inferior al pH máximo",
       "orp_threshold_error": "❌ El ORP mínimo debe ser inferior al ORP máximo",
       "temp_threshold_error": "❌ La temperatura mínima debe ser inferior a la temperatura máxima",
-      "invalid_access_code": "❌ Código de Acceso no válido (9 caracteres alfanuméricos)."
+      "invalid_access_code": "❌ Código de Acceso no válido (8 o 9 caracteres alfanuméricos).",
+      "invalid_access_code_9": "❌ Código de Acceso no válido: el código de acceso de un Blue Connect tiene 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX)."
     },
     "abort": {
       "already_configured": "⚠️ Este dispositivo ya está configurado.",
@@ -182,7 +183,8 @@
       "ph_threshold_error": "❌ El pH mínimo debe ser inferior al pH máximo",
       "orp_threshold_error": "❌ El ORP mínimo debe ser inferior al ORP máximo",
       "temp_threshold_error": "❌ La temperatura mínima debe ser inferior a la temperatura máxima",
-      "invalid_access_code": "❌ Código de Acceso no válido (9 caracteres alfanuméricos).",
+      "invalid_access_code": "❌ Código de Acceso no válido (8 o 9 caracteres alfanuméricos).",
+      "invalid_access_code_9": "❌ Código de Acceso no válido: el código de acceso de un Blue Connect tiene 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX).",
       "ph_calibration_equal": "❌ Los valores de calibración de pH deben ser diferentes",
       "ph_slope_mismatch": "❌ Error lógico: La pendiente de calibración es incoherente",
       "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"

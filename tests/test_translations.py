@@ -56,7 +56,11 @@ def _codes_returned_by(filename: str, function: str) -> set[str]:
 
 
 def _error_keys_in_flows() -> set[str]:
-    """Error keys set by the config flow (`errors[...] = "code"`)."""
+    """Error keys set by the config flow.
+
+    Either `errors[...] = "code"` or, for the keys picked by a helper such as
+    `_access_code_error`, `error = "code"`.
+    """
     tree = ast.parse((COMPONENT / "config_flow.py").read_text(encoding="utf-8"))
     return {
         node.value.value
@@ -65,9 +69,12 @@ def _error_keys_in_flows() -> set[str]:
         and isinstance(node.value, ast.Constant)
         and isinstance(node.value.value, str)
         and any(
-            isinstance(t, ast.Subscript)
-            and isinstance(t.value, ast.Name)
-            and t.value.id == "errors"
+            (
+                isinstance(t, ast.Subscript)
+                and isinstance(t.value, ast.Name)
+                and t.value.id == "errors"
+            )
+            or (isinstance(t, ast.Name) and t.id == "error")
             for t in node.targets
         )
     }
@@ -99,9 +106,11 @@ def test_every_validation_error_is_translated_in_both_flows(path):
     codes = _codes_returned_by("validation.py", "validate_calibration")
     codes |= _error_keys_in_flows()
     codes.discard("base")
-    assert {"ph_slope_mismatch", "invalid_access_code"} <= codes, (
-        "AST extraction broken"
-    )
+    assert {
+        "ph_slope_mismatch",
+        "invalid_access_code",
+        "invalid_access_code_9",
+    } <= codes, "AST extraction broken"
     for flow in ("config", "options"):
         missing = codes - set(data[flow]["error"])
         # `mac_conflict`, `no_mac_provided`, `invalid_mac` only exist in the
