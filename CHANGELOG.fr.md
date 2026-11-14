@@ -33,7 +33,7 @@ pH haute résolution (l'application officielle affiche 0,1), calibration de l'OR
 - Guide de Calibration (EN/FR) réécrit ; README (EN/FR) : section *pH haute résolution* et installation via le Marketplace de Home Assistant 2026.11 (étapes HACS conservées, repliées). En français, ORP est désormais le seul terme employé (Redox uniquement entre parenthèses).
 
 ### 🧰 Maintenance
-- Tests : 775 (565 auparavant), couverture de 100 %, sur Home Assistant 2026.10.4 avec Python 3.14.
+- Tests : 786 (565 auparavant), couverture de 100 %, sur Home Assistant 2026.10.4 avec Python 3.14.
 
 🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
 

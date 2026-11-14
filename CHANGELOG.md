@@ -33,7 +33,7 @@ High-resolution pH (the official app shows 0.1), ORP calibration, and calibratio
 - Calibration Guide (EN/FR) rewritten; README (EN/FR): *High-resolution pH* section and installation via the Home Assistant 2026.11 Marketplace (HACS steps kept, folded). In French, ORP is now the only term used (Redox only in parentheses).
 
 ### 🧰 Maintenance
-- Tests: 775 (565 before), 100 % coverage, on Home Assistant 2026.10.4 with Python 3.14.
+- Tests: 786 (565 before), 100 % coverage, on Home Assistant 2026.10.4 with Python 3.14.
 
 🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
 
