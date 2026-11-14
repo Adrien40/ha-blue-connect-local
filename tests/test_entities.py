@@ -50,7 +50,14 @@ from custom_components.blue_connect_local.switch import (
 )
 
 from .conftest import entity_id, make_entry
-from .helpers import ACCESS_CODE, MAC, FakeBlueClient, build_frame
+from .helpers import (
+    ACCESS_CODE,
+    MAC,
+    UUID_RAW_SENSORS,
+    FakeBlueClient,
+    build_electrical_frame,
+    build_frame,
+)
 
 
 async def _call(hass, domain, service, entity, **data):
@@ -68,6 +75,62 @@ async def _measured(hass, coordinator):
 # ---------------------------------------------------------------------------
 # Sensors
 # ---------------------------------------------------------------------------
+async def test_raw_ph_sensors_are_disabled_by_default(hass, coordinator):
+    from homeassistant.helpers import entity_registry as er
+
+    registry = er.async_get(hass)
+    for key in ("ph_raw", "ph_raw_mv", "ph_probe_calibrated", "probe_ph_calibration"):
+        entry = registry.async_get(entity_id(hass, "sensor", key))
+        assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION, key
+
+
+async def test_raw_orp_sensors_are_disabled_by_default(hass, coordinator):
+    from homeassistant.helpers import entity_registry as er
+
+    registry = er.async_get(hass)
+    for key in (
+        "orp_raw_mv",
+        "orp_probe_calibrated",
+        "probe_orp_calibration",
+        "last_orp_calib",
+    ):
+        entry = registry.async_get(entity_id(hass, "sensor", key))
+        assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION, key
+
+
+async def test_technical_sensors_are_disabled_by_default(hass, coordinator):
+    from homeassistant.helpers import entity_registry as er
+
+    registry = er.async_get(hass)
+    for key in (
+        "raw_frame",
+        "raw_frame_0005",
+        "battery_adc",
+        "cloud_id",
+        "accelerometer",
+        "receive_method",
+    ):
+        entry = registry.async_get(entity_id(hass, "sensor", key))
+        assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION, key
+
+
+async def test_everyday_diagnostic_sensors_stay_enabled(hass, coordinator):
+    from homeassistant.helpers import entity_registry as er
+
+    registry = er.async_get(hass)
+    for key in (
+        "battery_level",
+        "battery",
+        "last_received",
+        "lsi",
+        "lsi_status",
+        "float_status",
+        "target_equilibrium_ph",
+    ):
+        entry = registry.async_get(entity_id(hass, "sensor", key))
+        assert entry.disabled_by is None, key
+
+
 async def test_measurement_sensors(hass, coordinator):
     await _measured(hass, coordinator)
 
@@ -77,36 +140,48 @@ async def test_measurement_sensors(hass, coordinator):
     assert float(state("temperature")) == pytest.approx(25.02)
     assert float(state("ph")) == pytest.approx(7.4)
     assert float(state("orp")) == 700
-    assert float(state("orp_raw")) == 700
-    assert float(state("ph_raw")) == pytest.approx(7.4)
     assert float(state("battery_level")) == 80
     assert float(state("conductivity")) == 1200
     assert float(state("salinity")) == pytest.approx(3.5)
-    assert state("receive_method") == "active"
     assert state("bluetooth_status") == "success"
     assert state("lsi_status") == "unknown"
-    assert state("cloud_id") == "CLOUD42"
 
 
-async def test_raw_orp_is_not_affected_by_calibration_offset(
+async def test_probe_calibrated_orp_is_not_affected_by_calibration_offset(
     hass, setup_integration, ble
 ):
-    """Raw Redox is used to *establish* the offset: it stays the probe's value."""
-    ble.client = FakeBlueClient([build_frame(orp_mv=700)])
+    """The ORP of the calculated frame stays the probe's value: it is the one
+    the official app shows, whatever offset the integration applies."""
+    ble.client = FakeBlueClient(
+        [build_frame(orp_mv=700)],
+        reads={UUID_RAW_SENSORS: build_electrical_frame(orp_mv=700)},
+    )
     coord = await setup_integration(
         make_entry(**{CONF_ORP_CALIB: 640, CONF_ORP_REF: 650})
     )
     await _measured(hass, coord)
-    raw = hass.states.get(entity_id(hass, "sensor", "orp_raw"))
+    for key in ("orp_probe_calibrated", "orp_raw_mv"):
+        registry = er.async_get(hass)
+        registry.async_update_entity(entity_id(hass, "sensor", key), disabled_by=None)
+    await hass.config_entries.async_reload(coord.entry.entry_id)
+    await hass.async_block_till_done()
+    coord = coord.entry.runtime_data
+    await _measured(hass, coord)
+    probe = hass.states.get(entity_id(hass, "sensor", "orp_probe_calibrated"))
+    raw = hass.states.get(entity_id(hass, "sensor", "orp_raw_mv"))
     calibrated = hass.states.get(entity_id(hass, "sensor", "orp"))
+    assert float(probe.state) == 700
     assert float(raw.state) == 700
     assert float(calibrated.state) == 710
-    assert raw.attributes["unit_of_measurement"] == "mV"
+    assert probe.attributes["unit_of_measurement"] == "mV"
+    assert calibrated.attributes["calibration_source"] == "integration"
 
 
-async def test_raw_orp_is_a_diagnostic_entity(hass, coordinator):
-    reg = er.async_get(hass).async_get(entity_id(hass, "sensor", "orp_raw"))
-    assert reg.entity_category is EntityCategory.DIAGNOSTIC
+async def test_raw_orp_sensors_are_diagnostic_entities(hass, coordinator):
+    registry = er.async_get(hass)
+    for key in ("orp_raw_mv", "orp_probe_calibrated", "probe_orp_calibration"):
+        reg = registry.async_get(entity_id(hass, "sensor", key))
+        assert reg.entity_category is EntityCategory.DIAGNOSTIC, key
 
 
 async def test_every_entity_has_a_translated_name(hass, entry, coordinator):

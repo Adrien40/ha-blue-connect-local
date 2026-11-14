@@ -39,8 +39,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .chemistry import (
     compute_lsi,
+    compute_orp_calibrated,
+    compute_orp_raw_from_calibrated,
     compute_ph_calibrated,
     compute_ph_equilibrium,
+    compute_ph_raw_from_mv,
+    compute_ph_two_point,
+    ph_calibration_quality,
 )
 from .const import (
     ACCEL_THRESHOLD,
@@ -64,9 +69,17 @@ from .const import (
     CHAR_ESP32_FW_UUID,
     CHAR_FIRST_CONNECTION_UUID,
     CHAR_HW_VERSION_UUID,
+    CHAR_LAST_ORP_CALIB_UUID,
     CHAR_LAST_PH_CALIB_UUID,
     CHAR_NOTIFY_UUID,
     CHAR_NRF_FW_UUID,
+    CHAR_ORP_CALIB_MEAS_UUID,
+    CHAR_ORP_CALIB_REF_UUID,
+    CHAR_ORP_CALIB_STATUS_UUID,
+    CHAR_PH_CALIB_POINT_1_MV_UUID,
+    CHAR_PH_CALIB_POINT_1_PH_UUID,
+    CHAR_PH_CALIB_POINT_2_MV_UUID,
+    CHAR_PH_CALIB_POINT_2_PH_UUID,
     CHAR_PROBE_REPLACEMENT_UUID,
     CHAR_PROBE_SERIAL_UUID,
     CHAR_TRIGGER_UUID,
@@ -79,6 +92,10 @@ from .const import (
     CONF_PASSIVE_MEASURES,
     CONF_PH_CALIB_4,
     CONF_PH_CALIB_7,
+    CONF_PH_HR_CALIB_MV_4,
+    CONF_PH_HR_CALIB_MV_7,
+    CONF_PH_HR_REF_4,
+    CONF_PH_HR_REF_7,
     CONF_PH_REF_4,
     CONF_PH_REF_7,
     CONF_REFERENCE_TIME,
@@ -88,18 +105,27 @@ from .const import (
     CONF_TEMP_OFFSET,
     CONF_TH,
     DEBOUNCE_COOLDOWN,
-    DEFAULT_ORP_CALIB,
-    DEFAULT_ORP_REF,
     DEFAULT_PH_CALIB_4,
     DEFAULT_PH_CALIB_7,
     DEFAULT_PH_REF_4,
     DEFAULT_PH_REF_7,
+    DEVICE_TYPE_BLUERIIOT,
     DOMAIN,
     ECHO_MARKER,
     ERROR_RETRY_DELAY,
     EXPECTED_FRAME_HEX_LEN_18,
     FIRST_ANALYSIS_DELAY,
     GATT_WRITE_RETRY_DELAY,
+    ORP_CALIBRATION_MAX_OFFSET_MV,
+    ORP_CALIBRATION_SOURCE_INTEGRATION,
+    ORP_CALIBRATION_SOURCE_PROBE,
+    PH_CALIBRATION_MAX_OFFSET_MV,
+    PH_CALIBRATION_MAX_SLOPE_MV,
+    PH_CALIBRATION_MIN_SLOPE_MV,
+    PH_HR_CALIBRATION_SOURCE_INTEGRATION,
+    PH_HR_CALIBRATION_SOURCE_PROBE,
+    PH_SOURCE_HIGH_RESOLUTION,
+    PH_SOURCE_STANDARD,
     REPAIR_STALE_AFTER,
     SAVE_DEBOUNCE_DELAY,
     TIMEOUT_BLE_CONN,
@@ -107,6 +133,7 @@ from .const import (
     TIMEOUT_NOTIFICATION_WAIT,
     get_blue_connect_model,
     get_manufacturer,
+    mac_short_id,
     model_has_conductivity,
 )
 from .profile_blueriiot import (
@@ -117,7 +144,14 @@ from .profile_blueriiot import (
     describe_gatt_characteristics,
     is_blueriiot_services,
 )
-from .protocol import extract_raw_payload, parse_raw_frame
+from .protocol import (
+    extract_raw_payload,
+    parse_electrical_frame,
+    parse_electrical_orp,
+    parse_orp_calibration,
+    parse_ph_calibration,
+    parse_raw_frame,
+)
 from .protocol_blueriiot import (
     FRAME_HEX_LEN as BLUERIIOT_FRAME_HEX_LEN,
     is_blueriiot_frame,
@@ -131,6 +165,11 @@ UUID_HW_VERSION = "70ea0021-7a29-4fdf-93d2-838665e72677"
 UUID_SW_VERSION = "70ea0022-7a29-4fdf-93d2-838665e72677"
 
 _LOGGER = logging.getLogger(__name__)
+
+# Repair issues raised for an abnormal calibration (see _sync_calibration_issues).
+_CALIBRATION_ISSUE_KEYS = frozenset(
+    {"orp_calibration", "ph_calibration_slope", "ph_calibration_offset"}
+)
 
 # Errors expected from BLE I/O (connect/disconnect/read/write/notify) across
 # bleak backends: protocol errors, dropped/refused connections, and timeouts.
@@ -149,7 +188,12 @@ _MEASUREMENT_ONLY_KEYS = frozenset(
         "raw_frame_0005",
         "temp_raw",
         "ph_raw",
-        "orp_raw",
+        "ph_probe_calibrated",
+        "orp_probe_calibrated",
+        "orp_raw_mv",
+        "orp_calibration_source",
+        "probe_orp_calibration",
+        "orp_calibration_source_ts",
         "conductivity",
         "salinity",
         "has_conductivity",
@@ -159,6 +203,14 @@ _MEASUREMENT_ONLY_KEYS = frozenset(
         "battery_level",
         "temperature",
         "ph",
+        "ph_raw_mv",
+        "ph_source",
+        "ph_hr_calibration",
+        "ph_hr_calibration_source",
+        "ph_example_hr",
+        "ph_example_low",
+        "ph_calibration_source_ts",
+        "probe_ph_calibration",
         "orp",
         "last_received",
         "accelerometer",
@@ -245,6 +297,14 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         self._force_one_shot = False
         self._first_analysis_cancel: CALLBACK_TYPE | None = None
 
+        self._passive_issue_active = False
+        self._calibration_push_pending = False
+        # Set after the pH calibration was written to the probe: its own
+        # registers are then read once more, whatever else would skip it.
+        self._ph_calibration_reread = False
+        # Repair issues currently raised for an abnormal calibration.
+        self._calibration_issues_active: set[str] = set()
+
         self._ble_available = True
         self._ble_unavail_cancel: CALLBACK_TYPE | None = None
         self._ble_avail_cancel: CALLBACK_TYPE | None = None
@@ -287,6 +347,33 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
     @property
     def entry_id(self) -> str:
         return self._entry_id
+
+    @property
+    def display_label(self) -> str:
+        """Short label of the probe for messages shown to the user.
+
+        The name the user gave the device, otherwise its model ("Blue Connect
+        Gold"). When several Blue Connect are installed, the last 4 hex digits
+        of the address are added so that they can be told apart. Not the
+        masked address used in logs, which is the same for every probe of a
+        maker.
+        """
+        device = find_device(
+            dr.async_get(self.hass), (DOMAIN, self.mac), self._entry_id
+        )
+        label = (
+            (device.name_by_user or device.model) if device is not None else None
+        ) or "Blue Connect"
+        if len(self.hass.config_entries.async_entries(DOMAIN)) > 1:
+            label = f"{label} {mac_short_id(self.mac)}".strip()
+        return label
+
+    def _format_ph(self, value: float, decimals: int) -> str:
+        """pH as written in the user's language (decimal comma or point)."""
+        text = f"{value:.{decimals}f}"
+        if self.hass.config.language.split("-")[0] in ("en", "zh", "ja", "ko"):
+            return text
+        return text.replace(".", ",")
 
     @property
     def entry(self) -> ConfigEntry | None:
@@ -434,6 +521,26 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         if self.access_code:
             self._force_one_shot = True
 
+    def request_calibration_push(self) -> bool:
+        """Ask the next analysis to write the integration's calibrations to the probe.
+
+        Called by the options form when the person ticks the box, before the
+        new options are saved: which calibration (pH, ORP, or both) there
+        really is to write, and whether it changed since the last successful
+        push, is checked again at the moment of the write. Returns False when there
+        is no access code to authenticate with, or on a Blueriiot probe (which
+        has no such registers). The request lives in memory only: it is never
+        saved, so a restart cannot trigger a write.
+        """
+        if (
+            not self.access_code
+            or self.data.get("device_type") == DEVICE_TYPE_BLUERIIOT
+        ):
+            return False
+        self._calibration_push_pending = True
+        self.request_one_shot_analysis()
+        return True
+
     def request_deferred_recompute(self) -> None:
         if self._recalc_cancel:
             self._recalc_cancel()
@@ -489,18 +596,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
         has_initial_data = self.data.get("ph") is not None
 
-        passive_enabled = self.data.get(CONF_PASSIVE_MEASURES)
-        if passive_enabled is None:
-            # self.entry can be None if the entry was removed from hass
-            # while this callback was already scheduled; fall back to the
-            # same default _get_opt() would have used.
-            passive_enabled = (
-                _get_opt(self.entry, CONF_PASSIVE_MEASURES, True)
-                if self.entry
-                else True
-            )
-
-        if not passive_enabled:
+        if not self._passive_frames_enabled():
             return
 
         raw_payload = extract_raw_payload(info.manufacturer_data, info.service_data)
@@ -553,6 +649,19 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             # installs keep their already-detected model on upgrade.
             if "hw_version" in saved_data and "sku" not in saved_data:
                 saved_data["sku"] = saved_data.pop("hw_version")
+
+            # Before 1.4.0 "ph_raw" held the pH of the calculated frame. It
+            # now is the pH read from the electrode potential, and the former
+            # value lives in "ph_probe_calibrated".
+            if "ph_probe_calibrated" not in saved_data and "ph_raw" in saved_data:
+                saved_data["ph_probe_calibrated"] = saved_data.pop("ph_raw")
+
+            # Same for the ORP: "orp_raw" always held the ORP of the calculated
+            # frame (probe calibration applied). It is now "orp_probe_calibrated",
+            # and "orp_raw_mv" holds the real electrode potential.
+            if "orp_raw" in saved_data:
+                saved_data.setdefault("orp_probe_calibrated", saved_data["orp_raw"])
+                del saved_data["orp_raw"]
 
             rf = saved_data.get("raw_frame")
             raw_frame_valid = isinstance(rf, str) and len(rf) in (
@@ -609,7 +718,12 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
 
             # Dates are stored as ISO strings: parse them back, and drop
             # anything unreadable rather than showing a wrong date.
-            for date_key in ("first_connection", "probe_replacement", "last_ph_calib"):
+            for date_key in (
+                "first_connection",
+                "probe_replacement",
+                "last_ph_calib",
+                "last_orp_calib",
+            ):
                 if date_key in saved_data and isinstance(saved_data[date_key], str):
                     parsed_dt = dt_util.parse_datetime(saved_data[date_key])
                     if parsed_dt:
@@ -639,6 +753,9 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             BluetoothCallbackMatcher(address=self.mac),
             BluetoothScanningMode.PASSIVE,
         )
+
+        self._sync_passive_issue()
+        self._sync_calibration_issues()
 
         if self.access_code:
             _LOGGER.debug(
@@ -694,6 +811,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             "first_connection",
             "probe_replacement",
             "last_ph_calib",
+            "last_orp_calib",
         ):
             val = data_to_save.get(key)
             if val is not None and hasattr(val, "isoformat"):
@@ -724,6 +842,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         self.update_schedule()
         self.async_set_updated_data(self.data)
         self._schedule_save()
+        self._sync_passive_issue()
 
     def update_volatile_state(self, updates: dict[str, Any]) -> None:
         self.data.update(updates)
@@ -734,7 +853,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         self.update_volatile_state({"bluetooth_status": status})
 
     def _issue_id(self) -> str:
-        return f"stale_{self.safe_mac}"
+        return f"stale_{self._entry_id}"
 
     def _check_stale_issue(self) -> None:
         """Create a repair issue if unreachable for longer than REPAIR_STALE_AFTER."""
@@ -755,13 +874,473 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             severity=IssueSeverity.WARNING,
             translation_key="device_unreachable",
             translation_placeholders={
-                "name": self.safe_mac,
+                "name": self.display_label,
                 "days": str(age.days),
             },
         )
 
     def _clear_stale_issue(self) -> None:
         async_delete_issue(self.hass, DOMAIN, self._issue_id())
+
+    async def _read_ph_calibration_timestamp(self, client: BleakClient) -> int | None:
+        """Raw Unix timestamp of 70ea0029, used only to detect a new calibration.
+
+        The "Last pH Calibration" sensor reads the same characteristic again
+        later in this same analysis and turns it into the datetime shown;
+        that second read is deliberately kept separate and untouched.
+        """
+        try:
+            raw = await asyncio.wait_for(
+                client.read_gatt_char(CHAR_LAST_PH_CALIB_UUID),
+                timeout=TIMEOUT_GATT_OP,
+            )
+        except _BLE_IO_ERRORS as err:
+            _LOGGER.debug("Failed to read the pH calibration timestamp: %s", err)
+            return None
+        return int.from_bytes(raw[:4], byteorder="big") if len(raw) >= 4 else None
+
+    async def _write_ph_calibration_to_probe(
+        self, client: BleakClient, calibration: dict[str, float]
+    ) -> bool:
+        """Write the integration's mV calibration into the probe's own registers.
+
+        This makes the probe's own standard pH (and whatever the official app
+        shows) use the same two-point calibration as this integration's
+        high-resolution pH - the same operation the app itself does when the
+        person calibrates with buffer solutions, just written by the
+        integration instead. It also affects the probe's own onboard alert
+        thresholds, which compare against its calibrated pH: push it only
+        with calibration values the person trusts.
+        """
+        writes = (
+            (CHAR_PH_CALIB_POINT_1_PH_UUID, round(calibration["ph_1"] * 10), False),
+            (CHAR_PH_CALIB_POINT_2_PH_UUID, round(calibration["ph_2"] * 10), False),
+            (CHAR_PH_CALIB_POINT_1_MV_UUID, round(calibration["mv_1"] * 10), True),
+            (CHAR_PH_CALIB_POINT_2_MV_UUID, round(calibration["mv_2"] * 10), True),
+        )
+        for uuid, value, signed in writes:
+            try:
+                await asyncio.wait_for(
+                    client.write_gatt_char(
+                        uuid,
+                        value.to_bytes(2, byteorder="big", signed=signed),
+                        response=True,
+                    ),
+                    timeout=TIMEOUT_GATT_OP,
+                )
+            except _BLE_IO_ERRORS as err:
+                _LOGGER.warning(
+                    "Blue Connect %s: failed to push the pH calibration to the "
+                    "probe (%s): %s",
+                    self.safe_mac,
+                    uuid,
+                    err,
+                )
+                return False
+        # The official app also stamps the calibration date (4-byte big-endian
+        # Unix time, the format "Last pH Calibration" reads back). Best effort:
+        # the calibration itself is already written if the probe refuses this.
+        try:
+            await asyncio.wait_for(
+                client.write_gatt_char(
+                    CHAR_LAST_PH_CALIB_UUID,
+                    int(dt_util.utcnow().timestamp()).to_bytes(4, byteorder="big"),
+                    response=True,
+                ),
+                timeout=TIMEOUT_GATT_OP,
+            )
+        except _BLE_IO_ERRORS as err:
+            _LOGGER.warning(
+                "Blue Connect %s: the pH calibration was written but its date "
+                "could not be updated: %s",
+                self.safe_mac,
+                err,
+            )
+        _LOGGER.info(
+            "Blue Connect %s: pushed the integration's pH calibration to the probe",
+            self.safe_mac,
+        )
+        return True
+
+    async def _read_ph_calibration(
+        self, client: BleakClient
+    ) -> dict[str, float] | None:
+        """Read the pH calibration the probe keeps for its electrode."""
+        values: list[bytes] = []
+        for uuid in (
+            CHAR_PH_CALIB_POINT_1_PH_UUID,
+            CHAR_PH_CALIB_POINT_2_PH_UUID,
+            CHAR_PH_CALIB_POINT_1_MV_UUID,
+            CHAR_PH_CALIB_POINT_2_MV_UUID,
+        ):
+            try:
+                values.append(
+                    bytes(
+                        await asyncio.wait_for(
+                            client.read_gatt_char(uuid), timeout=TIMEOUT_GATT_OP
+                        )
+                    )
+                )
+            except _BLE_IO_ERRORS as err:
+                _LOGGER.debug("Failed to read pH calibration (%s): %s", uuid, err)
+                return None
+        calibration = parse_ph_calibration(*values)
+        if calibration is None:
+            _LOGGER.debug(
+                "Blue Connect %s: the pH calibration stored in the probe is "
+                "unusable (registers: %s)",
+                self.safe_mac,
+                [value.hex() for value in values],
+            )
+        return calibration
+
+    async def _write_orp_calibration_to_probe(
+        self, client: BleakClient, calibration: dict[str, int]
+    ) -> bool:
+        """Write the integration's ORP calibration into the probe's own registers.
+
+        The probe then applies the same ``ref - mes`` correction to its own ORP
+        (and whatever the official app shows) as this integration does. Like
+        the pH, it also changes what the probe's onboard alert thresholds
+        compare against: push it only with values the person trusts.
+        """
+        writes = (
+            (CHAR_ORP_CALIB_REF_UUID, calibration["ref"]),
+            (CHAR_ORP_CALIB_MEAS_UUID, calibration["mes"]),
+        )
+        for uuid, value in writes:
+            try:
+                await asyncio.wait_for(
+                    client.write_gatt_char(
+                        uuid,
+                        value.to_bytes(2, byteorder="big", signed=True),
+                        response=True,
+                    ),
+                    timeout=TIMEOUT_GATT_OP,
+                )
+            except _BLE_IO_ERRORS as err:
+                _LOGGER.warning(
+                    "Blue Connect %s: failed to push the ORP calibration to the "
+                    "probe (%s): %s",
+                    self.safe_mac,
+                    uuid,
+                    err,
+                )
+                return False
+        # The official app also stamps the calibration date. Best effort: the
+        # calibration itself is already written if the probe (or an ESPHome
+        # proxy that does not cache this far) refuses this.
+        try:
+            await asyncio.wait_for(
+                client.write_gatt_char(
+                    CHAR_LAST_ORP_CALIB_UUID,
+                    int(dt_util.utcnow().timestamp()).to_bytes(4, byteorder="big"),
+                    response=True,
+                ),
+                timeout=TIMEOUT_GATT_OP,
+            )
+        except _BLE_IO_ERRORS as err:
+            _LOGGER.warning(
+                "Blue Connect %s: the ORP calibration was written but its date "
+                "could not be updated: %s",
+                self.safe_mac,
+                err,
+            )
+        _LOGGER.info(
+            "Blue Connect %s: pushed the integration's ORP calibration to the probe",
+            self.safe_mac,
+        )
+        return True
+
+    async def _push_calibrations_to_probe(self, client: BleakClient) -> None:
+        """Write what the options form holds, and only what changed, to the probe.
+
+        The pH and the ORP are independent: each one is written only when it
+        is filled in and differs from what was last pushed successfully (kept
+        in storage), so ticking the box to send one never rewrites the other
+        nor refreshes its calibration date. A failed write is not remembered,
+        so it is tried again the next time the box is ticked.
+        """
+        ph_calibration = self._integration_ph_hr_calibration()
+        if ph_calibration is not None:
+            if ph_calibration == self.data.get("pushed_ph_calibration"):
+                _LOGGER.debug(
+                    "Blue Connect %s: the pH calibration is unchanged since the "
+                    "last push, nothing to write",
+                    self.safe_mac,
+                )
+            else:
+                if await self._write_ph_calibration_to_probe(client, ph_calibration):
+                    self.data["pushed_ph_calibration"] = dict(ph_calibration)
+                    self._schedule_save()
+                # A write invalidates the cached copy of the probe's own
+                # calibration: it is read again during this analysis, even
+                # when the diagnostic sensor that shows it is turned off.
+                self.data.pop("ph_calibration_source_ts", None)
+                self._ph_calibration_reread = True
+
+        orp_calibration = self._integration_orp_calibration()
+        if orp_calibration is not None:
+            if orp_calibration == self.data.get("pushed_orp_calibration"):
+                _LOGGER.debug(
+                    "Blue Connect %s: the ORP calibration is unchanged since the "
+                    "last push, nothing to write",
+                    self.safe_mac,
+                )
+            else:
+                if await self._write_orp_calibration_to_probe(client, orp_calibration):
+                    self.data["pushed_orp_calibration"] = dict(orp_calibration)
+                    self._schedule_save()
+                self.data.pop("orp_calibration_source_ts", None)
+
+    async def _read_orp_calibration_timestamp(self, client: BleakClient) -> int | None:
+        """Date of the last ORP calibration (70ea0036), best effort.
+
+        Also detects a new calibration, so that the two registers are re-read
+        only then. Behind an ESPHome proxy that caches too few characteristics
+        this one may be out of reach: that leaves the date unknown and the
+        registers read on every analysis, without failing anything.
+        """
+        try:
+            raw = await asyncio.wait_for(
+                client.read_gatt_char(CHAR_LAST_ORP_CALIB_UUID),
+                timeout=TIMEOUT_GATT_OP,
+            )
+        except _BLE_IO_ERRORS as err:
+            _LOGGER.debug("Failed to read the last ORP calibration date: %s", err)
+            return None
+        if len(raw) < 4:
+            return None
+        timestamp = int.from_bytes(raw[:4], byteorder="big")
+        if timestamp > 0:
+            self.data["last_orp_calib"] = dt_util.utc_from_timestamp(timestamp)
+        return timestamp
+
+    async def _read_orp_calibration(
+        self, client: BleakClient
+    ) -> dict[str, int | None] | None:
+        """Read the ORP calibration the probe keeps for its electrode."""
+        values: list[bytes] = []
+        for uuid in (CHAR_ORP_CALIB_REF_UUID, CHAR_ORP_CALIB_MEAS_UUID):
+            try:
+                values.append(
+                    bytes(
+                        await asyncio.wait_for(
+                            client.read_gatt_char(uuid), timeout=TIMEOUT_GATT_OP
+                        )
+                    )
+                )
+            except _BLE_IO_ERRORS as err:
+                _LOGGER.debug("Failed to read ORP calibration (%s): %s", uuid, err)
+                return None
+        parsed = parse_orp_calibration(*values)
+        if parsed is None:
+            _LOGGER.debug(
+                "Blue Connect %s: the ORP calibration stored in the probe is "
+                "unusable (registers: %s)",
+                self.safe_mac,
+                [value.hex() for value in values],
+            )
+            return None
+        # The status code is only shown, never interpreted (its meaning is not
+        # documented, and it did not follow the pH one in the logs we have).
+        status: int | None = None
+        try:
+            status_raw = await asyncio.wait_for(
+                client.read_gatt_char(CHAR_ORP_CALIB_STATUS_UUID),
+                timeout=TIMEOUT_GATT_OP,
+            )
+            status = status_raw[0] if len(status_raw) >= 1 else None
+        except _BLE_IO_ERRORS as err:
+            _LOGGER.debug("Failed to read the ORP calibration status: %s", err)
+        return {**parsed, "status": status}
+
+    def _integration_orp_calibration(self) -> dict[str, int] | None:
+        """The integration's own ORP calibration (reference, measured), in mV.
+
+        None unless the person filled in both values (empty by default): when
+        set, it takes priority over the calibration stored in the probe. The
+        measured value is the raw electrode potential, as shown by the "Raw
+        ORP (mV)" sensor with the probe in the reference solution.
+        """
+        entry = self.entry
+        if not entry:
+            return None
+        ref = _get_opt(entry, CONF_ORP_REF, None)
+        mes = _get_opt(entry, CONF_ORP_CALIB, None)
+        if ref in (None, "") or mes in (None, ""):
+            return None
+        return {"ref": int(float(ref)), "mes": int(float(mes))}
+
+    def _probe_calibration_sensor_enabled(self) -> bool:
+        """Whether the "probe calibration" diagnostic sensor is turned on.
+
+        It is disabled by default: the 4 registers are only read for it when
+        the person enabled it, so nobody else pays for the extra reads.
+        """
+        registry = er.async_get(self.hass)
+        entity_id = registry.async_get_entity_id(
+            "sensor", DOMAIN, f"{self.mac}_probe_ph_calibration"
+        )
+        if entity_id is None:
+            return False
+        entity = registry.async_get(entity_id)
+        return entity is not None and entity.disabled_by is None
+
+    def _passive_frames_enabled(self) -> bool:
+        """Whether the frames the probe broadcasts on its own are used."""
+        passive_enabled = self.data.get(CONF_PASSIVE_MEASURES)
+        if passive_enabled is None:
+            # self.entry can be None if the entry was removed from hass
+            # while a callback was already scheduled; fall back to the
+            # same default _get_opt() would have used.
+            passive_enabled = (
+                _get_opt(self.entry, CONF_PASSIVE_MEASURES, True)
+                if self.entry
+                else True
+            )
+        return bool(passive_enabled)
+
+    def _passive_issue_id(self) -> str:
+        return f"passive_hr_{self._entry_id}"
+
+    def _sync_passive_issue(self) -> None:
+        """Suggest ignoring the passive frames once high resolution works.
+
+        A passive frame arrives shortly after each analysis and replaces the
+        high-resolution pH (2 decimals) with the 0.1 one. The repair is
+        offered when an access code is set, the passive frames are used and
+        a high-resolution pH has already been obtained on this probe (the
+        flag and the pH values of that analysis are kept in storage). It
+        disappears as soon as one of these conditions no longer holds, and
+        its example values are refreshed after each analysis.
+        """
+        if self._is_shutdown:
+            return
+        ph_hr = self.data.get("ph_example_hr")
+        ph_low = self.data.get("ph_example_low")
+        wanted = bool(
+            self.access_code
+            and self.data.get("ph_hr_available")
+            and ph_hr is not None
+            and ph_low is not None
+            and self._passive_frames_enabled()
+        )
+        if not wanted:
+            if self._passive_issue_active:
+                self._passive_issue_active = False
+                async_delete_issue(self.hass, DOMAIN, self._passive_issue_id())
+            return
+        assert ph_hr is not None and ph_low is not None  # implied by `wanted`
+        self._passive_issue_active = True
+        # Creating an existing issue only updates it: an issue the user chose
+        # to ignore stays ignored.
+        async_create_issue(
+            self.hass,
+            DOMAIN,
+            self._passive_issue_id(),
+            is_fixable=True,
+            is_persistent=False,
+            severity=IssueSeverity.WARNING,
+            translation_key="passive_high_resolution",
+            translation_placeholders={
+                "name": self.display_label,
+                "ph_hr": self._format_ph(ph_hr, 2),
+                "ph_low": self._format_ph(ph_low, 1),
+            },
+            data={"entry_id": self._entry_id},
+        )
+
+    def _sync_calibration_issues(self) -> None:
+        """Raise a repair when the calibration in use looks wrong.
+
+        The calibration in use is the integration's own one when it is filled
+        in, otherwise the one stored in the probe (as last read). Warns when
+        the ORP gap between the reference and the measured value, or the pH
+        electrode slope or offset at pH 7, is out of the usual range: a wrong
+        buffer solution, a dirty electrode, or a probe at the end of its life.
+        It never blocks anything - the person stays free to keep the
+        calibration - and disappears as soon as the values look normal again.
+        """
+        if self._is_shutdown:
+            return
+        is_blueriiot = self.data.get("device_type") == DEVICE_TYPE_BLUERIIOT
+        name = self.display_label
+        wanted: dict[str, tuple[str, dict[str, str]]] = {}
+
+        orp_calibration = self._integration_orp_calibration()
+        if orp_calibration is None and not is_blueriiot:
+            probe_orp = self.data.get("probe_orp_calibration")
+            if probe_orp:
+                orp_calibration = {"ref": probe_orp["ref"], "mes": probe_orp["mes"]}
+        if orp_calibration is not None:
+            gap = abs(orp_calibration["ref"] - orp_calibration["mes"])
+            if gap > ORP_CALIBRATION_MAX_OFFSET_MV:
+                wanted["orp_calibration"] = (
+                    "orp_calibration_offset",
+                    {"name": name, "source": "ORP", "ecart": str(gap)},
+                )
+
+        ph_calibration = self._integration_ph_hr_calibration()
+        if ph_calibration is None and not is_blueriiot:
+            ph_calibration = self.data.get("probe_ph_calibration")
+        quality = ph_calibration_quality(ph_calibration) if ph_calibration else None
+        if quality is not None:
+            slope, offset = quality
+            if not (
+                PH_CALIBRATION_MIN_SLOPE_MV <= slope <= PH_CALIBRATION_MAX_SLOPE_MV
+            ):
+                wanted["ph_calibration_slope"] = (
+                    "ph_calibration_slope",
+                    {
+                        "name": name,
+                        "source": "pH",
+                        "slope": f"{slope:.1f}",
+                        "min": f"{PH_CALIBRATION_MIN_SLOPE_MV:g}",
+                        "max": f"{PH_CALIBRATION_MAX_SLOPE_MV:g}",
+                    },
+                )
+            if abs(offset) > PH_CALIBRATION_MAX_OFFSET_MV:
+                wanted["ph_calibration_offset"] = (
+                    "ph_calibration_offset",
+                    {
+                        "name": name,
+                        "source": "pH",
+                        "ecart": f"{offset:+.1f}",
+                        "limit": f"{PH_CALIBRATION_MAX_OFFSET_MV:g}",
+                    },
+                )
+
+        # Deleting an issue that does not exist is a no-op: all of them are
+        # cleared, not only the ones this instance raised, so that none is left
+        # behind by a previous instance of the coordinator (entry reload).
+        for key in _CALIBRATION_ISSUE_KEYS - wanted.keys():
+            async_delete_issue(self.hass, DOMAIN, f"{key}_{self._entry_id}")
+        for key, (translation_key, placeholders) in wanted.items():
+            if key not in self._calibration_issues_active:
+                _LOGGER.warning(
+                    "Blue Connect %s: abnormal %s calibration (%s)",
+                    self.safe_mac,
+                    placeholders["source"],
+                    ", ".join(
+                        f"{k}={v}"
+                        for k, v in placeholders.items()
+                        if k not in ("name", "source")
+                    ),
+                )
+            # Creating an existing issue only updates it: one the person chose
+            # to ignore stays ignored.
+            async_create_issue(
+                self.hass,
+                DOMAIN,
+                f"{key}_{self._entry_id}",
+                is_fixable=False,
+                is_persistent=False,
+                severity=IssueSeverity.WARNING,
+                translation_key=translation_key,
+                translation_placeholders=placeholders,
+            )
+        self._calibration_issues_active = set(wanted)
 
     def _load_ph_calibration(
         self, entry: ConfigEntry
@@ -771,6 +1350,29 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         ref_7 = float(_get_opt(entry, CONF_PH_REF_7, DEFAULT_PH_REF_7))
         ref_4 = float(_get_opt(entry, CONF_PH_REF_4, DEFAULT_PH_REF_4))
         return c4_meas, c7_meas, ref_4, ref_7
+
+    def _integration_ph_hr_calibration(self) -> dict[str, float] | None:
+        """The integration's own mV calibration for the high-resolution pH.
+
+        None unless the person filled in the two potentials (empty by default):
+        when set, it takes priority over the calibration stored in the probe,
+        the same way the official app's own calibration would. The two points
+        are the electrode potential read in each buffer solution (from the
+        "Raw pH (mV)" sensor) and the pH of that solution.
+        """
+        entry = self.entry
+        if not entry:
+            return None
+        mv_4 = _get_opt(entry, CONF_PH_HR_CALIB_MV_4, None)
+        mv_7 = _get_opt(entry, CONF_PH_HR_CALIB_MV_7, None)
+        if mv_4 in (None, "") or mv_7 in (None, ""):
+            return None
+        return {
+            "ph_1": float(_get_opt(entry, CONF_PH_HR_REF_4, DEFAULT_PH_REF_4)),
+            "ph_2": float(_get_opt(entry, CONF_PH_HR_REF_7, DEFAULT_PH_REF_7)),
+            "mv_1": float(mv_4),
+            "mv_2": float(mv_7),
+        }
 
     def _build_chemistry_updates(
         self,
@@ -811,8 +1413,34 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         return updates
 
     def _apply_new_measurements(
-        self, parsed_data: dict[str, Any], hex_frame: str
+        self,
+        parsed_data: dict[str, Any],
+        hex_frame: str,
+        ph_mv: float | None = None,
+        ph_calibration: dict[str, float] | None = None,
+        ph_calibration_source: str | None = None,
+        orp_mv: float | None = None,
     ) -> dict[str, Any]:
+        """Turn the decoded frame into the values shown by the sensors.
+
+        ``ph_mv`` is the pH electrode potential read in the electrical frame
+        of the same measurement, ``ph_calibration`` the two-point calibration
+        to convert it (either the integration's own, or the one stored in the
+        probe - ``ph_calibration_source`` says which). When both are given,
+        the pH is that formula's result without any rounding (2 decimals);
+        the integration's standard pH calibration (options) is never applied
+        to it. Otherwise the pH is that of the calculated frame (0.1
+        resolution), with the standard calibration applied as before.
+
+        ``orp_mv`` is the ORP electrode potential read in the electrical frame
+        of the same measurement. The ORP is that raw potential plus the
+        ``ref - mes`` correction of the integration's own calibration when
+        there is one, otherwise the ORP of the calculated frame, which already
+        carries the probe's own correction. A frame the probe broadcast on its
+        own has no electrical frame: the raw potential is then recovered by
+        removing the probe's correction (read earlier) from that ORP, so the
+        value does not change with the way the frame arrived.
+        """
         current_entry = self.entry
         if not current_entry:
             return self.data
@@ -823,24 +1451,81 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         raw_orp = parsed_data["orp_raw"]
 
         temp_offset = float(_get_opt(current_entry, CONF_TEMP_OFFSET, 0.0))
-        orp_target = float(_get_opt(current_entry, CONF_ORP_REF, DEFAULT_ORP_REF))
-        orp_measured = float(_get_opt(current_entry, CONF_ORP_CALIB, DEFAULT_ORP_CALIB))
-        orp_offset = orp_target - orp_measured
-
         temp = raw_temp + temp_offset
-        orp = raw_orp + orp_offset
 
-        c4_meas, c7_meas, ref_4, ref_7 = self._load_ph_calibration(current_entry)
-        try:
-            ph_calculated: float | None = compute_ph_calibrated(
-                raw_ph, c4_meas, c7_meas, ref_4, ref_7
+        # ORP. A Blueriiot probe has no calibration of its own: its frame is
+        # already the raw electrode potential.
+        is_blueriiot = self.data.get("device_type") == DEVICE_TYPE_BLUERIIOT
+        probe_orp_calibration = (
+            None if is_blueriiot else self.data.get("probe_orp_calibration")
+        )
+        orp_electrode: float | None
+        if is_blueriiot:
+            orp_electrode = float(raw_orp)
+        elif orp_mv is not None:
+            orp_electrode = float(orp_mv)
+        elif probe_orp_calibration:
+            orp_electrode = compute_orp_raw_from_calibrated(
+                raw_orp, probe_orp_calibration["ref"], probe_orp_calibration["mes"]
             )
-        except ValueError:
-            _LOGGER.warning(
-                "Degenerate pH calibration for %s - falling back to raw pH",
-                self.safe_mac,
+        else:
+            orp_electrode = None
+        orp_calibration_source: str | None = None
+        orp: float = raw_orp
+        integration_orp_calibration = self._integration_orp_calibration()
+        if integration_orp_calibration is not None and orp_electrode is not None:
+            orp = compute_orp_calibrated(
+                orp_electrode,
+                integration_orp_calibration["ref"],
+                integration_orp_calibration["mes"],
             )
-            ph_calculated = float(raw_ph)
+            orp_calibration_source = ORP_CALIBRATION_SOURCE_INTEGRATION
+        elif probe_orp_calibration:
+            orp_calibration_source = ORP_CALIBRATION_SOURCE_PROBE
+
+        # The electrode potential as read, before any calibration: it also
+        # gives the "Raw pH", whichever pH ends up being displayed.
+        ph_raw_from_mv = compute_ph_raw_from_mv(ph_mv)
+
+        ph_source = PH_SOURCE_STANDARD
+        ph_calculated: float | None
+        if ph_mv is not None and ph_calibration is not None:
+            assert ph_calibration_source is not None
+            try:
+                ph_calculated = compute_ph_two_point(ph_mv, ph_calibration)
+            except ValueError:
+                ph_calculated = None
+                _LOGGER.warning(
+                    "The pH calibration (%s) of %s is unusable (the two points "
+                    "coincide) - using the standard pH",
+                    ph_calibration_source,
+                    self.safe_mac,
+                )
+            else:
+                if 0.0 <= ph_calculated <= 14.0:
+                    ph_source = PH_SOURCE_HIGH_RESOLUTION
+                else:
+                    _LOGGER.warning(
+                        "High-resolution pH %.2f for %s is out of the physical "
+                        "range - using the standard pH",
+                        ph_calculated,
+                        self.safe_mac,
+                    )
+
+        if ph_source == PH_SOURCE_STANDARD:
+            ph_calibration = None
+            ph_calibration_source = None
+            c4_meas, c7_meas, ref_4, ref_7 = self._load_ph_calibration(current_entry)
+            try:
+                ph_calculated = compute_ph_calibrated(
+                    raw_ph, c4_meas, c7_meas, ref_4, ref_7
+                )
+            except ValueError:
+                _LOGGER.warning(
+                    "Degenerate pH calibration for %s - falling back to raw pH",
+                    self.safe_mac,
+                )
+                ph_calculated = float(raw_ph)
         # Both branches above always set a float (never None) - the range
         # check right below is the first thing allowed to set it back to
         # None. Make that visible to mypy.
@@ -871,14 +1556,35 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         new_data: dict[str, Any] = {
             **self.data,
             **parsed_data,
+            # parsed_data["ph_raw"] is the calculated frame's pH (probe
+            # calibration, 0.1): it is stored as "ph_probe_calibrated".
+            "ph_raw": ph_raw_from_mv,
+            "ph_probe_calibrated": raw_ph,
+            # Likewise "orp_raw" (the calculated frame's ORP) is stored as
+            # "orp_probe_calibrated"; "orp_raw_mv" is the electrode potential.
+            "orp_probe_calibrated": raw_orp,
+            "orp_raw_mv": (
+                None if is_blueriiot or orp_electrode is None else round(orp_electrode)
+            ),
+            "orp_calibration_source": orp_calibration_source,
             "temperature": round(temp, 2),
             "ph": None if ph_calculated is None else round(ph_calculated, 2),
+            "ph_raw_mv": ph_mv,
+            "ph_hr_calibration": ph_calibration,
+            "ph_hr_calibration_source": ph_calibration_source,
+            "ph_source": ph_source,
             "orp": round(orp),
             "battery_level": bat_pct,
             "last_received": now,
             "raw_frame": hex_frame,
             "bluetooth_status": BT_STATUS_SUCCESS,
         }
+        # parsed_data["orp_raw"] only carries the frame's ORP into this method.
+        new_data.pop("orp_raw", None)
+        if ph_source == PH_SOURCE_HIGH_RESOLUTION and ph_calculated is not None:
+            # Real values shown in the "keep the 2-decimal pH" repair.
+            new_data["ph_example_hr"] = round(ph_calculated, 2)
+            new_data["ph_example_low"] = raw_ph
 
         new_data.update(
             self._build_chemistry_updates(
@@ -903,8 +1609,8 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             return
 
         raw_temp = self.data.get("temp_raw")
-        raw_ph = self.data.get("ph_raw")
-        raw_orp = self.data.get("orp_raw")
+        raw_ph = self.data.get("ph_probe_calibrated")
+        raw_orp = self.data.get("orp_probe_calibrated")
         hex_frame = self.data.get("raw_frame", "")
 
         if raw_temp is not None and raw_ph is not None and raw_orp is not None:
@@ -915,7 +1621,31 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 "battery_percent": self.data.get("battery_percent", 0),
             }
 
-            updates = self._apply_new_measurements(parsed_data, hex_frame)
+            ph_mv = self.data.get("ph_raw_mv")
+            ph_calibration: dict[str, float] | None = None
+            ph_calibration_source: str | None = None
+            if ph_mv is not None:
+                integration_calibration = self._integration_ph_hr_calibration()
+                if integration_calibration is not None:
+                    ph_calibration = integration_calibration
+                    ph_calibration_source = PH_HR_CALIBRATION_SOURCE_INTEGRATION
+                elif self.data.get("probe_ph_calibration") is not None:
+                    ph_calibration = self.data.get("probe_ph_calibration")
+                    ph_calibration_source = PH_HR_CALIBRATION_SOURCE_PROBE
+                elif (
+                    self.data.get("ph_hr_calibration_source")
+                    == PH_HR_CALIBRATION_SOURCE_PROBE
+                ):
+                    ph_calibration = self.data.get("ph_hr_calibration")
+                    ph_calibration_source = PH_HR_CALIBRATION_SOURCE_PROBE
+            updates = self._apply_new_measurements(
+                parsed_data,
+                hex_frame,
+                ph_mv=ph_mv,
+                ph_calibration=ph_calibration,
+                ph_calibration_source=ph_calibration_source,
+                orp_mv=self.data.get("orp_raw_mv"),
+            )
 
             updates["last_received"] = self.data.get("last_received")
             updates["bluetooth_status"] = self.data.get("bluetooth_status")
@@ -927,6 +1657,8 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             }
             if changed_updates:
                 self.update_volatile_state(changed_updates)
+
+        self._sync_calibration_issues()
 
     async def _async_update_data(self) -> dict[str, Any]:
         self.update_volatile_state({"action_running": True})
@@ -961,12 +1693,12 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                 self.retry_count = 0
                 self.update_schedule()
                 self._check_stale_issue()
-                if self.data.get("ph_raw") is not None:
+                if self.data.get("ph_probe_calibrated") is not None:
                     return self.data
                 raise UpdateFailed(
                     translation_domain=DOMAIN,
                     translation_key="out_of_range_no_history",
-                    translation_placeholders={"mac": self.safe_mac},
+                    translation_placeholders={"name": self.display_label},
                 )
 
             device = async_ble_device_from_address(
@@ -993,6 +1725,13 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             trigger_uuid = CHAR_TRIGGER_UUID
             notify_uuids = [CHAR_NOTIFY_UUID]
             extra_trigger_uuids: list[str] = []
+            # Electrical frame read during THIS analysis only: a value kept
+            # from an earlier analysis (read failed this time) must never be
+            # used for the new measurement.
+            electrical_mv: float | None = None
+            electrical_orp: int | None = None
+            ph_calibration: dict[str, float] | None = None
+            ph_calibration_source: str | None = None
             loop = asyncio.get_running_loop()
 
             async with self.ble_lock:
@@ -1154,6 +1893,10 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                     "Invalid access code", BT_STATUS_AUTH_FAILED
                                 )
 
+                            if not is_blueriiot and self._calibration_push_pending:
+                                self._calibration_push_pending = False
+                                await self._push_calibrations_to_probe(client)
+
                             self._set_bt_status(BT_STATUS_REQUESTING)
                             await asyncio.wait_for(
                                 client.write_gatt_char(
@@ -1219,10 +1962,91 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
                                 timeout=TIMEOUT_GATT_OP,
                             )
                             self.data["raw_frame_0005"] = raw_0005.hex().upper()
+                            electrical_mv = parse_electrical_frame(bytes(raw_0005))
+                            electrical_orp = parse_electrical_orp(bytes(raw_0005))
                         except _BLE_IO_ERRORS as err:
                             _LOGGER.debug(
                                 "Failed to read raw sensors frame (0x0005): %s", err
                             )
+
+                        # The calibration stored in the probe is read when it
+                        # converts the potential of the electrical frame (unless
+                        # the integration's own calibration takes priority), or
+                        # when the "probe calibration" diagnostic sensor is
+                        # turned on, or once after the pH calibration was
+                        # written to the probe.
+                        integration_calibration = self._integration_ph_hr_calibration()
+                        probe_calibration: dict[str, float] | None = None
+                        if (
+                            (
+                                electrical_mv is not None
+                                and integration_calibration is None
+                            )
+                            or self._probe_calibration_sensor_enabled()
+                            or self._ph_calibration_reread
+                        ):
+                            self._ph_calibration_reread = False
+                            # The 4 registers practically never change between
+                            # two calibrations, so they are re-read only when
+                            # the calibration timestamp has: this saves 4 GATT
+                            # round trips (connection time, probe radio time)
+                            # on every other analysis.
+                            calib_ts = await self._read_ph_calibration_timestamp(client)
+                            cached_calibration = self.data.get("probe_ph_calibration")
+                            if (
+                                calib_ts is not None
+                                and cached_calibration is not None
+                                and calib_ts
+                                == self.data.get("ph_calibration_source_ts")
+                            ):
+                                probe_calibration = cached_calibration
+                            else:
+                                probe_calibration = await self._read_ph_calibration(
+                                    client
+                                )
+                                if (
+                                    probe_calibration is not None
+                                    and calib_ts is not None
+                                ):
+                                    self.data["ph_calibration_source_ts"] = calib_ts
+                            self.data["probe_ph_calibration"] = probe_calibration
+                        if electrical_mv is not None:
+                            if integration_calibration is not None:
+                                # The integration's own mV calibration takes
+                                # priority for the high-resolution pH.
+                                ph_calibration = integration_calibration
+                                ph_calibration_source = (
+                                    PH_HR_CALIBRATION_SOURCE_INTEGRATION
+                                )
+                            else:
+                                ph_calibration = probe_calibration
+                                ph_calibration_source = PH_HR_CALIBRATION_SOURCE_PROBE
+
+                        # The ORP calibration stored in the probe, read on every
+                        # analysis (a passive frame can only be turned back into
+                        # the raw electrode potential with it, and the repair
+                        # for an abnormal calibration needs it). Like the pH
+                        # one, its two registers are re-read only when the
+                        # calibration date has changed.
+                        orp_calib_ts = await self._read_orp_calibration_timestamp(
+                            client
+                        )
+                        if (
+                            orp_calib_ts is not None
+                            and self.data.get("probe_orp_calibration") is not None
+                            and orp_calib_ts
+                            == self.data.get("orp_calibration_source_ts")
+                        ):
+                            pass
+                        else:
+                            self.data[
+                                "probe_orp_calibration"
+                            ] = await self._read_orp_calibration(client)
+                            if (
+                                self.data["probe_orp_calibration"] is not None
+                                and orp_calib_ts is not None
+                            ):
+                                self.data["orp_calibration_source_ts"] = orp_calib_ts
 
                         try:
                             raw_accel = await asyncio.wait_for(
@@ -1467,13 +2291,29 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
             )
             hex_frame = clean_payload.hex().upper()
 
-            new_data = self._apply_new_measurements(parsed_data, hex_frame)
+            # The electrode potential read during this very analysis (never
+            # one kept from an earlier analysis).
+            ph_mv = electrical_mv if not is_blueriiot else None
+            orp_mv = electrical_orp if not is_blueriiot else None
+
+            new_data = self._apply_new_measurements(
+                parsed_data,
+                hex_frame,
+                ph_mv=ph_mv,
+                ph_calibration=ph_calibration,
+                ph_calibration_source=ph_calibration_source,
+                orp_mv=orp_mv,
+            )
             new_data["receive_method"] = "active"
+            if new_data["ph_source"] == PH_SOURCE_HIGH_RESOLUTION:
+                new_data["ph_hr_available"] = True
 
             self.data.update(new_data)
             self._update_device_registry()
             self._schedule_save()
             self.update_schedule()
+            self._sync_passive_issue()
+            self._sync_calibration_issues()
             return self.data
         finally:
             self.update_volatile_state({"action_running": False})
@@ -1509,7 +2349,7 @@ class BlueConnectCoordinator(DataUpdateCoordinator):
         self._set_bt_status(status)
         self.retry_count = 0
         self.update_schedule()
-        if self.data.get("ph_raw") is not None:
+        if self.data.get("ph_probe_calibrated") is not None:
             return self.data
         raise UpdateFailed(
             translation_domain=DOMAIN,

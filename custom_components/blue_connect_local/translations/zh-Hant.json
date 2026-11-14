@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "用於將排程分析對齊到固定時段的基準時間（例如2小時間隔對應08:00、10:00、12:00……）。",
               "scan_interval": "兩次排程分析之間的間隔，範圍 5 至 1440 分鐘。僅限主動模式（需要存取碼）。",
-              "passive_measures": "使用探頭自行廣播的讀數，大約每小時一次。無需存取碼即可使用。",
-              "ignore_echoes": "忽略探頭標記為分析回音的被動幀，以免覆蓋最新的測量值。"
+              "passive_measures": "使用探頭自行廣播的讀數，大約每小時一次。未設定存取碼時，這是唯一的資料來源。設定存取碼時，請保持關閉，以保留 2 位小數的 pH（7.23）。被動讀數只有 1 位小數（7.2），會將其取代。",
+              "ignore_echoes": "忽略探頭標記為分析回音的被動幀，以免覆蓋最新的測量值。在被動分析關閉時不起作用。"
             }
           },
           "probes_calibration": {
             "name": "🧪 探頭校準",
+            "description": "有存取碼時建議：將探頭浸入每種緩衝液，讀取感測器「原始 pH (mV)」，並在此輸入兩個值。沒有存取碼時，請使用下方的「依 pH 值校準（無存取碼）」區段。 對於 ORP，請在探頭浸入標準溶液時讀取「原始 ORP (mV)」感測器（需要存取碼）。",
+            "data": {
+              "ph_hr_calib_mv_7": "在 pH 7 緩衝液中測得的 mV",
+              "ph_hr_ref_7": "🎯 目標溶液 pH 7（例如 7.02）",
+              "ph_hr_calib_mv_4": "在 pH 4 緩衝液中測得的 mV",
+              "ph_hr_ref_4": "🎯 目標溶液 pH 4（例如 4.00）",
+              "orp_calib": "ORP（氧化還原電位）：在標準溶液中測得的 mV",
+              "orp_ref": "ORP（氧化還原電位）：標準溶液（例如 468 mV）",
+              "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "將探頭浸入此緩衝液時，感測器「原始 pH (mV)」（預設停用）顯示的電位。兩個 mV 值都填寫，即可將您自己的校準用於高解析度 pH；兩個都留空，則使用探頭中儲存的校準。標準 pH（解析度 0.1）不受影響。",
+              "ph_hr_ref_7": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。",
+              "ph_hr_calib_mv_4": "將探頭浸入此緩衝液時，感測器「原始 pH (mV)」（預設停用）顯示的電位。兩個 mV 值都填寫，即可將您自己的校準用於高解析度 pH；兩個都留空，則使用探頭中儲存的校準。標準 pH（解析度 0.1）不受影響。",
+              "ph_hr_ref_4": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。",
+              "orp_calib": "探頭浸入標準溶液時，「原始 ORP (mV)」感測器（預設停用）顯示的電位。填寫兩個 ORP 值即可使用您自己的校準，或兩個都留空以使用探頭中儲存的校準。",
+              "orp_ref": "標準溶液在目前溫度下的 ORP 電位 (mV)：它會隨溫度變化，請見瓶身說明。所套用的修正值為該值減去測得值。",
+              "temp_offset": "以 °C 為單位的修正值，會加到探頭測得的溫度上。可以是正數或負數。"
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 依 pH 值校準（無存取碼）",
             "data": {
               "ph_calib_7": "🟢 測量值 pH 7（例如 7.10）",
               "ph_ref_7": "🎯 目標溶液 pH 7（例如 7.02）",
               "ph_calib_4": "🔴 測量值 pH 4（例如 4.10）",
-              "ph_ref_4": "🎯 目標溶液 pH 4（例如 4.00）",
-              "orp_calib": "📏 測量值 ORP（例如 650）",
-              "orp_ref": "🎯 目標溶液 ORP（例如 650）",
-              "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+              "ph_ref_4": "🎯 目標溶液 pH 4（例如 4.00）"
             },
             "data_description": {
-              "ph_calib_7": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
-              "ph_calib_4": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
-              "ph_ref_7": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
-              "ph_ref_4": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
-              "orp_calib": "探頭浸入參考溶液時實際顯示的原始 ORP 值（mV）。",
-              "orp_ref": "參考溶液在目前溫度下的 ORP 值（mV）：它隨溫度變化，請參閱瓶身。套用的修正值等於此值減去實測值。",
-              "temp_offset": "以 °C 為單位的修正值，會加到探頭測得的溫度上。可以是正數或負數。"
+              "ph_calib_7": "探頭浸入此校準溶液時，感測器「探頭校準的 pH」（預設停用）顯示的值（不是溶液的標稱值）。沒有存取碼時，此校準會疊加在探頭本身的內部校準之上：內部校準一旦變化，整合顯示的 pH 也會隨之變化。",
+              "ph_ref_7": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。",
+              "ph_calib_4": "探頭浸入此校準溶液時，感測器「探頭校準的 pH」（預設停用）顯示的值（不是溶液的標稱值）。沒有存取碼時，此校準會疊加在探頭本身的內部校準之上：內部校準一旦變化，整合顯示的 pH 也會隨之變化。",
+              "ph_ref_4": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。"
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ 最小 ORP 必須小於最大 ORP",
       "temp_threshold_error": "❌ 最低溫度必須低於最高溫度",
       "invalid_access_code": "❌ 存取碼無效（8 位或 9 位英數字元）。",
-      "invalid_access_code_9": "❌ 存取碼無效：Blue Connect 的存取碼為 9 位英數字元（例如 B93XXXXXX）。"
+      "invalid_access_code_9": "❌ 存取碼無效：Blue Connect 的存取碼為 9 位英數字元（例如 B93XXXXXX）。",
+      "ph_hr_calibration_equal": "❌ 兩個 mV 值必須不同",
+      "ph_hr_slope_mismatch": "❌ pH 4 緩衝液的 mV 讀數必須高於 pH 7 緩衝液",
+      "ph_hr_mv_incomplete": "❌ 請填寫兩個 mV 值，或兩個都留空",
+      "orp_calib_incomplete": "❌ 請填寫兩個 ORP 值，或兩個都留空"
     },
     "abort": {
       "already_configured": "⚠️ 此裝置已完成設定。",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "用於將排程分析對齊到固定時段的基準時間（例如2小時間隔對應08:00、10:00、12:00……）。",
               "scan_interval": "兩次排程分析之間的間隔，範圍 5 至 1440 分鐘。僅限主動模式（需要存取碼）。",
-              "passive_measures": "使用探頭自行廣播的讀數，大約每小時一次。無需存取碼即可使用。",
-              "ignore_echoes": "忽略探頭標記為分析回音的被動幀，以免覆蓋最新的測量值。"
+              "passive_measures": "使用探頭自行廣播的讀數，大約每小時一次。未設定存取碼時，這是唯一的資料來源。設定存取碼時，請保持關閉，以保留 2 位小數的 pH（7.23）。被動讀數只有 1 位小數（7.2），會將其取代。",
+              "ignore_echoes": "忽略探頭標記為分析回音的被動幀，以免覆蓋最新的測量值。在被動分析關閉時不起作用。"
             }
           },
           "probes_calibration": {
             "name": "🧪 探頭校準",
+            "description": "有存取碼時建議：將探頭浸入每種緩衝液，讀取感測器「原始 pH (mV)」，並在此輸入兩個值。沒有存取碼時，請使用下方的「依 pH 值校準（無存取碼）」區段。 對於 ORP，請在探頭浸入標準溶液時讀取「原始 ORP (mV)」感測器（需要存取碼）。",
+            "data": {
+              "ph_hr_calib_mv_7": "在 pH 7 緩衝液中測得的 mV",
+              "ph_hr_ref_7": "🎯 目標溶液 pH 7（例如 7.02）",
+              "ph_hr_calib_mv_4": "在 pH 4 緩衝液中測得的 mV",
+              "ph_hr_ref_4": "🎯 目標溶液 pH 4（例如 4.00）",
+              "calib_push": "將校準傳送到 Blue Connect",
+              "orp_calib": "ORP（氧化還原電位）：在標準溶液中測得的 mV",
+              "orp_ref": "ORP（氧化還原電位）：標準溶液（例如 468 mV）",
+              "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "將探頭浸入此緩衝液時，感測器「原始 pH (mV)」（預設停用）顯示的電位。兩個 mV 值都填寫，即可將您自己的校準用於高解析度 pH；兩個都留空，則使用探頭中儲存的校準。標準 pH（解析度 0.1）不受影響。",
+              "ph_hr_ref_7": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。",
+              "ph_hr_calib_mv_4": "將探頭浸入此緩衝液時，感測器「原始 pH (mV)」（預設停用）顯示的電位。兩個 mV 值都填寫，即可將您自己的校準用於高解析度 pH；兩個都留空，則使用探頭中儲存的校準。標準 pH（解析度 0.1）不受影響。",
+              "ph_hr_ref_4": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。",
+              "calib_push": "一次性操作，將在下一次分析時執行（需要存取碼）。會把上方填寫的 pH 校準（兩個點，pH 和 mV）和/或 ORP 校準（標準值和測得的 mV）寫入 Blue Connect 自身的暫存器，與官方應用程式的校準相同。只會寫入已填寫且自上次成功傳送後有變更的內容。這也會改變 Blue Connect 的 pH 和 ORP、其警報閾值以及官方應用程式顯示的內容。請先與診斷感測器「Blue Connect pH 校準」和「Blue Connect ORP 校準」（預設停用）比較。",
+              "orp_calib": "探頭浸入標準溶液時，「原始 ORP (mV)」感測器（預設停用）顯示的電位。填寫兩個 ORP 值即可使用您自己的校準，或兩個都留空以使用探頭中儲存的校準。",
+              "orp_ref": "標準溶液在目前溫度下的 ORP 電位 (mV)：它會隨溫度變化，請見瓶身說明。所套用的修正值為該值減去測得值。",
+              "temp_offset": "以 °C 為單位的修正值，會加到探頭測得的溫度上。可以是正數或負數。"
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 依 pH 值校準（無存取碼）",
             "data": {
               "ph_calib_7": "🟢 測量值 pH 7（例如 7.10）",
               "ph_ref_7": "🎯 目標溶液 pH 7（例如 7.02）",
               "ph_calib_4": "🔴 測量值 pH 4（例如 4.10）",
-              "ph_ref_4": "🎯 目標溶液 pH 4（例如 4.00）",
-              "orp_calib": "📏 測量值 ORP（例如 650）",
-              "orp_ref": "🎯 目標溶液 ORP（例如 650）",
-              "temp_offset": "🌡️ 溫度偏移（°C）(+/-)"
+              "ph_ref_4": "🎯 目標溶液 pH 4（例如 4.00）"
             },
             "data_description": {
-              "ph_calib_7": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
-              "ph_calib_4": "探頭浸入此校準溶液時實際測得的原始pH值（不是溶液的標稱值）。",
-              "ph_ref_7": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
-              "ph_ref_4": "此校準溶液在目前溫度下的 pH 值：它隨溫度變化，請參閱瓶身上的對照表。",
-              "orp_calib": "探頭浸入參考溶液時實際顯示的原始 ORP 值（mV）。",
-              "orp_ref": "參考溶液在目前溫度下的 ORP 值（mV）：它隨溫度變化，請參閱瓶身。套用的修正值等於此值減去實測值。",
-              "temp_offset": "以 °C 為單位的修正值，會加到探頭測得的溫度上。可以是正數或負數。"
+              "ph_calib_7": "探頭浸入此校準溶液時，感測器「探頭校準的 pH」（預設停用）顯示的值（不是溶液的標稱值）。沒有存取碼時，此校準會疊加在探頭本身的內部校準之上：內部校準一旦變化，整合顯示的 pH 也會隨之變化。僅用於標準 pH（解析度 0.1），不用於高解析度 pH。",
+              "ph_ref_7": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。",
+              "ph_calib_4": "探頭浸入此校準溶液時，感測器「探頭校準的 pH」（預設停用）顯示的值（不是溶液的標稱值）。沒有存取碼時，此校準會疊加在探頭本身的內部校準之上：內部校準一旦變化，整合顯示的 pH 也會隨之變化。僅用於標準 pH（解析度 0.1），不用於高解析度 pH。",
+              "ph_ref_4": "此緩衝液在目前溫度下的 pH：它會隨溫度變化，請參閱瓶身。"
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ 存取碼無效：Blue Connect 的存取碼為 9 位英數字元（例如 B93XXXXXX）。",
       "ph_calibration_equal": "❌ pH 校準值必須不同",
       "ph_slope_mismatch": "❌ 邏輯錯誤：校準斜率不一致",
-      "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4：2.5-5.5，pH 7：6.5-7.5",
+      "calib_push_unavailable": "請先填寫 pH 校準（兩個 mV 值）和/或 ORP 校準（兩個值），並輸入存取碼：否則無法傳送（Blue Connect Plus 也不支援）。",
+      "ph_hr_calibration_equal": "❌ 兩個 mV 值必須不同",
+      "ph_hr_slope_mismatch": "❌ pH 4 緩衝液的 mV 讀數必須高於 pH 7 緩衝液",
+      "ph_hr_mv_incomplete": "❌ 請填寫兩個 mV 值，或兩個都留空",
+      "orp_calib_incomplete": "❌ 請填寫兩個 ORP 值，或兩個都留空"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "原始 pH"
       },
-      "orp_raw": {
-        "name": "原始 ORP"
+      "ph_probe_calibrated": {
+        "name": "探頭校準的 pH"
+      },
+      "ph_raw_mv": {
+        "name": "原始 pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Blue Connect pH 校準"
       },
       "lsi": {
         "name": "朗格利爾指數"
@@ -345,6 +394,18 @@
           "active": "主動",
           "unknown": "未知"
         }
+      },
+      "orp_raw_mv": {
+        "name": "原始 ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "探頭校準的 ORP"
+      },
+      "probe_orp_calibration": {
+        "name": "Blue Connect ORP 校準"
+      },
+      "last_orp_calib": {
+        "name": "上次 ORP 校準"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect 無法連線",
-      "description": "Blue Connect探頭（{name}）已有{days}天未回應。請檢查電源、信號範圍，以及是否有藍牙轉接器或ESPHome代理涵蓋泳池區域。"
+      "description": "{name} 已有{days}天未回應。請檢查電源、信號範圍，以及是否有藍牙轉接器或ESPHome代理涵蓋泳池區域。"
+    },
+    "passive_high_resolution": {
+      "title": "保留 2 位小數的高解析度 pH",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "保留 2 位小數的高解析度 pH",
+            "description": "每次分析後，您的 {name} 還會傳送一筆 1 位小數的 pH，它會取代您的精確值（例如 {ph_hr} → {ph_low}）。\n\n**提交**將關閉開關「Blue Connect 內部分析（被動）」：這些測量值將被忽略。"
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "ORP 校準異常",
+      "description": "{name}：{source} 偏差異常：參考值與測得值相差 {ecart} mV。請檢查標準溶液並清潔電極。如果問題仍然存在，探頭可能已接近使用壽命終點。"
+    },
+    "ph_calibration_slope": {
+      "title": "pH 校準異常",
+      "description": "{name}：{source} 校準異常：斜率為 {slope} mV/pH，預期範圍為 {min} 至 {max}。請檢查緩衝溶液並清潔電極。如果問題仍然存在，探頭可能已接近使用壽命終點。"
+    },
+    "ph_calibration_offset": {
+      "title": "pH 校準異常",
+      "description": "{name}：{source} 校準異常：pH 7 處的偏移為 {ecart} mV，預期範圍為 −{limit} 至 +{limit}。請檢查緩衝溶液並清潔電極。如果問題仍然存在，探頭可能已接近使用壽命終點。"
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} 超出藍牙範圍，且沒有可用的歷史資料。"
+      "message": "{name} 超出藍牙範圍，且沒有可用的歷史資料。"
     },
     "unreachable_no_history": {
       "message": "Blue Connect 無法連線，且沒有可用的歷史資料：{error}"

@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Hora de referencia usada para alinear los análisis programados en intervalos regulares (por ejemplo, 08:00, 10:00, 12:00... para un intervalo de 2 horas).",
               "scan_interval": "Tiempo entre dos análisis programados, de 5 a 1440 minutos. Solo en Modo Activo (requiere el código de acceso).",
-              "passive_measures": "Usa las lecturas que la sonda emite por sí sola, aproximadamente una por hora. Funciona sin código de acceso.",
-              "ignore_echoes": "Ignora las tramas pasivas que la sonda marca como ecos de un análisis, para que no sobrescriban la última medición."
+              "passive_measures": "Usa las lecturas que la sonda emite por sí sola, aproximadamente una por hora. Es la única fuente de lecturas sin código de acceso. Con un código de acceso, déjelo desactivado para conservar el pH con 2 decimales (7,23). Las lecturas pasivas solo tienen un decimal (7,2) y lo sustituirían.",
+              "ignore_echoes": "Ignora las tramas pasivas que la sonda marca como ecos de un análisis, para que no sobrescriban la última medición. No tiene efecto mientras los análisis pasivos estén desactivados."
             }
           },
           "probes_calibration": {
             "name": "🧪 Calibración de Sondas",
+            "description": "Recomendado con código de acceso: lea el sensor «pH Bruto (mV)» con la sonda sumergida en cada solución tampón y escriba aquí los dos valores. Sin código de acceso, use más abajo la sección «Calibración por valor de pH (sin código de acceso)». Para el ORP, lea el sensor «ORP Bruto (mV)» con la sonda sumergida en la solución de referencia (se requiere un código de acceso).",
+            "data": {
+              "ph_hr_calib_mv_7": "mV medidos en el tampón de pH 7",
+              "ph_hr_ref_7": "🎯 Solución de Referencia pH 7 (ej., 7.02)",
+              "ph_hr_calib_mv_4": "mV medidos en el tampón de pH 4",
+              "ph_hr_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)",
+              "orp_calib": "ORP (Redox): mV medidos en la solución de referencia",
+              "orp_ref": "ORP (Redox): solución de referencia (p. ej., 468 mV)",
+              "temp_offset": "🌡️ Desviación de Temperatura (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "El potencial que muestra el sensor «pH Bruto (mV)» (desactivado por defecto) con la sonda sumergida en esta solución tampón. Rellene los dos valores en mV para usar su propia calibración en el pH de alta resolución, o deje ambos vacíos para usar la guardada en la sonda. El pH estándar (resolución 0,1) no se ve afectado.",
+              "ph_hr_ref_7": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco.",
+              "ph_hr_calib_mv_4": "El potencial que muestra el sensor «pH Bruto (mV)» (desactivado por defecto) con la sonda sumergida en esta solución tampón. Rellene los dos valores en mV para usar su propia calibración en el pH de alta resolución, o deje ambos vacíos para usar la guardada en la sonda. El pH estándar (resolución 0,1) no se ve afectado.",
+              "ph_hr_ref_4": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco.",
+              "orp_calib": "El potencial que muestra el sensor «ORP Bruto (mV)» (desactivado por defecto) con la sonda sumergida en la solución de referencia. Rellene los dos valores de ORP para usar su propia calibración, o déjelos vacíos para usar la almacenada en la sonda.",
+              "orp_ref": "El potencial ORP (mV) de la solución de referencia a su temperatura actual: varía con la temperatura, vea el frasco. La corrección aplicada es este valor menos el valor medido.",
+              "temp_offset": "Corrección en °C que se suma a la temperatura medida por la sonda. Puede ser positiva o negativa."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Calibración por valor de pH (sin código de acceso)",
             "data": {
               "ph_calib_7": "🟢 Valor Medido pH 7 (ej., 7.10)",
               "ph_ref_7": "🎯 Solución de Referencia pH 7 (ej., 7.02)",
               "ph_calib_4": "🔴 Valor Medido pH 4 (ej., 4.10)",
-              "ph_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)",
-              "orp_calib": "📏 Valor Medido ORP (ej., 650)",
-              "orp_ref": "🎯 Solución de Referencia ORP (ej., 650)",
-              "temp_offset": "🌡️ Desviación de Temperatura (°C) (+/-)"
+              "ph_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "El valor de pH bruto que su sonda midió realmente mientras estaba sumergida en esta solución de calibración (no el valor nominal de la solución).",
-              "ph_calib_4": "El valor de pH bruto que su sonda midió realmente mientras estaba sumergida en esta solución de calibración (no el valor nominal de la solución).",
-              "ph_ref_7": "El pH de esta solución de calibración a su temperatura actual: varía con la temperatura, consulte la tabla del frasco.",
-              "ph_ref_4": "El pH de esta solución de calibración a su temperatura actual: varía con la temperatura, consulte la tabla del frasco.",
-              "orp_calib": "El valor ORP bruto (mV) que su sonda mostró realmente sumergida en la solución de referencia.",
-              "orp_ref": "El valor ORP (mV) de la solución de referencia a su temperatura actual: varía con la temperatura, consulte el frasco. La corrección aplicada es este valor menos el valor medido.",
-              "temp_offset": "Corrección en °C que se suma a la temperatura medida por la sonda. Puede ser positiva o negativa."
+              "ph_calib_7": "El valor que muestra el sensor «pH calibrado por la sonda» (desactivado por defecto) mientras la sonda está sumergida en esta solución de calibración (no el valor nominal de la solución). Sin código de acceso, esta calibración se aplica sobre la calibración interna de la sonda: si esta cambia, el pH de la integración también cambia.",
+              "ph_ref_7": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco.",
+              "ph_calib_4": "El valor que muestra el sensor «pH calibrado por la sonda» (desactivado por defecto) mientras la sonda está sumergida en esta solución de calibración (no el valor nominal de la solución). Sin código de acceso, esta calibración se aplica sobre la calibración interna de la sonda: si esta cambia, el pH de la integración también cambia.",
+              "ph_ref_4": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ El ORP mínimo debe ser inferior al ORP máximo",
       "temp_threshold_error": "❌ La temperatura mínima debe ser inferior a la temperatura máxima",
       "invalid_access_code": "❌ Código de Acceso no válido (8 o 9 caracteres alfanuméricos).",
-      "invalid_access_code_9": "❌ Código de Acceso no válido: el código de acceso de un Blue Connect tiene 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX)."
+      "invalid_access_code_9": "❌ Código de Acceso no válido: el código de acceso de un Blue Connect tiene 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ Los dos valores en mV deben ser distintos",
+      "ph_hr_slope_mismatch": "❌ La solución tampón de pH 4 debe dar más mV que la de pH 7",
+      "ph_hr_mv_incomplete": "❌ Rellene los dos valores en mV o deje ambos vacíos",
+      "orp_calib_incomplete": "❌ Rellene los dos valores de ORP o deje ambos vacíos"
     },
     "abort": {
       "already_configured": "⚠️ Este dispositivo ya está configurado.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Hora de referencia usada para alinear los análisis programados en intervalos regulares (por ejemplo, 08:00, 10:00, 12:00... para un intervalo de 2 horas).",
               "scan_interval": "Tiempo entre dos análisis programados, de 5 a 1440 minutos. Solo en Modo Activo (requiere el código de acceso).",
-              "passive_measures": "Usa las lecturas que la sonda emite por sí sola, aproximadamente una por hora. Funciona sin código de acceso.",
-              "ignore_echoes": "Ignora las tramas pasivas que la sonda marca como ecos de un análisis, para que no sobrescriban la última medición."
+              "passive_measures": "Usa las lecturas que la sonda emite por sí sola, aproximadamente una por hora. Es la única fuente de lecturas sin código de acceso. Con un código de acceso, déjelo desactivado para conservar el pH con 2 decimales (7,23). Las lecturas pasivas solo tienen un decimal (7,2) y lo sustituirían.",
+              "ignore_echoes": "Ignora las tramas pasivas que la sonda marca como ecos de un análisis, para que no sobrescriban la última medición. No tiene efecto mientras los análisis pasivos estén desactivados."
             }
           },
           "probes_calibration": {
             "name": "🧪 Calibración de Sondas",
+            "description": "Recomendado con código de acceso: lea el sensor «pH Bruto (mV)» con la sonda sumergida en cada solución tampón y escriba aquí los dos valores. Sin código de acceso, use más abajo la sección «Calibración por valor de pH (sin código de acceso)». Para el ORP, lea el sensor «ORP Bruto (mV)» con la sonda sumergida en la solución de referencia (se requiere un código de acceso).",
+            "data": {
+              "ph_hr_calib_mv_7": "mV medidos en el tampón de pH 7",
+              "ph_hr_ref_7": "🎯 Solución de Referencia pH 7 (ej., 7.02)",
+              "ph_hr_calib_mv_4": "mV medidos en el tampón de pH 4",
+              "ph_hr_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)",
+              "calib_push": "Enviar las calibraciones al Blue Connect",
+              "orp_calib": "ORP (Redox): mV medidos en la solución de referencia",
+              "orp_ref": "ORP (Redox): solución de referencia (p. ej., 468 mV)",
+              "temp_offset": "🌡️ Desviación de Temperatura (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "El potencial que muestra el sensor «pH Bruto (mV)» (desactivado por defecto) con la sonda sumergida en esta solución tampón. Rellene los dos valores en mV para usar su propia calibración en el pH de alta resolución, o deje ambos vacíos para usar la guardada en la sonda. El pH estándar (resolución 0,1) no se ve afectado.",
+              "ph_hr_ref_7": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco.",
+              "ph_hr_calib_mv_4": "El potencial que muestra el sensor «pH Bruto (mV)» (desactivado por defecto) con la sonda sumergida en esta solución tampón. Rellene los dos valores en mV para usar su propia calibración en el pH de alta resolución, o deje ambos vacíos para usar la guardada en la sonda. El pH estándar (resolución 0,1) no se ve afectado.",
+              "ph_hr_ref_4": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco.",
+              "calib_push": "Acción puntual, aplicada en el próximo análisis (se requiere un código de acceso). Escribe en los registros propios del Blue Connect la calibración de pH (dos puntos, pH y mV) y/o la calibración de ORP (referencia y mV medidos) rellenadas arriba, como la calibración de la aplicación oficial. Solo se escribe lo que está rellenado y ha cambiado desde el último envío correcto. Esto también cambia el pH y el ORP del Blue Connect, sus umbrales de alerta y lo que muestra la aplicación oficial. Compare antes con los sensores de diagnóstico «Calibración de pH del Blue Connect» y «Calibración de ORP del Blue Connect» (desactivados por defecto).",
+              "orp_calib": "El potencial que muestra el sensor «ORP Bruto (mV)» (desactivado por defecto) con la sonda sumergida en la solución de referencia. Rellene los dos valores de ORP para usar su propia calibración, o déjelos vacíos para usar la almacenada en la sonda.",
+              "orp_ref": "El potencial ORP (mV) de la solución de referencia a su temperatura actual: varía con la temperatura, vea el frasco. La corrección aplicada es este valor menos el valor medido.",
+              "temp_offset": "Corrección en °C que se suma a la temperatura medida por la sonda. Puede ser positiva o negativa."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Calibración por valor de pH (sin código de acceso)",
             "data": {
               "ph_calib_7": "🟢 Valor Medido pH 7 (ej., 7.10)",
               "ph_ref_7": "🎯 Solución de Referencia pH 7 (ej., 7.02)",
               "ph_calib_4": "🔴 Valor Medido pH 4 (ej., 4.10)",
-              "ph_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)",
-              "orp_calib": "📏 Valor Medido ORP (ej., 650)",
-              "orp_ref": "🎯 Solución de Referencia ORP (ej., 650)",
-              "temp_offset": "🌡️ Desviación de Temperatura (°C) (+/-)"
+              "ph_ref_4": "🎯 Solución de Referencia pH 4 (ej., 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "El valor de pH bruto que su sonda midió realmente mientras estaba sumergida en esta solución de calibración (no el valor nominal de la solución).",
-              "ph_calib_4": "El valor de pH bruto que su sonda midió realmente mientras estaba sumergida en esta solución de calibración (no el valor nominal de la solución).",
-              "ph_ref_7": "El pH de esta solución de calibración a su temperatura actual: varía con la temperatura, consulte la tabla del frasco.",
-              "ph_ref_4": "El pH de esta solución de calibración a su temperatura actual: varía con la temperatura, consulte la tabla del frasco.",
-              "orp_calib": "El valor ORP bruto (mV) que su sonda mostró realmente sumergida en la solución de referencia.",
-              "orp_ref": "El valor ORP (mV) de la solución de referencia a su temperatura actual: varía con la temperatura, consulte el frasco. La corrección aplicada es este valor menos el valor medido.",
-              "temp_offset": "Corrección en °C que se suma a la temperatura medida por la sonda. Puede ser positiva o negativa."
+              "ph_calib_7": "El valor que muestra el sensor «pH calibrado por la sonda» (desactivado por defecto) mientras la sonda está sumergida en esta solución de calibración (no el valor nominal de la solución). Sin código de acceso, esta calibración se aplica sobre la calibración interna de la sonda: si esta cambia, el pH de la integración también cambia. Solo se usa para el pH estándar (resolución 0,1), no para el pH de alta resolución.",
+              "ph_ref_7": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco.",
+              "ph_calib_4": "El valor que muestra el sensor «pH calibrado por la sonda» (desactivado por defecto) mientras la sonda está sumergida en esta solución de calibración (no el valor nominal de la solución). Sin código de acceso, esta calibración se aplica sobre la calibración interna de la sonda: si esta cambia, el pH de la integración también cambia. Solo se usa para el pH estándar (resolución 0,1), no para el pH de alta resolución.",
+              "ph_ref_4": "El pH de esta solución tampón a su temperatura actual: varía con la temperatura, vea el frasco."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Código de Acceso no válido: el código de acceso de un Blue Connect tiene 9 caracteres alfanuméricos (por ejemplo, B93XXXXXX).",
       "ph_calibration_equal": "❌ Los valores de calibración de pH deben ser diferentes",
       "ph_slope_mismatch": "❌ Error lógico: La pendiente de calibración es incoherente",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Rellene primero la calibración de pH (los dos valores en mV) y/o la de ORP (los dos valores) e introduzca un código de acceso: de lo contrario no se puede enviar (ni en el Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ Los dos valores en mV deben ser distintos",
+      "ph_hr_slope_mismatch": "❌ La solución tampón de pH 4 debe dar más mV que la de pH 7",
+      "ph_hr_mv_incomplete": "❌ Rellene los dos valores en mV o deje ambos vacíos",
+      "orp_calib_incomplete": "❌ Rellene los dos valores de ORP o deje ambos vacíos"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "pH Bruto"
       },
-      "orp_raw": {
-        "name": "ORP Bruto"
+      "ph_probe_calibrated": {
+        "name": "pH calibrado por la sonda"
+      },
+      "ph_raw_mv": {
+        "name": "pH Bruto (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Calibración de pH del Blue Connect"
       },
       "lsi": {
         "name": "Índice de Langelier"
@@ -345,6 +394,18 @@
           "active": "Activa",
           "unknown": "Desconocido"
         }
+      },
+      "orp_raw_mv": {
+        "name": "ORP Bruto (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "ORP calibrado por la sonda"
+      },
+      "probe_orp_calibration": {
+        "name": "Calibración de ORP del Blue Connect"
+      },
+      "last_orp_calib": {
+        "name": "Última calibración del ORP"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect inaccesible",
-      "description": "La sonda Blue Connect ({name}) no ha respondido durante {days} día(s). Compruebe la alimentación, el alcance, y que un adaptador Bluetooth o proxy ESPHome cubra la zona de la piscina."
+      "description": "La sonda {name} no ha respondido durante {days} día(s). Compruebe la alimentación, el alcance, y que un adaptador Bluetooth o proxy ESPHome cubra la zona de la piscina."
+    },
+    "passive_high_resolution": {
+      "title": "Conservar el pH de alta resolución con 2 decimales",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Conservar el pH de alta resolución con 2 decimales",
+            "description": "Después de cada análisis, su {name} envía también un pH con 1 decimal, que sustituye a su valor preciso (p. ej. {ph_hr} → {ph_low}).\n\n**Enviar** desactiva el interruptor «Análisis Internos de Blue Connect (Pasivos)»: se ignorarán estas lecturas."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Calibración de ORP anómala",
+      "description": "{name}: desviación de {source} anómala: {ecart} mV entre la referencia y el valor medido. Compruebe la solución de referencia y limpie el electrodo. Si el problema persiste, es posible que la sonda esté al final de su vida útil."
+    },
+    "ph_calibration_slope": {
+      "title": "Calibración de pH anómala",
+      "description": "{name}: calibración de {source} anómala: pendiente de {slope} mV/pH, esperada entre {min} y {max}. Compruebe las soluciones tampón y limpie el electrodo. Si el problema persiste, es posible que la sonda esté al final de su vida útil."
+    },
+    "ph_calibration_offset": {
+      "title": "Calibración de pH anómala",
+      "description": "{name}: calibración de {source} anómala: offset de {ecart} mV a pH 7, esperado entre −{limit} y +{limit}. Compruebe las soluciones tampón y limpie el electrodo. Si el problema persiste, es posible que la sonda esté al final de su vida útil."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} está fuera del alcance de Bluetooth y no hay datos anteriores disponibles."
+      "message": "{name} está fuera del alcance de Bluetooth y no hay datos anteriores disponibles."
     },
     "unreachable_no_history": {
       "message": "Blue Connect no está accesible y no hay datos anteriores disponibles: {error}"

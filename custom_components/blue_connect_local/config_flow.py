@@ -19,6 +19,7 @@ from homeassistant.helpers.typing import UNDEFINED
 from . import BlueConnectConfigEntry
 from .const import (
     CONF_ACCESS_CODE,
+    CONF_CALIB_PUSH,
     CONF_CHLORINE_MODEL,
     CONF_CYA,
     CONF_IGNORE_ECHOES,
@@ -30,6 +31,10 @@ from .const import (
     CONF_PASSIVE_MEASURES,
     CONF_PH_CALIB_4,
     CONF_PH_CALIB_7,
+    CONF_PH_HR_CALIB_MV_4,
+    CONF_PH_HR_CALIB_MV_7,
+    CONF_PH_HR_REF_4,
+    CONF_PH_HR_REF_7,
     CONF_PH_MAX,
     CONF_PH_MIN,
     CONF_PH_REF_4,
@@ -39,10 +44,8 @@ from .const import (
     CONF_TEMP_MAX,
     CONF_TEMP_MIN,
     CONF_TEMP_OFFSET,
-    DEFAULT_ORP_CALIB,
     DEFAULT_ORP_MAX,
     DEFAULT_ORP_MIN,
-    DEFAULT_ORP_REF,
     DEFAULT_PH_CALIB_4,
     DEFAULT_PH_CALIB_7,
     DEFAULT_PH_MAX,
@@ -176,7 +179,7 @@ def _access_code_error(access_code: str, family: str | None) -> str | None:
 
 class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
-    MINOR_VERSION = 4
+    MINOR_VERSION = 5
 
     def __init__(self) -> None:
         super().__init__()
@@ -353,6 +356,10 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         title = self._get_display_name(bt_name, detected_model)
 
                         final_access_code = normalized_input.pop(CONF_ACCESS_CODE, "")
+                        if not final_access_code:
+                            # No access code: the passive frames are the only
+                            # source of measurements.
+                            normalized_input[CONF_PASSIVE_MEASURES] = True
 
                         entry_data = {
                             CONF_MAC_ADDRESS: final_mac,
@@ -467,8 +474,12 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             vol.Required(
                                 CONF_REFERENCE_TIME, default="08:00"
                             ): selector.TimeSelector(),
+                            # Off by default: with an access code, the frames
+                            # the probe broadcasts on its own would replace the
+                            # high-resolution pH after every analysis. Without
+                            # an access code they are forced on (see below).
                             vol.Optional(
-                                CONF_PASSIVE_MEASURES, default=True
+                                CONF_PASSIVE_MEASURES, default=False
                             ): selector.BooleanSelector(),
                             vol.Optional(
                                 CONF_IGNORE_ECHOES, default=True
@@ -478,6 +489,83 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     {"collapsed": True},
                 ),
                 vol.Required("probes_calibration"): section(
+                    _schema(
+                        {
+                            vol.Optional(
+                                CONF_PH_HR_CALIB_MV_7
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=-1000,
+                                    max=1000,
+                                    step=0.1,
+                                    mode=selector.NumberSelectorMode.BOX,
+                                    unit_of_measurement="mV",
+                                )
+                            ),
+                            vol.Required(
+                                CONF_PH_HR_REF_7, default=DEFAULT_PH_REF_7
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=0,
+                                    max=14,
+                                    step=0.01,
+                                    mode=selector.NumberSelectorMode.BOX,
+                                )
+                            ),
+                            vol.Optional(
+                                CONF_PH_HR_CALIB_MV_4
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=-1000,
+                                    max=1000,
+                                    step=0.1,
+                                    mode=selector.NumberSelectorMode.BOX,
+                                    unit_of_measurement="mV",
+                                )
+                            ),
+                            vol.Required(
+                                CONF_PH_HR_REF_4, default=float(DEFAULT_PH_REF_4)
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=0,
+                                    max=14,
+                                    step=0.01,
+                                    mode=selector.NumberSelectorMode.BOX,
+                                )
+                            ),
+                            vol.Optional(CONF_ORP_CALIB): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=-1000,
+                                    max=1000,
+                                    step=1,
+                                    mode=selector.NumberSelectorMode.BOX,
+                                    unit_of_measurement="mV",
+                                )
+                            ),
+                            vol.Optional(CONF_ORP_REF): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=-1000,
+                                    max=1000,
+                                    step=1,
+                                    mode=selector.NumberSelectorMode.BOX,
+                                    unit_of_measurement="mV",
+                                )
+                            ),
+                            vol.Required(
+                                CONF_TEMP_OFFSET, default=0.0
+                            ): selector.NumberSelector(
+                                selector.NumberSelectorConfig(
+                                    min=-5.0,
+                                    max=5.0,
+                                    step=0.1,
+                                    mode=selector.NumberSelectorMode.BOX,
+                                )
+                            ),
+                        }
+                    ),
+                    {"collapsed": True},
+                ),
+                vol.Required("ph_value_calibration"): section(
                     _schema(
                         {
                             vol.Required(
@@ -517,36 +605,6 @@ class BlueConnectConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                                     min=0,
                                     max=14,
                                     step=0.01,
-                                    mode=selector.NumberSelectorMode.BOX,
-                                )
-                            ),
-                            vol.Required(
-                                CONF_ORP_CALIB, default=int(DEFAULT_ORP_CALIB)
-                            ): selector.NumberSelector(
-                                selector.NumberSelectorConfig(
-                                    min=0,
-                                    max=1000,
-                                    step=1,
-                                    mode=selector.NumberSelectorMode.BOX,
-                                )
-                            ),
-                            vol.Required(
-                                CONF_ORP_REF, default=int(DEFAULT_ORP_REF)
-                            ): selector.NumberSelector(
-                                selector.NumberSelectorConfig(
-                                    min=0,
-                                    max=1000,
-                                    step=1,
-                                    mode=selector.NumberSelectorMode.BOX,
-                                )
-                            ),
-                            vol.Required(
-                                CONF_TEMP_OFFSET, default=0.0
-                            ): selector.NumberSelector(
-                                selector.NumberSelectorConfig(
-                                    min=-5.0,
-                                    max=5.0,
-                                    step=0.1,
                                     mode=selector.NumberSelectorMode.BOX,
                                 )
                             ),
@@ -660,6 +718,33 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
             ):
                 errors[CONF_ACCESS_CODE] = error
 
+            # One-shot action, not a setting: never stored.
+            push_calibration = bool(flat_input.pop(CONF_CALIB_PUSH, False))
+            # Something to send: the pH (both potentials) and/or the ORP (both
+            # values) filled in. Each one is sent on its own, and only if it
+            # changed since the last successful push.
+            has_ph_calibration = flat_input.get(CONF_PH_HR_CALIB_MV_4) not in (
+                None,
+                "",
+            ) and flat_input.get(CONF_PH_HR_CALIB_MV_7) not in (
+                None,
+                "",
+            )
+            has_orp_calibration = flat_input.get(CONF_ORP_CALIB) not in (
+                None,
+                "",
+            ) and flat_input.get(CONF_ORP_REF) not in (None, "")
+            if (
+                push_calibration
+                and not errors
+                and (
+                    not (has_ph_calibration or has_orp_calibration)
+                    or not access_code
+                    or _family_from_entry(entry) == FAMILY_BLUERIIOT
+                )
+            ):
+                errors[CONF_CALIB_PUSH] = "calib_push_unavailable"
+
             if not errors:
                 validation = validate_calibration(flat_input)
                 if isinstance(validation, tuple):
@@ -668,13 +753,17 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                 else:
                     normalized_input = validation
                     normalized_input[CONF_ACCESS_CODE] = access_code
+                    if not access_code:
+                        normalized_input[CONF_PASSIVE_MEASURES] = True
 
                     coordinator = getattr(entry, "runtime_data", None)
                     if coordinator:
                         coordinator.update_local_state(normalized_input)
                         coordinator.request_deferred_recompute()
 
-                        if access_code and access_code != current_access_code:
+                        if (
+                            push_calibration and coordinator.request_calibration_push()
+                        ) or (access_code and access_code != current_access_code):
                             coordinator.request_one_shot_analysis()
                             entry.async_create_background_task(
                                 self.hass,
@@ -765,12 +854,22 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
         ph_ref_4 = entry.options.get(
             CONF_PH_REF_4, entry.data.get(CONF_PH_REF_4, DEFAULT_PH_REF_4)
         )
-        orp_target = entry.options.get(
-            CONF_ORP_REF, entry.data.get(CONF_ORP_REF, DEFAULT_ORP_REF)
+        ph_hr_ref_7 = entry.options.get(
+            CONF_PH_HR_REF_7, entry.data.get(CONF_PH_HR_REF_7, DEFAULT_PH_REF_7)
         )
-        orp_measured = entry.options.get(
-            CONF_ORP_CALIB, entry.data.get(CONF_ORP_CALIB, DEFAULT_ORP_CALIB)
+        ph_hr_ref_4 = entry.options.get(
+            CONF_PH_HR_REF_4, entry.data.get(CONF_PH_HR_REF_4, DEFAULT_PH_REF_4)
         )
+        # The mV calibration is empty unless the person filled it in.
+        ph_hr_calib_mv_4 = entry.options.get(
+            CONF_PH_HR_CALIB_MV_4, entry.data.get(CONF_PH_HR_CALIB_MV_4)
+        )
+        ph_hr_calib_mv_7 = entry.options.get(
+            CONF_PH_HR_CALIB_MV_7, entry.data.get(CONF_PH_HR_CALIB_MV_7)
+        )
+        # The ORP calibration is empty unless the person filled it in.
+        orp_target = entry.options.get(CONF_ORP_REF, entry.data.get(CONF_ORP_REF))
+        orp_measured = entry.options.get(CONF_ORP_CALIB, entry.data.get(CONF_ORP_CALIB))
         temp_offset = entry.options.get(
             CONF_TEMP_OFFSET, entry.data.get(CONF_TEMP_OFFSET, 0.0)
         )
@@ -849,6 +948,94 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required("probes_calibration"): section(
                         _schema(
                             {
+                                vol.Optional(
+                                    CONF_PH_HR_CALIB_MV_7,
+                                    description={"suggested_value": ph_hr_calib_mv_7},
+                                ): selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        min=-1000,
+                                        max=1000,
+                                        step=0.1,
+                                        mode=selector.NumberSelectorMode.BOX,
+                                        unit_of_measurement="mV",
+                                    )
+                                ),
+                                vol.Required(
+                                    CONF_PH_HR_REF_7, default=float(ph_hr_ref_7)
+                                ): selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        min=0,
+                                        max=14,
+                                        step=0.01,
+                                        mode=selector.NumberSelectorMode.BOX,
+                                    )
+                                ),
+                                vol.Optional(
+                                    CONF_PH_HR_CALIB_MV_4,
+                                    description={"suggested_value": ph_hr_calib_mv_4},
+                                ): selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        min=-1000,
+                                        max=1000,
+                                        step=0.1,
+                                        mode=selector.NumberSelectorMode.BOX,
+                                        unit_of_measurement="mV",
+                                    )
+                                ),
+                                vol.Required(
+                                    CONF_PH_HR_REF_4, default=float(ph_hr_ref_4)
+                                ): selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        min=0,
+                                        max=14,
+                                        step=0.01,
+                                        mode=selector.NumberSelectorMode.BOX,
+                                    )
+                                ),
+                                vol.Optional(
+                                    CONF_ORP_CALIB,
+                                    description={"suggested_value": orp_measured},
+                                ): selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        min=-1000,
+                                        max=1000,
+                                        step=1,
+                                        mode=selector.NumberSelectorMode.BOX,
+                                        unit_of_measurement="mV",
+                                    )
+                                ),
+                                vol.Optional(
+                                    CONF_ORP_REF,
+                                    description={"suggested_value": orp_target},
+                                ): selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        min=-1000,
+                                        max=1000,
+                                        step=1,
+                                        mode=selector.NumberSelectorMode.BOX,
+                                        unit_of_measurement="mV",
+                                    )
+                                ),
+                                vol.Optional(
+                                    CONF_CALIB_PUSH, default=False
+                                ): selector.BooleanSelector(),
+                                vol.Required(
+                                    CONF_TEMP_OFFSET, default=float(temp_offset)
+                                ): selector.NumberSelector(
+                                    selector.NumberSelectorConfig(
+                                        min=-5.0,
+                                        max=5.0,
+                                        step=0.1,
+                                        mode=selector.NumberSelectorMode.BOX,
+                                    )
+                                ),
+                            }
+                        ),
+                        {"collapsed": True},
+                    ),
+                    vol.Required("ph_value_calibration"): section(
+                        _schema(
+                            {
                                 vol.Required(
                                     CONF_PH_CALIB_7, default=float(c7)
                                 ): selector.NumberSelector(
@@ -886,36 +1073,6 @@ class BlueConnectOptionsFlowHandler(config_entries.OptionsFlow):
                                         min=0,
                                         max=14,
                                         step=0.01,
-                                        mode=selector.NumberSelectorMode.BOX,
-                                    )
-                                ),
-                                vol.Required(
-                                    CONF_ORP_CALIB, default=int(orp_measured)
-                                ): selector.NumberSelector(
-                                    selector.NumberSelectorConfig(
-                                        min=0,
-                                        max=1000,
-                                        step=1,
-                                        mode=selector.NumberSelectorMode.BOX,
-                                    )
-                                ),
-                                vol.Required(
-                                    CONF_ORP_REF, default=int(orp_target)
-                                ): selector.NumberSelector(
-                                    selector.NumberSelectorConfig(
-                                        min=0,
-                                        max=1000,
-                                        step=1,
-                                        mode=selector.NumberSelectorMode.BOX,
-                                    )
-                                ),
-                                vol.Required(
-                                    CONF_TEMP_OFFSET, default=float(temp_offset)
-                                ): selector.NumberSelector(
-                                    selector.NumberSelectorConfig(
-                                        min=-5.0,
-                                        max=5.0,
-                                        step=0.1,
                                         mode=selector.NumberSelectorMode.BOX,
                                     )
                                 ),

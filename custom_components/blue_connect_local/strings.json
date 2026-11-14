@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Anchor time used to align scheduled analyses on regular slots (e.g. 08:00, 10:00, 12:00... for a 2-hour interval).",
               "scan_interval": "Time between two scheduled analyses, from 5 to 1440 minutes. Active Mode only (requires the access code).",
-              "passive_measures": "Use the readings the probe broadcasts on its own, about one per hour. Works without an access code.",
-              "ignore_echoes": "Ignore the passive frames the probe flags as echoes of an analysis, so they don't overwrite the latest measurement."
+              "passive_measures": "Uses the readings the probe sends on its own, about one per hour. It is the only source of readings without an access code. With an access code, leave it off to keep the 2-decimal pH (7.23). Passive readings have only one decimal (7.2) and would replace it.",
+              "ignore_echoes": "Ignore the passive frames the probe flags as echoes of an analysis, so they don't overwrite the latest measurement. No effect while the passive analyses are turned off."
             }
           },
           "probes_calibration": {
             "name": "Probes Calibration",
+            "description": "Recommended with an access code: read the “Raw pH (mV)” sensor with the probe dipped in each buffer solution, then enter the two values here. Without an access code, use the “pH calibration by value (without access code)” section below. For the ORP, read the “Raw ORP (mV)” sensor with the probe dipped in the reference solution (an access code is required).",
+            "data": {
+              "ph_hr_calib_mv_7": "mV measured at the pH 7 buffer",
+              "ph_hr_ref_7": "pH 7 Target Solution (e.g., 7.02)",
+              "ph_hr_calib_mv_4": "mV measured at the pH 4 buffer",
+              "ph_hr_ref_4": "pH 4 Target Solution (e.g., 4.00)",
+              "orp_calib": "ORP (Redox): mV measured in the reference solution",
+              "orp_ref": "ORP (Redox): reference solution (e.g., 468 mV)",
+              "temp_offset": "Temperature Offset (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "The potential shown by the “Raw pH (mV)” sensor (disabled by default) with the probe dipped in this buffer solution. Fill in both mV values to use your own calibration for the high-resolution pH, or leave both empty to use the one stored in the probe. The standard pH (0.1 resolution) is not affected.",
+              "ph_hr_ref_7": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle.",
+              "ph_hr_calib_mv_4": "The potential shown by the “Raw pH (mV)” sensor (disabled by default) with the probe dipped in this buffer solution. Fill in both mV values to use your own calibration for the high-resolution pH, or leave both empty to use the one stored in the probe. The standard pH (0.1 resolution) is not affected.",
+              "ph_hr_ref_4": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle.",
+              "orp_calib": "The potential shown by the “Raw ORP (mV)” sensor (disabled by default) with the probe dipped in the reference solution. Fill in both ORP values to use your own calibration, or leave both empty to use the one stored in the probe.",
+              "orp_ref": "The ORP potential (mV) of the reference solution at its current temperature: it varies with temperature, see the bottle. The correction applied is this value minus the measured one.",
+              "temp_offset": "Correction in °C added to the temperature measured by the probe. Can be positive or negative."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "pH calibration by value (without access code)",
             "data": {
               "ph_calib_7": "pH 7 Measured Value (e.g., 7.10)",
               "ph_ref_7": "pH 7 Target Solution (e.g., 7.02)",
               "ph_calib_4": "pH 4 Measured Value (e.g., 4.10)",
-              "ph_ref_4": "pH 4 Target Solution (e.g., 4.00)",
-              "orp_calib": "ORP (Redox) Measured Value (e.g., 650)",
-              "orp_ref": "ORP (Redox) Target Solution (e.g., 650)",
-              "temp_offset": "Temperature Offset (°C) (+/-)"
+              "ph_ref_4": "pH 4 Target Solution (e.g., 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
-              "ph_calib_4": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
-              "ph_ref_7": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
-              "ph_ref_4": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
-              "orp_calib": "The raw ORP value (mV) your probe actually displayed while dipped in the reference solution.",
-              "orp_ref": "The ORP value (mV) of the reference solution at its current temperature: it varies with temperature, see the bottle. The correction applied is this value minus the measured one.",
-              "temp_offset": "Correction in °C added to the temperature measured by the probe. Can be positive or negative."
+              "ph_calib_7": "The value shown by the \"Probe-Calibrated pH\" sensor (disabled by default) while the probe is dipped in this calibration solution (not the solution's nominal value). Without an access code, this calibration applies on top of the probe's own internal calibration: if that one changes, the integration's pH changes too.",
+              "ph_ref_7": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle.",
+              "ph_calib_4": "The value shown by the \"Probe-Calibrated pH\" sensor (disabled by default) while the probe is dipped in this calibration solution (not the solution's nominal value). Without an access code, this calibration applies on top of the probe's own internal calibration: if that one changes, the integration's pH changes too.",
+              "ph_ref_4": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "Minimum ORP (Redox) must be less than maximum ORP",
       "temp_threshold_error": "Minimum temperature must be less than maximum temperature",
       "invalid_access_code": "Invalid Access Code (8 or 9 alphanumeric characters).",
-      "invalid_access_code_9": "Invalid Access Code: a Blue Connect access code has 9 alphanumeric characters (e.g., B93XXXXXX)."
+      "invalid_access_code_9": "Invalid Access Code: a Blue Connect access code has 9 alphanumeric characters (e.g., B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ The two mV values must be different",
+      "ph_hr_slope_mismatch": "❌ The pH 4 buffer must read a higher mV than the pH 7 buffer",
+      "ph_hr_mv_incomplete": "❌ Fill in both mV values, or leave both empty",
+      "orp_calib_incomplete": "❌ Fill in both ORP values, or leave both empty"
     },
     "abort": {
       "already_configured": "This device is already configured.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Anchor time used to align scheduled analyses on regular slots (e.g. 08:00, 10:00, 12:00... for a 2-hour interval).",
               "scan_interval": "Time between two scheduled analyses, from 5 to 1440 minutes. Active Mode only (requires the access code).",
-              "passive_measures": "Use the readings the probe broadcasts on its own, about one per hour. Works without an access code.",
-              "ignore_echoes": "Ignore the passive frames the probe flags as echoes of an analysis, so they don't overwrite the latest measurement."
+              "passive_measures": "Uses the readings the probe sends on its own, about one per hour. It is the only source of readings without an access code. With an access code, leave it off to keep the 2-decimal pH (7.23). Passive readings have only one decimal (7.2) and would replace it.",
+              "ignore_echoes": "Ignore the passive frames the probe flags as echoes of an analysis, so they don't overwrite the latest measurement. No effect while the passive analyses are turned off."
             }
           },
           "probes_calibration": {
             "name": "Probes Calibration",
+            "description": "Recommended with an access code: read the “Raw pH (mV)” sensor with the probe dipped in each buffer solution, then enter the two values here. Without an access code, use the “pH calibration by value (without access code)” section below. For the ORP, read the “Raw ORP (mV)” sensor with the probe dipped in the reference solution (an access code is required).",
+            "data": {
+              "ph_hr_calib_mv_7": "mV measured at the pH 7 buffer",
+              "ph_hr_ref_7": "pH 7 Target Solution (e.g., 7.02)",
+              "ph_hr_calib_mv_4": "mV measured at the pH 4 buffer",
+              "ph_hr_ref_4": "pH 4 Target Solution (e.g., 4.00)",
+              "calib_push": "Send the calibrations to the Blue Connect",
+              "orp_calib": "ORP (Redox): mV measured in the reference solution",
+              "orp_ref": "ORP (Redox): reference solution (e.g., 468 mV)",
+              "temp_offset": "Temperature Offset (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "The potential shown by the “Raw pH (mV)” sensor (disabled by default) with the probe dipped in this buffer solution. Fill in both mV values to use your own calibration for the high-resolution pH, or leave both empty to use the one stored in the probe. The standard pH (0.1 resolution) is not affected.",
+              "ph_hr_ref_7": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle.",
+              "ph_hr_calib_mv_4": "The potential shown by the “Raw pH (mV)” sensor (disabled by default) with the probe dipped in this buffer solution. Fill in both mV values to use your own calibration for the high-resolution pH, or leave both empty to use the one stored in the probe. The standard pH (0.1 resolution) is not affected.",
+              "ph_hr_ref_4": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle.",
+              "calib_push": "One-off action, applied at the next analysis (an access code is required). Writes the pH calibration (two points, pH and mV) and/or the ORP calibration (reference and measured mV) filled in above into the Blue Connect's own registers, like the official app's calibration. Only what is filled in and has changed since the last successful sending is written. This also changes the Blue Connect's own pH and ORP, its alert thresholds and what the official app shows. Compare first with the “Blue Connect pH calibration” and “Blue Connect ORP calibration” diagnostic sensors (disabled by default).",
+              "orp_calib": "The potential shown by the “Raw ORP (mV)” sensor (disabled by default) with the probe dipped in the reference solution. Fill in both ORP values to use your own calibration, or leave both empty to use the one stored in the probe.",
+              "orp_ref": "The ORP potential (mV) of the reference solution at its current temperature: it varies with temperature, see the bottle. The correction applied is this value minus the measured one.",
+              "temp_offset": "Correction in °C added to the temperature measured by the probe. Can be positive or negative."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "pH calibration by value (without access code)",
             "data": {
               "ph_calib_7": "pH 7 Measured Value (e.g., 7.10)",
               "ph_ref_7": "pH 7 Target Solution (e.g., 7.02)",
               "ph_calib_4": "pH 4 Measured Value (e.g., 4.10)",
-              "ph_ref_4": "pH 4 Target Solution (e.g., 4.00)",
-              "orp_calib": "ORP (Redox) Measured Value (e.g., 650)",
-              "orp_ref": "ORP (Redox) Target Solution (e.g., 650)",
-              "temp_offset": "Temperature Offset (°C) (+/-)"
+              "ph_ref_4": "pH 4 Target Solution (e.g., 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
-              "ph_calib_4": "The raw pH value your probe actually measured while dipped in this calibration solution (not the solution's nominal value).",
-              "ph_ref_7": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
-              "ph_ref_4": "The pH of this calibration solution at its current temperature: it varies with temperature, see the table on the bottle.",
-              "orp_calib": "The raw ORP value (mV) your probe actually displayed while dipped in the reference solution.",
-              "orp_ref": "The ORP value (mV) of the reference solution at its current temperature: it varies with temperature, see the bottle. The correction applied is this value minus the measured one.",
-              "temp_offset": "Correction in °C added to the temperature measured by the probe. Can be positive or negative."
+              "ph_calib_7": "The value shown by the \"Probe-Calibrated pH\" sensor (disabled by default) while the probe is dipped in this calibration solution (not the solution's nominal value). Without an access code, this calibration applies on top of the probe's own internal calibration: if that one changes, the integration's pH changes too. Only used for the standard pH (0.1 resolution), not for the high-resolution pH.",
+              "ph_ref_7": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle.",
+              "ph_calib_4": "The value shown by the \"Probe-Calibrated pH\" sensor (disabled by default) while the probe is dipped in this calibration solution (not the solution's nominal value). Without an access code, this calibration applies on top of the probe's own internal calibration: if that one changes, the integration's pH changes too. Only used for the standard pH (0.1 resolution), not for the high-resolution pH.",
+              "ph_ref_4": "The pH of this buffer solution at its current temperature: it varies with temperature, see the bottle."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "Invalid Access Code: a Blue Connect access code has 9 alphanumeric characters (e.g., B93XXXXXX).",
       "ph_calibration_equal": "pH calibration values must be different",
       "ph_slope_mismatch": "Logical error: The calibration slope is inconsistent",
-      "ph_ref_out_of_range": "pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Fill in the pH calibration (both mV values) and/or the ORP calibration (both values), and enter an access code first: sending is not possible otherwise (nor on the Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ The two mV values must be different",
+      "ph_hr_slope_mismatch": "❌ The pH 4 buffer must read a higher mV than the pH 7 buffer",
+      "ph_hr_mv_incomplete": "❌ Fill in both mV values, or leave both empty",
+      "orp_calib_incomplete": "❌ Fill in both ORP values, or leave both empty"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Raw pH"
       },
-      "orp_raw": {
-        "name": "Raw ORP"
+      "ph_probe_calibrated": {
+        "name": "Probe-Calibrated pH"
+      },
+      "ph_raw_mv": {
+        "name": "Raw pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Blue Connect pH calibration"
       },
       "lsi": {
         "name": "Langelier Index"
@@ -345,6 +394,18 @@
           "active": "Active",
           "unknown": "Unknown"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Raw ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "Probe-Calibrated ORP"
+      },
+      "probe_orp_calibration": {
+        "name": "Blue Connect ORP calibration"
+      },
+      "last_orp_calib": {
+        "name": "Last ORP Calibration"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect unreachable",
-      "description": "The Blue Connect probe ({name}) has not responded for {days} day(s). Check that it is powered, in range, and that a Bluetooth adapter or ESPHome proxy covers the pool area."
+      "description": "{name} has not responded for {days} day(s). Check that it is powered, in range, and that a Bluetooth adapter or ESPHome proxy covers the pool area."
+    },
+    "passive_high_resolution": {
+      "title": "Keep high-resolution pH at 2 decimals",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Keep high-resolution pH at 2 decimals",
+            "description": "After each analysis, your {name} also broadcasts a 1-decimal pH, which replaces your precise value (e.g. {ph_hr} → {ph_low}).\n\n**Submit** turns off the “Blue Connect Internal Analysis (Passive)” switch: these readings will be ignored."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Abnormal ORP calibration",
+      "description": "{name}: abnormal {source} deviation: {ecart} mV between the reference and the measured value. Check the reference solution and clean the electrode. If the problem persists, the probe may be at the end of its life."
+    },
+    "ph_calibration_slope": {
+      "title": "Abnormal pH calibration",
+      "description": "{name}: abnormal {source} calibration: slope of {slope} mV/pH, expected between {min} and {max}. Check the buffer solutions and clean the electrode. If the problem persists, the probe may be at the end of its life."
+    },
+    "ph_calibration_offset": {
+      "title": "Abnormal pH calibration",
+      "description": "{name}: abnormal {source} calibration: offset of {ecart} mV at pH 7, expected between −{limit} and +{limit}. Check the buffer solutions and clean the electrode. If the problem persists, the probe may be at the end of its life."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} is out of Bluetooth range and no previous data is available."
+      "message": "{name} is out of Bluetooth range and no previous data is available."
     },
     "unreachable_no_history": {
       "message": "Blue Connect is unreachable and no previous data is available: {error}"

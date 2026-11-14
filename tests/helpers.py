@@ -14,6 +14,17 @@ UUID_ACCELEROMETER = "70ea000a-7a29-4fdf-93d2-838665e72677"
 UUID_SERIAL_NUMBER = "70ea0020-7a29-4fdf-93d2-838665e72677"
 UUID_HW_VERSION = "70ea0021-7a29-4fdf-93d2-838665e72677"
 UUID_SW_VERSION = "70ea0022-7a29-4fdf-93d2-838665e72677"
+# pH calibration kept by the probe: buffer pH (x10) and potential measured (0.1 mV).
+UUID_PH_CALIB_PH_1 = "70ea0015-7a29-4fdf-93d2-838665e72677"
+UUID_PH_CALIB_PH_2 = "70ea0016-7a29-4fdf-93d2-838665e72677"
+UUID_PH_CALIB_MV_1 = "70ea0017-7a29-4fdf-93d2-838665e72677"
+UUID_PH_CALIB_MV_2 = "70ea0018-7a29-4fdf-93d2-838665e72677"
+# ORP calibration kept by the probe: status code, reference potential and raw
+# potential measured in it (signed 16-bit, mV), and the date of the last one.
+UUID_ORP_CALIB_STATUS = "70ea001a-7a29-4fdf-93d2-838665e72677"
+UUID_ORP_CALIB_REF = "70ea001b-7a29-4fdf-93d2-838665e72677"
+UUID_ORP_CALIB_MEAS = "70ea001c-7a29-4fdf-93d2-838665e72677"
+UUID_LAST_ORP_CALIB = "70ea0036-7a29-4fdf-93d2-838665e72677"
 
 
 def build_frame(
@@ -46,6 +57,47 @@ def build_frame(
     body += bytes([0xB0 if echo else 0x00, 0x00])  # 2 trailing bytes
     assert len(body) == 18
     return (b"\xaa" + bytes(body)) if prefixed else bytes(body)
+
+
+def build_electrical_frame(ph_mv: float = 37.1, orp_mv: int | None = None) -> bytes:
+    """30-byte electrical frame (characteristic 0x0005): 15 big-endian words.
+
+    Word 1 is the pH electrode potential (0.1 mV, signed), word 2 the ORP
+    electrode potential (1 mV, signed); the other words are not decoded by the
+    integration.
+    """
+    words = [0] * 15
+    words[1] = round(ph_mv * 10)
+    words[2] = 0 if orp_mv is None else int(orp_mv)
+    return b"".join(
+        w.to_bytes(2, "big", signed=(i in (1, 2))) for i, w in enumerate(words)
+    )
+
+
+def orp_calibration_reads(
+    ref: int = 468, mes: int = 472, ts: int | None = 1794470254, status: int = 0
+) -> dict[str, bytes]:
+    """GATT values of the probe's ORP calibration (defaults: a real Blue Connect)."""
+    reads = {
+        UUID_ORP_CALIB_STATUS: bytes([status]),
+        UUID_ORP_CALIB_REF: ref.to_bytes(2, "big", signed=True),
+        UUID_ORP_CALIB_MEAS: mes.to_bytes(2, "big", signed=True),
+    }
+    if ts is not None:
+        reads[UUID_LAST_ORP_CALIB] = ts.to_bytes(4, "big")
+    return reads
+
+
+def ph_calibration_reads(
+    ph_1: float = 4.0, ph_2: float = 7.0, mv_1: float = 178.2, mv_2: float = 2.8
+) -> dict[str, bytes]:
+    """GATT values of the probe's pH calibration (defaults: a real Blue Connect)."""
+    return {
+        UUID_PH_CALIB_PH_1: round(ph_1 * 10).to_bytes(2, "big"),
+        UUID_PH_CALIB_PH_2: round(ph_2 * 10).to_bytes(2, "big"),
+        UUID_PH_CALIB_MV_1: round(mv_1 * 10).to_bytes(2, "big", signed=True),
+        UUID_PH_CALIB_MV_2: round(mv_2 * 10).to_bytes(2, "big", signed=True),
+    }
 
 
 def clean_hex(frame: bytes) -> str:

@@ -56,9 +56,15 @@ EXPECTED_ENTITIES = {
             "lsi_status",
             "next_analysis",
             "orp",
-            "orp_raw",
+            "orp_probe_calibrated",
+            "orp_raw_mv",
+            "probe_orp_calibration",
+            "last_orp_calib",
             "ph",
             "ph_raw",
+            "ph_probe_calibrated",
+            "ph_raw_mv",
+            "probe_ph_calibration",
             "probe_replacement",
             "probe_serial_number",
             "raw_frame",
@@ -107,7 +113,9 @@ async def test_unload(hass, entry, coordinator):
 async def test_unload_saves_to_disk(hass, entry, coordinator, hass_storage):
     await coordinator.async_refresh()
     await hass.config_entries.async_unload(entry.entry_id)
-    assert hass_storage[store_key(MAC)]["data"]["ph_raw"] == pytest.approx(7.4)
+    assert hass_storage[store_key(MAC)]["data"]["ph_probe_calibrated"] == pytest.approx(
+        7.4
+    )
 
 
 async def test_remove_entry_deletes_stored_data(hass, entry, coordinator, hass_storage):
@@ -183,7 +191,7 @@ async def test_migration_1_1_drops_stale_model_field(hass, setup_integration):
     await setup_integration(entry)
     assert "model" not in entry.data
     assert entry.data[CONF_MAC_ADDRESS] == MAC
-    assert entry.minor_version == 4
+    assert entry.minor_version == 5
 
 
 async def test_migration_removes_orphaned_serial_and_hw_version(
@@ -223,7 +231,7 @@ async def test_migration_keeps_cya_and_chlorine_model(setup_integration):
 
 
 async def test_current_version_entry_is_untouched(hass, setup_integration):
-    entry = make_entry(minor_version=4)
+    entry = make_entry(minor_version=5)
     entry.add_to_hass(hass)
     reg = er.async_get(hass)
     reg.async_get_or_create(

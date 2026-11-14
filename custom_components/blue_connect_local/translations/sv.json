@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Referenstid som används för att justera schemalagda analyser till regelbundna intervall (t.ex. 08:00, 10:00, 12:00... för ett 2-timmarsintervall).",
               "scan_interval": "Tid mellan två schemalagda analyser, från 5 till 1440 minuter. Endast i aktivt läge (kräver åtkomstkoden).",
-              "passive_measures": "Använder de mätvärden som proben skickar ut själv, ungefär ett per timme. Fungerar utan åtkomstkod.",
-              "ignore_echoes": "Ignorerar passiva ramar som proben markerar som eko av en analys, så att de inte skriver över den senaste mätningen."
+              "passive_measures": "Använder de mätvärden som proben skickar ut själv, ungefär ett per timme. Utan åtkomstkod är det den enda källan till mätvärden. Med en åtkomstkod bör du lämna den avstängd för att behålla pH med 2 decimaler (7,23). De passiva mätvärdena har bara en decimal (7,2) och skulle ersätta det.",
+              "ignore_echoes": "Ignorerar passiva ramar som proben markerar som eko av en analys, så att de inte skriver över den senaste mätningen. Har ingen effekt medan de passiva analyserna är avstängda."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibrering av sonder",
+            "description": "Rekommenderas med åtkomstkod: läs av sensorn ”Rått pH (mV)” medan sonden sitter i varje buffertlösning och ange de två värdena här. Utan åtkomstkod använder du avsnittet ”pH-kalibrering efter värde (utan åtkomstkod)” nedan. För ORP: läs av sensorn ”Rått ORP (mV)” medan sonden är nedsänkt i referenslösningen (kräver åtkomstkod).",
+            "data": {
+              "ph_hr_calib_mv_7": "Uppmätt mV vid pH 7-bufferten",
+              "ph_hr_ref_7": "🎯 Referenslösning pH 7 (t.ex. 7.02)",
+              "ph_hr_calib_mv_4": "Uppmätt mV vid pH 4-bufferten",
+              "ph_hr_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)",
+              "orp_calib": "ORP (Redox): mV uppmätta i referenslösningen",
+              "orp_ref": "ORP (Redox): referenslösning (t.ex. 468 mV)",
+              "temp_offset": "🌡️ Temperaturavvikelse (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potentialen som sensorn ”Rått pH (mV)” (avstängd som standard) visar medan sonden sitter i denna buffertlösning. Fyll i båda mV-värdena för att använda din egen kalibrering för pH med hög upplösning, eller lämna båda tomma för att använda den som är lagrad i sonden. Standard-pH (upplösning 0,1) påverkas inte.",
+              "ph_hr_ref_7": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan.",
+              "ph_hr_calib_mv_4": "Potentialen som sensorn ”Rått pH (mV)” (avstängd som standard) visar medan sonden sitter i denna buffertlösning. Fyll i båda mV-värdena för att använda din egen kalibrering för pH med hög upplösning, eller lämna båda tomma för att använda den som är lagrad i sonden. Standard-pH (upplösning 0,1) påverkas inte.",
+              "ph_hr_ref_4": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan.",
+              "orp_calib": "Potentialen som sensorn ”Rått ORP (mV)” (avstängd som standard) visar medan sonden är nedsänkt i referenslösningen. Fyll i båda ORP-värdena för att använda din egen kalibrering, eller lämna båda tomma för att använda den som är lagrad i sonden.",
+              "orp_ref": "ORP-potentialen (mV) för referenslösningen vid dess aktuella temperatur: den varierar med temperaturen, se flaskan. Korrigeringen som tillämpas är detta värde minus det uppmätta värdet.",
+              "temp_offset": "Korrigering i °C som läggs till temperaturen som proben mäter. Kan vara positiv eller negativ."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-kalibrering efter värde (utan åtkomstkod)",
             "data": {
               "ph_calib_7": "🟢 Uppmätt värde pH 7 (t.ex. 7.10)",
               "ph_ref_7": "🎯 Referenslösning pH 7 (t.ex. 7.02)",
               "ph_calib_4": "🔴 Uppmätt värde pH 4 (t.ex. 4.10)",
-              "ph_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)",
-              "orp_calib": "📏 Uppmätt värde ORP (t.ex. 650)",
-              "orp_ref": "🎯 Referenslösning ORP (t.ex. 650)",
-              "temp_offset": "🌡️ Temperaturavvikelse (°C) (+/-)"
+              "ph_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Det råa pH-värde som din sond faktiskt mätte medan den var nedsänkt i denna kalibreringslösning (inte lösningens nominella värde).",
-              "ph_calib_4": "Det råa pH-värde som din sond faktiskt mätte medan den var nedsänkt i denna kalibreringslösning (inte lösningens nominella värde).",
-              "ph_ref_7": "pH för denna kalibreringslösning vid dess aktuella temperatur: det beror på temperaturen, se tabellen på flaskan.",
-              "ph_ref_4": "pH för denna kalibreringslösning vid dess aktuella temperatur: det beror på temperaturen, se tabellen på flaskan.",
-              "orp_calib": "Det råa ORP-värdet (mV) som din prob faktiskt visade i referenslösningen.",
-              "orp_ref": "ORP-värdet (mV) för referenslösningen vid dess aktuella temperatur: det beror på temperaturen, se flaskan. Korrigeringen som tillämpas är detta värde minus det uppmätta värdet.",
-              "temp_offset": "Korrigering i °C som läggs till temperaturen som proben mäter. Kan vara positiv eller negativ."
+              "ph_calib_7": "Värdet som sensorn ”Sondkalibrerat pH” (avstängd som standard) visar medan sonden är nedsänkt i denna kalibreringslösning (inte lösningens nominella värde). Utan åtkomstkod tillämpas denna kalibrering ovanpå sondens egen interna kalibrering: om den ändras ändras också integrationens pH.",
+              "ph_ref_7": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan.",
+              "ph_calib_4": "Värdet som sensorn ”Sondkalibrerat pH” (avstängd som standard) visar medan sonden är nedsänkt i denna kalibreringslösning (inte lösningens nominella värde). Utan åtkomstkod tillämpas denna kalibrering ovanpå sondens egen interna kalibrering: om den ändras ändras också integrationens pH.",
+              "ph_ref_4": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ Minsta ORP måste vara lägre än högsta ORP",
       "temp_threshold_error": "❌ Minimitemperaturen måste vara lägre än maximitemperaturen",
       "invalid_access_code": "❌ Ogiltig åtkomstkod (8 eller 9 alfanumeriska tecken).",
-      "invalid_access_code_9": "❌ Ogiltig åtkomstkod: åtkomstkoden till en Blue Connect har 9 alfanumeriska tecken (t.ex. B93XXXXXX)."
+      "invalid_access_code_9": "❌ Ogiltig åtkomstkod: åtkomstkoden till en Blue Connect har 9 alfanumeriska tecken (t.ex. B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ De två mV-värdena måste vara olika",
+      "ph_hr_slope_mismatch": "❌ pH 4-bufferten måste ge högre mV än pH 7-bufferten",
+      "ph_hr_mv_incomplete": "❌ Fyll i båda mV-värdena, eller lämna båda tomma",
+      "orp_calib_incomplete": "❌ Fyll i båda ORP-värdena, eller lämna båda tomma"
     },
     "abort": {
       "already_configured": "⚠️ Den här enheten är redan konfigurerad.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Referenstid som används för att justera schemalagda analyser till regelbundna intervall (t.ex. 08:00, 10:00, 12:00... för ett 2-timmarsintervall).",
               "scan_interval": "Tid mellan två schemalagda analyser, från 5 till 1440 minuter. Endast i aktivt läge (kräver åtkomstkoden).",
-              "passive_measures": "Använder de mätvärden som proben skickar ut själv, ungefär ett per timme. Fungerar utan åtkomstkod.",
-              "ignore_echoes": "Ignorerar passiva ramar som proben markerar som eko av en analys, så att de inte skriver över den senaste mätningen."
+              "passive_measures": "Använder de mätvärden som proben skickar ut själv, ungefär ett per timme. Utan åtkomstkod är det den enda källan till mätvärden. Med en åtkomstkod bör du lämna den avstängd för att behålla pH med 2 decimaler (7,23). De passiva mätvärdena har bara en decimal (7,2) och skulle ersätta det.",
+              "ignore_echoes": "Ignorerar passiva ramar som proben markerar som eko av en analys, så att de inte skriver över den senaste mätningen. Har ingen effekt medan de passiva analyserna är avstängda."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibrering av sonder",
+            "description": "Rekommenderas med åtkomstkod: läs av sensorn ”Rått pH (mV)” medan sonden sitter i varje buffertlösning och ange de två värdena här. Utan åtkomstkod använder du avsnittet ”pH-kalibrering efter värde (utan åtkomstkod)” nedan. För ORP: läs av sensorn ”Rått ORP (mV)” medan sonden är nedsänkt i referenslösningen (kräver åtkomstkod).",
+            "data": {
+              "ph_hr_calib_mv_7": "Uppmätt mV vid pH 7-bufferten",
+              "ph_hr_ref_7": "🎯 Referenslösning pH 7 (t.ex. 7.02)",
+              "ph_hr_calib_mv_4": "Uppmätt mV vid pH 4-bufferten",
+              "ph_hr_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)",
+              "calib_push": "Skicka kalibreringarna till Blue Connect",
+              "orp_calib": "ORP (Redox): mV uppmätta i referenslösningen",
+              "orp_ref": "ORP (Redox): referenslösning (t.ex. 468 mV)",
+              "temp_offset": "🌡️ Temperaturavvikelse (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potentialen som sensorn ”Rått pH (mV)” (avstängd som standard) visar medan sonden sitter i denna buffertlösning. Fyll i båda mV-värdena för att använda din egen kalibrering för pH med hög upplösning, eller lämna båda tomma för att använda den som är lagrad i sonden. Standard-pH (upplösning 0,1) påverkas inte.",
+              "ph_hr_ref_7": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan.",
+              "ph_hr_calib_mv_4": "Potentialen som sensorn ”Rått pH (mV)” (avstängd som standard) visar medan sonden sitter i denna buffertlösning. Fyll i båda mV-värdena för att använda din egen kalibrering för pH med hög upplösning, eller lämna båda tomma för att använda den som är lagrad i sonden. Standard-pH (upplösning 0,1) påverkas inte.",
+              "ph_hr_ref_4": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan.",
+              "calib_push": "Engångsåtgärd som utförs vid nästa analys (kräver åtkomstkod). Skriver pH-kalibreringen (två punkter, pH och mV) och/eller ORP-kalibreringen (referens och uppmätt mV) som fyllts i ovan till Blue Connects egna register, som kalibreringen i den officiella appen. Endast det som är ifyllt och har ändrats sedan den senaste lyckade sändningen skrivs. Det ändrar också Blue Connects pH och ORP, dess larmgränser och det den officiella appen visar. Jämför först med diagnossensorerna ”Blue Connect pH-kalibrering” och ”Blue Connect ORP-kalibrering” (avstängda som standard).",
+              "orp_calib": "Potentialen som sensorn ”Rått ORP (mV)” (avstängd som standard) visar medan sonden är nedsänkt i referenslösningen. Fyll i båda ORP-värdena för att använda din egen kalibrering, eller lämna båda tomma för att använda den som är lagrad i sonden.",
+              "orp_ref": "ORP-potentialen (mV) för referenslösningen vid dess aktuella temperatur: den varierar med temperaturen, se flaskan. Korrigeringen som tillämpas är detta värde minus det uppmätta värdet.",
+              "temp_offset": "Korrigering i °C som läggs till temperaturen som proben mäter. Kan vara positiv eller negativ."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-kalibrering efter värde (utan åtkomstkod)",
             "data": {
               "ph_calib_7": "🟢 Uppmätt värde pH 7 (t.ex. 7.10)",
               "ph_ref_7": "🎯 Referenslösning pH 7 (t.ex. 7.02)",
               "ph_calib_4": "🔴 Uppmätt värde pH 4 (t.ex. 4.10)",
-              "ph_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)",
-              "orp_calib": "📏 Uppmätt värde ORP (t.ex. 650)",
-              "orp_ref": "🎯 Referenslösning ORP (t.ex. 650)",
-              "temp_offset": "🌡️ Temperaturavvikelse (°C) (+/-)"
+              "ph_ref_4": "🎯 Referenslösning pH 4 (t.ex. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Det råa pH-värde som din sond faktiskt mätte medan den var nedsänkt i denna kalibreringslösning (inte lösningens nominella värde).",
-              "ph_calib_4": "Det råa pH-värde som din sond faktiskt mätte medan den var nedsänkt i denna kalibreringslösning (inte lösningens nominella värde).",
-              "ph_ref_7": "pH för denna kalibreringslösning vid dess aktuella temperatur: det beror på temperaturen, se tabellen på flaskan.",
-              "ph_ref_4": "pH för denna kalibreringslösning vid dess aktuella temperatur: det beror på temperaturen, se tabellen på flaskan.",
-              "orp_calib": "Det råa ORP-värdet (mV) som din prob faktiskt visade i referenslösningen.",
-              "orp_ref": "ORP-värdet (mV) för referenslösningen vid dess aktuella temperatur: det beror på temperaturen, se flaskan. Korrigeringen som tillämpas är detta värde minus det uppmätta värdet.",
-              "temp_offset": "Korrigering i °C som läggs till temperaturen som proben mäter. Kan vara positiv eller negativ."
+              "ph_calib_7": "Värdet som sensorn ”Sondkalibrerat pH” (avstängd som standard) visar medan sonden är nedsänkt i denna kalibreringslösning (inte lösningens nominella värde). Utan åtkomstkod tillämpas denna kalibrering ovanpå sondens egen interna kalibrering: om den ändras ändras också integrationens pH. Används bara för standard-pH (upplösning 0,1), inte för pH med hög upplösning.",
+              "ph_ref_7": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan.",
+              "ph_calib_4": "Värdet som sensorn ”Sondkalibrerat pH” (avstängd som standard) visar medan sonden är nedsänkt i denna kalibreringslösning (inte lösningens nominella värde). Utan åtkomstkod tillämpas denna kalibrering ovanpå sondens egen interna kalibrering: om den ändras ändras också integrationens pH. Används bara för standard-pH (upplösning 0,1), inte för pH med hög upplösning.",
+              "ph_ref_4": "pH för denna buffertlösning vid dess aktuella temperatur: det varierar med temperaturen, se flaskan."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Ogiltig åtkomstkod: åtkomstkoden till en Blue Connect har 9 alfanumeriska tecken (t.ex. B93XXXXXX).",
       "ph_calibration_equal": "❌ pH-kalibreringsvärdena måste vara olika",
       "ph_slope_mismatch": "❌ Logiskt fel: Kalibreringslutningen är inkonsekvent",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Fyll först i pH-kalibreringen (båda mV-värdena) och/eller ORP-kalibreringen (båda värdena) och ange en åtkomstkod: annars går det inte att skicka (inte heller på Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ De två mV-värdena måste vara olika",
+      "ph_hr_slope_mismatch": "❌ pH 4-bufferten måste ge högre mV än pH 7-bufferten",
+      "ph_hr_mv_incomplete": "❌ Fyll i båda mV-värdena, eller lämna båda tomma",
+      "orp_calib_incomplete": "❌ Fyll i båda ORP-värdena, eller lämna båda tomma"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Rått pH"
       },
-      "orp_raw": {
-        "name": "Rått ORP"
+      "ph_probe_calibrated": {
+        "name": "Sondkalibrerat pH"
+      },
+      "ph_raw_mv": {
+        "name": "Rått pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Blue Connect pH-kalibrering"
       },
       "lsi": {
         "name": "Langelier-index"
@@ -345,6 +394,18 @@
           "active": "Aktiv",
           "unknown": "Okänt"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Rått ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "Sondkalibrerat ORP"
+      },
+      "probe_orp_calibration": {
+        "name": "Blue Connect ORP-kalibrering"
+      },
+      "last_orp_calib": {
+        "name": "Senaste ORP-kalibrering"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect oåtkomlig",
-      "description": "Blue Connect-sonden ({name}) har inte svarat på {days} dag(ar). Kontrollera strömförsörjning, räckvidd, och att en Bluetooth-adapter eller ESPHome-proxy täcker poolområdet."
+      "description": "{name} har inte svarat på {days} dag(ar). Kontrollera strömförsörjning, räckvidd, och att en Bluetooth-adapter eller ESPHome-proxy täcker poolområdet."
+    },
+    "passive_high_resolution": {
+      "title": "Behåll pH med hög upplösning på 2 decimaler",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Behåll pH med hög upplösning på 2 decimaler",
+            "description": "Efter varje analys skickar din {name} även ett pH med 1 decimal, som ersätter ditt exakta värde (t.ex. {ph_hr} → {ph_low}).\n\n**Skicka** stänger av omkopplaren ”Blue Connects interna analyser (passiv)”: dessa mätningar ignoreras."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Ovanlig ORP-kalibrering",
+      "description": "{name}: ovanlig {source}-avvikelse: {ecart} mV mellan referensen och det uppmätta värdet. Kontrollera referenslösningen och rengör elektroden. Om problemet kvarstår kan sonden vara uttjänt."
+    },
+    "ph_calibration_slope": {
+      "title": "Ovanlig pH-kalibrering",
+      "description": "{name}: ovanlig {source}-kalibrering: lutning på {slope} mV/pH, förväntad mellan {min} och {max}. Kontrollera buffertlösningarna och rengör elektroden. Om problemet kvarstår kan sonden vara uttjänt."
+    },
+    "ph_calibration_offset": {
+      "title": "Ovanlig pH-kalibrering",
+      "description": "{name}: ovanlig {source}-kalibrering: offset på {ecart} mV vid pH 7, förväntad mellan −{limit} och +{limit}. Kontrollera buffertlösningarna och rengör elektroden. Om problemet kvarstår kan sonden vara uttjänt."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} är utanför Bluetooth-räckvidd och ingen tidigare data är tillgänglig."
+      "message": "{name} är utanför Bluetooth-räckvidd och ingen tidigare data är tillgänglig."
     },
     "unreachable_no_history": {
       "message": "Blue Connect är oåtkomlig och ingen tidigare data är tillgänglig: {error}"

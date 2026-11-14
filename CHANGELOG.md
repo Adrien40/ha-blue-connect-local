@@ -1,5 +1,42 @@
 # Blue Connect Local - Changelog
 
+## 1.4.0
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
+High-resolution pH (the official app shows 0.1), ORP calibration, and calibrations you can send to the probe from Home Assistant.
+
+### ⚠️ Before updating
+- **ORP options are cleared.** The integration's ORP calibration used to be added on top of an ORP the probe had already corrected. It is now empty by default and applied to the raw potential, so **values saved by a previous version are removed**: enter them again if needed.
+- **Raw ORP and raw pH change meaning.** `orp_raw` becomes **Probe-Calibrated ORP** (`orp_probe_calibrated`, same history and entity_id); the real electrode potential is the new **Raw ORP (mV)**. `ph_raw` is now the electrode potential read as a pH (pH 7 at 0 mV, 59.16 mV per pH unit) and its former value moves to **Probe-Calibrated pH**, so the history of `ph_raw` mixes both meanings up to this version.
+- **Access code needed for the electrode potential** (ZODIAC, Active Mode). Without it, Raw pH is unavailable (on a Blue Connect Plus, the former value is in *Probe-Calibrated pH*) and the probe's ORP is shown.
+
+### ✨ New features
+- **High-resolution pH (2 decimals)**, not available in the official app (which shows 0.1), on ZODIAC probes in Active Mode: each analysis also reads the electrode potential and converts it with a two-point calibration (the probe's or yours), without the probe's rounding to 0.1. Falls back to 0.1 when the last frame is passive, unusable or outside 0-14. New `source`, `resolution` and `calibration_source` attributes.
+- **ORP calibration, like the pH** (ZODIAC, access code): the *ORP* is the raw potential plus the calibration in use. New `calibration_source` attribute.
+- **Your own calibrations** (*Options > Probes Calibration*), empty by default and taking priority over the probe's: pH from the mV read by **Raw pH (mV)** in pH 4 and pH 7 buffers; ORP from the mV read by **Raw ORP (mV)** in a reference solution and that solution's mV. Both values, or none.
+- **Calibrate the probe from Home Assistant**: the **Send the calibrations to the Blue Connect** tick box (access code, not on Blueriiot probes) writes your pH and/or ORP points and their date into the probe, like the official app, but only what is filled in and changed since the last successful sending. It also changes what the probe's own alert thresholds refer to.
+- **Abnormal calibration warning** (*Settings > Repairs*, never blocking): ORP gap above 100 mV, pH slope outside 50-63 mV/pH or offset at pH 7 beyond ±60 mV. Generic rules of thumb, not a Blue Connect specification.
+- **Repair suggestion** to ignore the probe's passive analyses, which replace the 2-decimal pH with a 0.1 one.
+- **Five diagnostic sensors**, disabled by default (ZODIAC, access code): **Raw pH (mV)**, **Blue Connect pH calibration**, **Raw ORP (mV)**, **Blue Connect ORP calibration**, **Last ORP Calibration**.
+
+### 🔄 Changes
+- Technical diagnostic sensors (*Calculated Frame*, *Electric Frame*, *Battery ADC*, *Cloud ID / SN*, *Accelerometer*, *Calculated Frame Type*) are disabled by default on new installations.
+- Setup: with an access code, passive analyses are off by default (existing installations unchanged).
+- Options: removing the access code turns the passive analyses back on, as during setup (without a code they are the only source of measurements).
+- Probes Calibration form reorganized (mV calibration first, by pH value in a collapsed section); the tick box is now *Send the calibrations to the Blue Connect* (`calib_push`, never stored).
+- With an access code, each ZODIAC analysis also reads the probe's pH calibration date (skipped with your own mV calibration and the *Blue Connect pH calibration* sensor off).
+- The *pH* sensor no longer forces 2 decimals: 7.20 now shows as 7.2.
+- Translations updated in every language.
+
+### 📚 Documentation
+- Calibration Guide (EN/FR) rewritten; README (EN/FR): *High-resolution pH* section and installation via the Home Assistant 2026.11 Marketplace (HACS steps kept, folded). In French, ORP is now the only term used (Redox only in parentheses).
+
+### 🧰 Maintenance
+- Tests: 775 (565 before), 100 % coverage, on Home Assistant 2026.10.4 with Python 3.14.
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
 ## 1.3.1
 
 🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬

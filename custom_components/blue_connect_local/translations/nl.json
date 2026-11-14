@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Referentietijd gebruikt om geplande analyses af te stemmen op regelmatige intervallen (bijv. 08:00, 10:00, 12:00... voor een interval van 2 uur).",
               "scan_interval": "Tijd tussen twee geplande analyses, van 5 tot 1440 minuten. Alleen in de actieve modus (toegangscode vereist).",
-              "passive_measures": "Gebruikt de metingen die de sonde zelf uitzendt, ongeveer één per uur. Werkt zonder toegangscode.",
-              "ignore_echoes": "Negeert passieve frames die de sonde als echo van een analyse markeert, zodat ze de laatste meting niet overschrijven."
+              "passive_measures": "Gebruikt de metingen die de sonde zelf uitzendt, ongeveer één per uur. Zonder toegangscode is dit de enige bron van metingen. Laat dit met een toegangscode uitgeschakeld om de pH met 2 decimalen (7,23) te behouden. Passieve metingen hebben maar één decimaal (7,2) en zouden die vervangen.",
+              "ignore_echoes": "Negeert passieve frames die de sonde als echo van een analyse markeert, zodat ze de laatste meting niet overschrijven. Heeft geen effect zolang de passieve analyses zijn uitgeschakeld."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibratie van sondes",
+            "description": "Aanbevolen met toegangscode: lees de sensor ‘Ruwe pH (mV)’ af terwijl de sonde in elke bufferoplossing zit en vul hier de twee waarden in. Zonder toegangscode gebruik je hieronder de sectie ‘pH-kalibratie op waarde (zonder toegangscode)’. Lees voor de ORP de sensor ‘Ruwe ORP (mV)’ af terwijl de sonde in de referentieoplossing zit (toegangscode vereist).",
+            "data": {
+              "ph_hr_calib_mv_7": "Gemeten mV bij de pH 7-buffer",
+              "ph_hr_ref_7": "🎯 Referentieoplossing pH 7 (bijv. 7.02)",
+              "ph_hr_calib_mv_4": "Gemeten mV bij de pH 4-buffer",
+              "ph_hr_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)",
+              "orp_calib": "ORP (Redox): in de referentieoplossing gemeten mV",
+              "orp_ref": "ORP (Redox): referentieoplossing (bijv. 468 mV)",
+              "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "De potentiaal die de sensor ‘Ruwe pH (mV)’ (standaard uitgeschakeld) toont terwijl de sonde in deze bufferoplossing zit. Vul beide mV-waarden in om je eigen kalibratie te gebruiken voor de pH met hoge resolutie, of laat beide leeg om die in de sonde te gebruiken. De standaard-pH (resolutie 0,1) blijft ongewijzigd.",
+              "ph_hr_ref_7": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles.",
+              "ph_hr_calib_mv_4": "De potentiaal die de sensor ‘Ruwe pH (mV)’ (standaard uitgeschakeld) toont terwijl de sonde in deze bufferoplossing zit. Vul beide mV-waarden in om je eigen kalibratie te gebruiken voor de pH met hoge resolutie, of laat beide leeg om die in de sonde te gebruiken. De standaard-pH (resolutie 0,1) blijft ongewijzigd.",
+              "ph_hr_ref_4": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles.",
+              "orp_calib": "De potentiaal die de sensor ‘Ruwe ORP (mV)’ (standaard uitgeschakeld) toont terwijl de sonde in de referentieoplossing zit. Vul beide ORP-waarden in om je eigen kalibratie te gebruiken, of laat beide leeg om die in de sonde te gebruiken.",
+              "orp_ref": "De ORP-potentiaal (mV) van de referentieoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles. De toegepaste correctie is deze waarde min de gemeten waarde.",
+              "temp_offset": "Correctie in °C die wordt opgeteld bij de door de sonde gemeten temperatuur. Kan positief of negatief zijn."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-kalibratie op waarde (zonder toegangscode)",
             "data": {
               "ph_calib_7": "🟢 Gemeten waarde pH 7 (bijv. 7.10)",
               "ph_ref_7": "🎯 Referentieoplossing pH 7 (bijv. 7.02)",
               "ph_calib_4": "🔴 Gemeten waarde pH 4 (bijv. 4.10)",
-              "ph_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)",
-              "orp_calib": "📏 Gemeten waarde ORP (bijv. 650)",
-              "orp_ref": "🎯 Referentieoplossing ORP (bijv. 650)",
-              "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+              "ph_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
-              "ph_calib_4": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
-              "ph_ref_7": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
-              "ph_ref_4": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
-              "orp_calib": "De ruwe ORP-waarde (mV) die uw sonde daadwerkelijk toonde in de referentievloeistof.",
-              "orp_ref": "De ORP-waarde (mV) van de referentievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de fles. De toegepaste correctie is deze waarde min de gemeten waarde.",
-              "temp_offset": "Correctie in °C die wordt opgeteld bij de door de sonde gemeten temperatuur. Kan positief of negatief zijn."
+              "ph_calib_7": "De waarde die de sensor ‘Door sonde gekalibreerde pH’ (standaard uitgeschakeld) toont terwijl de sonde in deze kalibratieoplossing is ondergedompeld (niet de nominale waarde van de oplossing). Zonder toegangscode wordt deze kalibratie bovenop de interne kalibratie van de sonde toegepast: als die verandert, verandert ook de pH van de integratie.",
+              "ph_ref_7": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles.",
+              "ph_calib_4": "De waarde die de sensor ‘Door sonde gekalibreerde pH’ (standaard uitgeschakeld) toont terwijl de sonde in deze kalibratieoplossing is ondergedompeld (niet de nominale waarde van de oplossing). Zonder toegangscode wordt deze kalibratie bovenop de interne kalibratie van de sonde toegepast: als die verandert, verandert ook de pH van de integratie.",
+              "ph_ref_4": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ Minimum ORP moet lager zijn dan maximum ORP",
       "temp_threshold_error": "❌ De minimumtemperatuur moet lager zijn dan de maximumtemperatuur",
       "invalid_access_code": "❌ Ongeldige toegangscode (8 of 9 alfanumerieke tekens).",
-      "invalid_access_code_9": "❌ Ongeldige toegangscode: de toegangscode van een Blue Connect bestaat uit 9 alfanumerieke tekens (bijv. B93XXXXXX)."
+      "invalid_access_code_9": "❌ Ongeldige toegangscode: de toegangscode van een Blue Connect bestaat uit 9 alfanumerieke tekens (bijv. B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ De twee mV-waarden moeten verschillen",
+      "ph_hr_slope_mismatch": "❌ De pH 4-buffer moet meer mV geven dan de pH 7-buffer",
+      "ph_hr_mv_incomplete": "❌ Vul beide mV-waarden in, of laat beide leeg",
+      "orp_calib_incomplete": "❌ Vul beide ORP-waarden in, of laat beide leeg"
     },
     "abort": {
       "already_configured": "⚠️ Dit apparaat is al geconfigureerd.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Referentietijd gebruikt om geplande analyses af te stemmen op regelmatige intervallen (bijv. 08:00, 10:00, 12:00... voor een interval van 2 uur).",
               "scan_interval": "Tijd tussen twee geplande analyses, van 5 tot 1440 minuten. Alleen in de actieve modus (toegangscode vereist).",
-              "passive_measures": "Gebruikt de metingen die de sonde zelf uitzendt, ongeveer één per uur. Werkt zonder toegangscode.",
-              "ignore_echoes": "Negeert passieve frames die de sonde als echo van een analyse markeert, zodat ze de laatste meting niet overschrijven."
+              "passive_measures": "Gebruikt de metingen die de sonde zelf uitzendt, ongeveer één per uur. Zonder toegangscode is dit de enige bron van metingen. Laat dit met een toegangscode uitgeschakeld om de pH met 2 decimalen (7,23) te behouden. Passieve metingen hebben maar één decimaal (7,2) en zouden die vervangen.",
+              "ignore_echoes": "Negeert passieve frames die de sonde als echo van een analyse markeert, zodat ze de laatste meting niet overschrijven. Heeft geen effect zolang de passieve analyses zijn uitgeschakeld."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibratie van sondes",
+            "description": "Aanbevolen met toegangscode: lees de sensor ‘Ruwe pH (mV)’ af terwijl de sonde in elke bufferoplossing zit en vul hier de twee waarden in. Zonder toegangscode gebruik je hieronder de sectie ‘pH-kalibratie op waarde (zonder toegangscode)’. Lees voor de ORP de sensor ‘Ruwe ORP (mV)’ af terwijl de sonde in de referentieoplossing zit (toegangscode vereist).",
+            "data": {
+              "ph_hr_calib_mv_7": "Gemeten mV bij de pH 7-buffer",
+              "ph_hr_ref_7": "🎯 Referentieoplossing pH 7 (bijv. 7.02)",
+              "ph_hr_calib_mv_4": "Gemeten mV bij de pH 4-buffer",
+              "ph_hr_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)",
+              "calib_push": "Kalibraties naar de Blue Connect sturen",
+              "orp_calib": "ORP (Redox): in de referentieoplossing gemeten mV",
+              "orp_ref": "ORP (Redox): referentieoplossing (bijv. 468 mV)",
+              "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "De potentiaal die de sensor ‘Ruwe pH (mV)’ (standaard uitgeschakeld) toont terwijl de sonde in deze bufferoplossing zit. Vul beide mV-waarden in om je eigen kalibratie te gebruiken voor de pH met hoge resolutie, of laat beide leeg om die in de sonde te gebruiken. De standaard-pH (resolutie 0,1) blijft ongewijzigd.",
+              "ph_hr_ref_7": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles.",
+              "ph_hr_calib_mv_4": "De potentiaal die de sensor ‘Ruwe pH (mV)’ (standaard uitgeschakeld) toont terwijl de sonde in deze bufferoplossing zit. Vul beide mV-waarden in om je eigen kalibratie te gebruiken voor de pH met hoge resolutie, of laat beide leeg om die in de sonde te gebruiken. De standaard-pH (resolutie 0,1) blijft ongewijzigd.",
+              "ph_hr_ref_4": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles.",
+              "calib_push": "Eenmalige actie, uitgevoerd bij de volgende analyse (toegangscode vereist). Schrijft de hierboven ingevulde pH-kalibratie (twee punten, pH en mV) en/of ORP-kalibratie (referentie en gemeten mV) naar de eigen registers van de Blue Connect, zoals de kalibratie van de officiële app. Alleen wat is ingevuld en sinds de laatste geslaagde verzending is gewijzigd, wordt geschreven. Dit verandert ook de pH en ORP van de Blue Connect, de alarmdrempels en wat de officiële app toont. Vergelijk eerst met de diagnostische sensoren ‘pH-kalibratie van Blue Connect’ en ‘ORP-kalibratie van Blue Connect’ (standaard uitgeschakeld).",
+              "orp_calib": "De potentiaal die de sensor ‘Ruwe ORP (mV)’ (standaard uitgeschakeld) toont terwijl de sonde in de referentieoplossing zit. Vul beide ORP-waarden in om je eigen kalibratie te gebruiken, of laat beide leeg om die in de sonde te gebruiken.",
+              "orp_ref": "De ORP-potentiaal (mV) van de referentieoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles. De toegepaste correctie is deze waarde min de gemeten waarde.",
+              "temp_offset": "Correctie in °C die wordt opgeteld bij de door de sonde gemeten temperatuur. Kan positief of negatief zijn."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-kalibratie op waarde (zonder toegangscode)",
             "data": {
               "ph_calib_7": "🟢 Gemeten waarde pH 7 (bijv. 7.10)",
               "ph_ref_7": "🎯 Referentieoplossing pH 7 (bijv. 7.02)",
               "ph_calib_4": "🔴 Gemeten waarde pH 4 (bijv. 4.10)",
-              "ph_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)",
-              "orp_calib": "📏 Gemeten waarde ORP (bijv. 650)",
-              "orp_ref": "🎯 Referentieoplossing ORP (bijv. 650)",
-              "temp_offset": "🌡️ Temperatuurafwijking (°C) (+/-)"
+              "ph_ref_4": "🎯 Referentieoplossing pH 4 (bijv. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
-              "ph_calib_4": "De ruwe pH-waarde die uw sonde daadwerkelijk heeft gemeten terwijl deze in deze kalibratieoplossing was ondergedompeld (niet de nominale waarde van de oplossing).",
-              "ph_ref_7": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
-              "ph_ref_4": "De pH van deze kalibratievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de tabel op de fles.",
-              "orp_calib": "De ruwe ORP-waarde (mV) die uw sonde daadwerkelijk toonde in de referentievloeistof.",
-              "orp_ref": "De ORP-waarde (mV) van de referentievloeistof bij de huidige temperatuur: die hangt af van de temperatuur, zie de fles. De toegepaste correctie is deze waarde min de gemeten waarde.",
-              "temp_offset": "Correctie in °C die wordt opgeteld bij de door de sonde gemeten temperatuur. Kan positief of negatief zijn."
+              "ph_calib_7": "De waarde die de sensor ‘Door sonde gekalibreerde pH’ (standaard uitgeschakeld) toont terwijl de sonde in deze kalibratieoplossing is ondergedompeld (niet de nominale waarde van de oplossing). Zonder toegangscode wordt deze kalibratie bovenop de interne kalibratie van de sonde toegepast: als die verandert, verandert ook de pH van de integratie. Alleen gebruikt voor de standaard-pH (resolutie 0,1), niet voor de pH met hoge resolutie.",
+              "ph_ref_7": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles.",
+              "ph_calib_4": "De waarde die de sensor ‘Door sonde gekalibreerde pH’ (standaard uitgeschakeld) toont terwijl de sonde in deze kalibratieoplossing is ondergedompeld (niet de nominale waarde van de oplossing). Zonder toegangscode wordt deze kalibratie bovenop de interne kalibratie van de sonde toegepast: als die verandert, verandert ook de pH van de integratie. Alleen gebruikt voor de standaard-pH (resolutie 0,1), niet voor de pH met hoge resolutie.",
+              "ph_ref_4": "De pH van deze bufferoplossing bij de huidige temperatuur: die varieert met de temperatuur, zie de fles."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Ongeldige toegangscode: de toegangscode van een Blue Connect bestaat uit 9 alfanumerieke tekens (bijv. B93XXXXXX).",
       "ph_calibration_equal": "❌ De pH-kalibratiewaarden moeten verschillend zijn",
       "ph_slope_mismatch": "❌ Logische fout: De kalibratiehelling is inconsistent",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Vul eerst de pH-kalibratie (beide mV-waarden) en/of de ORP-kalibratie (beide waarden) in en voer een toegangscode in: anders is verzenden niet mogelijk (ook niet op de Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ De twee mV-waarden moeten verschillen",
+      "ph_hr_slope_mismatch": "❌ De pH 4-buffer moet meer mV geven dan de pH 7-buffer",
+      "ph_hr_mv_incomplete": "❌ Vul beide mV-waarden in, of laat beide leeg",
+      "orp_calib_incomplete": "❌ Vul beide ORP-waarden in, of laat beide leeg"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Ruwe pH"
       },
-      "orp_raw": {
-        "name": "Ruwe ORP"
+      "ph_probe_calibrated": {
+        "name": "Door sonde gekalibreerde pH"
+      },
+      "ph_raw_mv": {
+        "name": "Ruwe pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "pH-kalibratie van Blue Connect"
       },
       "lsi": {
         "name": "Langelier-index"
@@ -345,6 +394,18 @@
           "active": "Actief",
           "unknown": "Onbekend"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Ruwe ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "Door sonde gekalibreerde ORP"
+      },
+      "probe_orp_calibration": {
+        "name": "ORP-kalibratie van Blue Connect"
+      },
+      "last_orp_calib": {
+        "name": "Laatste ORP-kalibratie"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect onbereikbaar",
-      "description": "De Blue Connect-sonde ({name}) heeft {days} dag(en) niet gereageerd. Controleer de voeding, het bereik, en of een Bluetooth-adapter of ESPHome-proxy het zwembadgebied dekt."
+      "description": "De sonde {name} heeft {days} dag(en) niet gereageerd. Controleer de voeding, het bereik, en of een Bluetooth-adapter of ESPHome-proxy het zwembadgebied dekt."
+    },
+    "passive_high_resolution": {
+      "title": "Houd de pH met hoge resolutie op 2 decimalen",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Houd de pH met hoge resolutie op 2 decimalen",
+            "description": "Na elke analyse stuurt je {name} ook een pH met 1 decimaal, die je nauwkeurige waarde vervangt (bijv. {ph_hr} → {ph_low}).\n\n**Verzenden** zet de schakelaar ‘Interne analyses van Blue Connect (passief)’ uit: deze metingen worden genegeerd."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Afwijkende ORP-kalibratie",
+      "description": "{name}: ongebruikelijk {source}-verschil: {ecart} mV tussen de referentie en de gemeten waarde. Controleer de referentieoplossing en reinig de elektrode. Als het probleem blijft bestaan, is de sonde mogelijk aan het einde van zijn levensduur."
+    },
+    "ph_calibration_slope": {
+      "title": "Afwijkende pH-kalibratie",
+      "description": "{name}: afwijkende {source}-kalibratie: helling van {slope} mV/pH, verwacht tussen {min} en {max}. Controleer de bufferoplossingen en reinig de elektrode. Als het probleem blijft bestaan, is de sonde mogelijk aan het einde van zijn levensduur."
+    },
+    "ph_calibration_offset": {
+      "title": "Afwijkende pH-kalibratie",
+      "description": "{name}: afwijkende {source}-kalibratie: offset van {ecart} mV bij pH 7, verwacht tussen −{limit} en +{limit}. Controleer de bufferoplossingen en reinig de elektrode. Als het probleem blijft bestaan, is de sonde mogelijk aan het einde van zijn levensduur."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} bevindt zich buiten het Bluetooth-bereik en er zijn geen eerdere gegevens beschikbaar."
+      "message": "{name} bevindt zich buiten het Bluetooth-bereik en er zijn geen eerdere gegevens beschikbaar."
     },
     "unreachable_no_history": {
       "message": "Blue Connect is onbereikbaar en er zijn geen eerdere gegevens beschikbaar: {error}"

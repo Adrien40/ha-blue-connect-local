@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Referenční čas pro zarovnání naplánovaných analýz na pravidelné intervaly (např. 08:00, 10:00, 12:00... pro 2hodinový interval).",
               "scan_interval": "Doba mezi dvěma plánovanými analýzami, od 5 do 1440 minut. Pouze v aktivním režimu (vyžaduje přístupový kód).",
-              "passive_measures": "Používá hodnoty, které sonda vysílá sama, zhruba jednu za hodinu. Funguje bez přístupového kódu.",
-              "ignore_echoes": "Ignoruje pasivní rámce, které sonda označí jako ozvěnu analýzy, aby nepřepisovaly poslední měření."
+              "passive_measures": "Používá hodnoty, které sonda vysílá sama, zhruba jednu za hodinu. Je to jediný zdroj měření bez přístupového kódu. S přístupovým kódem ji nechte vypnutou, aby se zachovalo pH na 2 desetinná místa (7,23). Pasivní měření mají jen jedno desetinné místo (7,2) a nahradila by ho.",
+              "ignore_echoes": "Ignoruje pasivní rámce, které sonda označí jako ozvěnu analýzy, aby nepřepisovaly poslední měření. Nemá žádný účinek, dokud jsou pasivní analýzy vypnuté."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibrace sond",
+            "description": "Doporučeno s přístupovým kódem: odečtěte senzor „Surové pH (mV)“ se sondou ponořenou do každého pufrovacího roztoku a zadejte obě hodnoty zde. Bez přístupového kódu použijte níže sekci „Kalibrace podle hodnoty pH (bez přístupového kódu)“. U ORP přečtěte senzor „Surové ORP (mV)“ se sondou ponořenou do referenčního roztoku (vyžaduje přístupový kód).",
+            "data": {
+              "ph_hr_calib_mv_7": "Naměřené mV v pufru pH 7",
+              "ph_hr_ref_7": "🎯 Cílový roztok pH 7 (např. 7.02)",
+              "ph_hr_calib_mv_4": "Naměřené mV v pufru pH 4",
+              "ph_hr_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)",
+              "orp_calib": "ORP (Redox): mV naměřené v referenčním roztoku",
+              "orp_ref": "ORP (Redox): referenční roztok (např. 468 mV)",
+              "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potenciál zobrazený senzorem „Surové pH (mV)“ (ve výchozím stavu vypnutý) se sondou ponořenou do tohoto pufrovacího roztoku. Vyplňte obě hodnoty v mV, chcete-li pro pH s vysokým rozlišením použít vlastní kalibraci, nebo obě nechte prázdné a použije se kalibrace uložená v sondě. Standardní pH (rozlišení 0,1) tím není ovlivněno.",
+              "ph_hr_ref_7": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev.",
+              "ph_hr_calib_mv_4": "Potenciál zobrazený senzorem „Surové pH (mV)“ (ve výchozím stavu vypnutý) se sondou ponořenou do tohoto pufrovacího roztoku. Vyplňte obě hodnoty v mV, chcete-li pro pH s vysokým rozlišením použít vlastní kalibraci, nebo obě nechte prázdné a použije se kalibrace uložená v sondě. Standardní pH (rozlišení 0,1) tím není ovlivněno.",
+              "ph_hr_ref_4": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev.",
+              "orp_calib": "Potenciál zobrazený senzorem „Surové ORP (mV)“ (ve výchozím stavu vypnutý) se sondou ponořenou do referenčního roztoku. Vyplňte obě hodnoty ORP, chcete-li použít vlastní kalibraci, nebo je nechte obě prázdné a použije se kalibrace uložená v sondě.",
+              "orp_ref": "Potenciál ORP (mV) referenčního roztoku při jeho aktuální teplotě: mění se s teplotou, viz láhev. Použitá korekce je tato hodnota minus naměřená hodnota.",
+              "temp_offset": "Korekce v °C přičtená k teplotě naměřené sondou. Může být kladná i záporná."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Kalibrace podle hodnoty pH (bez přístupového kódu)",
             "data": {
               "ph_calib_7": "🟢 Naměřená hodnota pH 7 (např. 7.10)",
               "ph_ref_7": "🎯 Cílový roztok pH 7 (např. 7.02)",
               "ph_calib_4": "🔴 Naměřená hodnota pH 4 (např. 4.10)",
-              "ph_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)",
-              "orp_calib": "📏 Naměřená hodnota ORP (např. 650)",
-              "orp_ref": "🎯 Cílový roztok ORP (např. 650)",
-              "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+              "ph_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
-              "ph_calib_4": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
-              "ph_ref_7": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
-              "ph_ref_4": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
-              "orp_calib": "Surová hodnota ORP (mV), kterou vaše sonda skutečně ukázala v referenčním roztoku.",
-              "orp_ref": "Hodnota ORP (mV) referenčního roztoku při jeho aktuální teplotě: závisí na teplotě, viz lahev. Použitá korekce je tato hodnota minus naměřená hodnota.",
-              "temp_offset": "Korekce v °C přičtená k teplotě naměřené sondou. Může být kladná i záporná."
+              "ph_calib_7": "Hodnota zobrazená senzorem „pH kalibrované sondou“ (ve výchozím stavu vypnutý), když je sonda ponořena v tomto kalibračním roztoku (ne nominální hodnota roztoku). Bez přístupového kódu se tato kalibrace použije nad vlastní vnitřní kalibrací sondy: když se ta změní, změní se i pH integrace.",
+              "ph_ref_7": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev.",
+              "ph_calib_4": "Hodnota zobrazená senzorem „pH kalibrované sondou“ (ve výchozím stavu vypnutý), když je sonda ponořena v tomto kalibračním roztoku (ne nominální hodnota roztoku). Bez přístupového kódu se tato kalibrace použije nad vlastní vnitřní kalibrací sondy: když se ta změní, změní se i pH integrace.",
+              "ph_ref_4": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ Minimální ORP musí být nižší než maximální ORP",
       "temp_threshold_error": "❌ Minimální teplota musí být nižší než maximální teplota",
       "invalid_access_code": "❌ Neplatný přístupový kód (8 nebo 9 alfanumerických znaků).",
-      "invalid_access_code_9": "❌ Neplatný přístupový kód: přístupový kód Blue Connect má 9 alfanumerických znaků (např. B93XXXXXX)."
+      "invalid_access_code_9": "❌ Neplatný přístupový kód: přístupový kód Blue Connect má 9 alfanumerických znaků (např. B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ Obě hodnoty v mV musí být různé",
+      "ph_hr_slope_mismatch": "❌ Pufr pH 4 musí ukazovat vyšší mV než pufr pH 7",
+      "ph_hr_mv_incomplete": "❌ Vyplňte obě hodnoty v mV, nebo obě nechte prázdné",
+      "orp_calib_incomplete": "❌ Vyplňte obě hodnoty ORP, nebo obě nechte prázdné"
     },
     "abort": {
       "already_configured": "⚠️ Toto zařízení je již nakonfigurováno.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Referenční čas pro zarovnání naplánovaných analýz na pravidelné intervaly (např. 08:00, 10:00, 12:00... pro 2hodinový interval).",
               "scan_interval": "Doba mezi dvěma plánovanými analýzami, od 5 do 1440 minut. Pouze v aktivním režimu (vyžaduje přístupový kód).",
-              "passive_measures": "Používá hodnoty, které sonda vysílá sama, zhruba jednu za hodinu. Funguje bez přístupového kódu.",
-              "ignore_echoes": "Ignoruje pasivní rámce, které sonda označí jako ozvěnu analýzy, aby nepřepisovaly poslední měření."
+              "passive_measures": "Používá hodnoty, které sonda vysílá sama, zhruba jednu za hodinu. Je to jediný zdroj měření bez přístupového kódu. S přístupovým kódem ji nechte vypnutou, aby se zachovalo pH na 2 desetinná místa (7,23). Pasivní měření mají jen jedno desetinné místo (7,2) a nahradila by ho.",
+              "ignore_echoes": "Ignoruje pasivní rámce, které sonda označí jako ozvěnu analýzy, aby nepřepisovaly poslední měření. Nemá žádný účinek, dokud jsou pasivní analýzy vypnuté."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibrace sond",
+            "description": "Doporučeno s přístupovým kódem: odečtěte senzor „Surové pH (mV)“ se sondou ponořenou do každého pufrovacího roztoku a zadejte obě hodnoty zde. Bez přístupového kódu použijte níže sekci „Kalibrace podle hodnoty pH (bez přístupového kódu)“. U ORP přečtěte senzor „Surové ORP (mV)“ se sondou ponořenou do referenčního roztoku (vyžaduje přístupový kód).",
+            "data": {
+              "ph_hr_calib_mv_7": "Naměřené mV v pufru pH 7",
+              "ph_hr_ref_7": "🎯 Cílový roztok pH 7 (např. 7.02)",
+              "ph_hr_calib_mv_4": "Naměřené mV v pufru pH 4",
+              "ph_hr_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)",
+              "calib_push": "Odeslat kalibrace do Blue Connect",
+              "orp_calib": "ORP (Redox): mV naměřené v referenčním roztoku",
+              "orp_ref": "ORP (Redox): referenční roztok (např. 468 mV)",
+              "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potenciál zobrazený senzorem „Surové pH (mV)“ (ve výchozím stavu vypnutý) se sondou ponořenou do tohoto pufrovacího roztoku. Vyplňte obě hodnoty v mV, chcete-li pro pH s vysokým rozlišením použít vlastní kalibraci, nebo obě nechte prázdné a použije se kalibrace uložená v sondě. Standardní pH (rozlišení 0,1) tím není ovlivněno.",
+              "ph_hr_ref_7": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev.",
+              "ph_hr_calib_mv_4": "Potenciál zobrazený senzorem „Surové pH (mV)“ (ve výchozím stavu vypnutý) se sondou ponořenou do tohoto pufrovacího roztoku. Vyplňte obě hodnoty v mV, chcete-li pro pH s vysokým rozlišením použít vlastní kalibraci, nebo obě nechte prázdné a použije se kalibrace uložená v sondě. Standardní pH (rozlišení 0,1) tím není ovlivněno.",
+              "ph_hr_ref_4": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev.",
+              "calib_push": "Jednorázová akce provedená při další analýze (vyžaduje přístupový kód). Zapíše do vlastních registrů Blue Connect kalibraci pH (dva body, pH a mV) a/nebo kalibraci ORP (reference a naměřené mV) vyplněné výše, stejně jako kalibrace v oficiální aplikaci. Zapíše se jen to, co je vyplněno a změnilo se od posledního úspěšného odeslání. Změní to také pH a ORP Blue Connect, jeho prahové hodnoty upozornění a to, co ukazuje oficiální aplikace. Nejprve porovnejte s diagnostickými senzory „Kalibrace pH Blue Connect“ a „Kalibrace ORP Blue Connect“ (ve výchozím stavu vypnuté).",
+              "orp_calib": "Potenciál zobrazený senzorem „Surové ORP (mV)“ (ve výchozím stavu vypnutý) se sondou ponořenou do referenčního roztoku. Vyplňte obě hodnoty ORP, chcete-li použít vlastní kalibraci, nebo je nechte obě prázdné a použije se kalibrace uložená v sondě.",
+              "orp_ref": "Potenciál ORP (mV) referenčního roztoku při jeho aktuální teplotě: mění se s teplotou, viz láhev. Použitá korekce je tato hodnota minus naměřená hodnota.",
+              "temp_offset": "Korekce v °C přičtená k teplotě naměřené sondou. Může být kladná i záporná."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Kalibrace podle hodnoty pH (bez přístupového kódu)",
             "data": {
               "ph_calib_7": "🟢 Naměřená hodnota pH 7 (např. 7.10)",
               "ph_ref_7": "🎯 Cílový roztok pH 7 (např. 7.02)",
               "ph_calib_4": "🔴 Naměřená hodnota pH 4 (např. 4.10)",
-              "ph_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)",
-              "orp_calib": "📏 Naměřená hodnota ORP (např. 650)",
-              "orp_ref": "🎯 Cílový roztok ORP (např. 650)",
-              "temp_offset": "🌡️ Teplotní odchylka (°C) (+/-)"
+              "ph_ref_4": "🎯 Cílový roztok pH 4 (např. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
-              "ph_calib_4": "Skutečná hodnota pH naměřená sondou po ponoření do tohoto kalibračního roztoku (ne nominální hodnota roztoku).",
-              "ph_ref_7": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
-              "ph_ref_4": "pH tohoto kalibračního roztoku při jeho aktuální teplotě: závisí na teplotě, viz tabulka na lahvi.",
-              "orp_calib": "Surová hodnota ORP (mV), kterou vaše sonda skutečně ukázala v referenčním roztoku.",
-              "orp_ref": "Hodnota ORP (mV) referenčního roztoku při jeho aktuální teplotě: závisí na teplotě, viz lahev. Použitá korekce je tato hodnota minus naměřená hodnota.",
-              "temp_offset": "Korekce v °C přičtená k teplotě naměřené sondou. Může být kladná i záporná."
+              "ph_calib_7": "Hodnota zobrazená senzorem „pH kalibrované sondou“ (ve výchozím stavu vypnutý), když je sonda ponořena v tomto kalibračním roztoku (ne nominální hodnota roztoku). Bez přístupového kódu se tato kalibrace použije nad vlastní vnitřní kalibrací sondy: když se ta změní, změní se i pH integrace. Používá se jen pro standardní pH (rozlišení 0,1), ne pro pH s vysokým rozlišením.",
+              "ph_ref_7": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev.",
+              "ph_calib_4": "Hodnota zobrazená senzorem „pH kalibrované sondou“ (ve výchozím stavu vypnutý), když je sonda ponořena v tomto kalibračním roztoku (ne nominální hodnota roztoku). Bez přístupového kódu se tato kalibrace použije nad vlastní vnitřní kalibrací sondy: když se ta změní, změní se i pH integrace. Používá se jen pro standardní pH (rozlišení 0,1), ne pro pH s vysokým rozlišením.",
+              "ph_ref_4": "pH tohoto pufrovacího roztoku při jeho aktuální teplotě: s teplotou se mění, viz láhev."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Neplatný přístupový kód: přístupový kód Blue Connect má 9 alfanumerických znaků (např. B93XXXXXX).",
       "ph_calibration_equal": "❌ Kalibrační hodnoty pH musí být odlišné",
       "ph_slope_mismatch": "❌ Logická chyba: Kalibrační sklon je nekonzistentní",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Nejprve vyplňte kalibraci pH (obě hodnoty v mV) a/nebo kalibraci ORP (obě hodnoty) a zadejte přístupový kód: jinak odeslání není možné (ani u Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ Obě hodnoty v mV musí být různé",
+      "ph_hr_slope_mismatch": "❌ Pufr pH 4 musí ukazovat vyšší mV než pufr pH 7",
+      "ph_hr_mv_incomplete": "❌ Vyplňte obě hodnoty v mV, nebo obě nechte prázdné",
+      "orp_calib_incomplete": "❌ Vyplňte obě hodnoty ORP, nebo obě nechte prázdné"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Surové pH"
       },
-      "orp_raw": {
-        "name": "Surové ORP"
+      "ph_probe_calibrated": {
+        "name": "pH kalibrované sondou"
+      },
+      "ph_raw_mv": {
+        "name": "Surové pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Kalibrace pH Blue Connect"
       },
       "lsi": {
         "name": "Langelierův index"
@@ -345,6 +394,18 @@
           "active": "Aktivní",
           "unknown": "Neznámý"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Surové ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "ORP kalibrované sondou"
+      },
+      "probe_orp_calibration": {
+        "name": "Kalibrace ORP Blue Connect"
+      },
+      "last_orp_calib": {
+        "name": "Poslední kalibrace ORP"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect nedostupný",
-      "description": "Sonda Blue Connect ({name}) neodpověděla {days} den/dní. Zkontrolujte napájení, dosah a pokrytí bazénu Bluetooth adaptérem nebo ESPHome proxy."
+      "description": "Sonda {name} neodpověděla {days} den/dní. Zkontrolujte napájení, dosah a pokrytí bazénu Bluetooth adaptérem nebo ESPHome proxy."
+    },
+    "passive_high_resolution": {
+      "title": "Zachovat pH s vysokým rozlišením na 2 desetinná místa",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Zachovat pH s vysokým rozlišením na 2 desetinná místa",
+            "description": "Po každé analýze vaše {name} vysílá také pH s 1 desetinným místem, které nahradí vaši přesnou hodnotu (např. {ph_hr} → {ph_low}).\n\n**Odeslat** vypne přepínač „Interní analýzy Blue Connect (pasivní)“: tato měření budou ignorována."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Neobvyklá kalibrace ORP",
+      "description": "{name}: neobvyklá odchylka {source}: {ecart} mV mezi referencí a naměřenou hodnotou. Zkontrolujte referenční roztok a vyčistěte elektrodu. Pokud problém přetrvává, sonda může být na konci životnosti."
+    },
+    "ph_calibration_slope": {
+      "title": "Neobvyklá kalibrace pH",
+      "description": "{name}: neobvyklá kalibrace {source}: sklon {slope} mV/pH, očekávaný mezi {min} a {max}. Zkontrolujte pufrovací roztoky a vyčistěte elektrodu. Pokud problém přetrvává, sonda může být na konci životnosti."
+    },
+    "ph_calibration_offset": {
+      "title": "Neobvyklá kalibrace pH",
+      "description": "{name}: neobvyklá kalibrace {source}: offset {ecart} mV při pH 7, očekávaný mezi −{limit} a +{limit}. Zkontrolujte pufrovací roztoky a vyčistěte elektrodu. Pokud problém přetrvává, sonda může být na konci životnosti."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} je mimo dosah Bluetooth a nejsou k dispozici žádná předchozí data."
+      "message": "{name} je mimo dosah Bluetooth a nejsou k dispozici žádná předchozí data."
     },
     "unreachable_no_history": {
       "message": "Blue Connect je nedostupný a nejsou k dispozici žádná předchozí data: {error}"

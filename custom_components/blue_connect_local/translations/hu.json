@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Viszonyítási idő az ütemezett elemzések rendszeres időközökre igazításához (pl. 08:00, 10:00, 12:00... 2 órás intervallum esetén).",
               "scan_interval": "Két ütemezett elemzés közötti idő, 5 és 1440 perc között. Csak aktív módban (hozzáférési kód szükséges).",
-              "passive_measures": "A szonda által magától küldött méréseket használja, óránként körülbelül egyet. Hozzáférési kód nélkül is működik.",
-              "ignore_echoes": "Figyelmen kívül hagyja azokat a passzív kereteket, amelyeket a szonda egy elemzés visszhangjaként jelöl, hogy ne írják felül az utolsó mérést."
+              "passive_measures": "A szonda által magától küldött méréseket használja, óránként körülbelül egyet. Hozzáférési kód nélkül ez az egyetlen mérési forrás. Hozzáférési kód esetén hagyja kikapcsolva, hogy megmaradjon a 2 tizedesjegyes pH (7,23). A passzív mérésekben csak egy tizedesjegy van (7,2), és felváltanák azt.",
+              "ignore_echoes": "Figyelmen kívül hagyja azokat a passzív kereteket, amelyeket a szonda egy elemzés visszhangjaként jelöl, hogy ne írják felül az utolsó mérést. Nincs hatása, amíg a passzív elemzések ki vannak kapcsolva."
             }
           },
           "probes_calibration": {
             "name": "🧪 Szondák kalibrálása",
+            "description": "Hozzáférési kóddal ajánlott: olvassa le a(z) „Nyers pH (mV)” szenzort, miközben a szonda az egyes pufferoldatokban van, majd adja meg itt a két értéket. Hozzáférési kód nélkül használja lent a(z) „pH-kalibráció értékkel (hozzáférési kód nélkül)” szakaszt. Az ORP-hez olvassa le a „Nyers ORP (mV)” szenzort, miközben a szonda a referenciaoldatba van merítve (hozzáférési kód szükséges).",
+            "data": {
+              "ph_hr_calib_mv_7": "Mért mV a pH 7 pufferben",
+              "ph_hr_ref_7": "🎯 Célértékű oldat pH 7 (pl. 7.02)",
+              "ph_hr_calib_mv_4": "Mért mV a pH 4 pufferben",
+              "ph_hr_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)",
+              "orp_calib": "ORP (Redox): a referenciaoldatban mért mV",
+              "orp_ref": "ORP (Redox): referenciaoldat (pl. 468 mV)",
+              "temp_offset": "🌡️ Hőmérséklet-eltolás (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "A(z) „Nyers pH (mV)” (alapértelmezés szerint kikapcsolva) szenzor által mutatott potenciál, miközben a szonda ebben a pufferoldatban van. Töltse ki mindkét mV-értéket, ha a nagy felbontású pH-hoz a saját kalibrációját szeretné használni, vagy hagyja mindkettőt üresen a szondában tárolt kalibrációhoz. A standard pH-t (0,1 felbontás) ez nem érinti.",
+              "ph_hr_ref_7": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot.",
+              "ph_hr_calib_mv_4": "A(z) „Nyers pH (mV)” (alapértelmezés szerint kikapcsolva) szenzor által mutatott potenciál, miközben a szonda ebben a pufferoldatban van. Töltse ki mindkét mV-értéket, ha a nagy felbontású pH-hoz a saját kalibrációját szeretné használni, vagy hagyja mindkettőt üresen a szondában tárolt kalibrációhoz. A standard pH-t (0,1 felbontás) ez nem érinti.",
+              "ph_hr_ref_4": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot.",
+              "orp_calib": "A „Nyers ORP (mV)” szenzor (alapértelmezés szerint kikapcsolva) által mutatott potenciál, miközben a szonda a referenciaoldatba van merítve. Töltse ki mindkét ORP-értéket a saját kalibráció használatához, vagy hagyja mindkettőt üresen a szondában tárolt kalibráció használatához.",
+              "orp_ref": "A referenciaoldat ORP-potenciálja (mV) a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd az üveget. Az alkalmazott korrekció ez az érték mínusz a mért érték.",
+              "temp_offset": "°C-ban megadott korrekció, amelyet a rendszer hozzáad a szonda által mért hőmérséklethez. Lehet pozitív vagy negatív."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-kalibráció értékkel (hozzáférési kód nélkül)",
             "data": {
               "ph_calib_7": "🟢 Mért érték pH 7 (pl. 7.10)",
               "ph_ref_7": "🎯 Célértékű oldat pH 7 (pl. 7.02)",
               "ph_calib_4": "🔴 Mért érték pH 4 (pl. 4.10)",
-              "ph_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)",
-              "orp_calib": "📏 Mért érték ORP (pl. 650)",
-              "orp_ref": "🎯 Célértékű oldat ORP (pl. 650)",
-              "temp_offset": "🌡️ Hőmérséklet-eltolás (°C) (+/-)"
+              "ph_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "A szonda által ténylegesen mért nyers pH-érték, amíg ebben a kalibráló oldatban volt (nem az oldat névleges értéke).",
-              "ph_calib_4": "A szonda által ténylegesen mért nyers pH-érték, amíg ebben a kalibráló oldatban volt (nem az oldat névleges értéke).",
-              "ph_ref_7": "Ennek a kalibrálóoldatnak a pH-ja a jelenlegi hőmérsékletén: függ a hőmérséklettől, lásd a palackon lévő táblázatot.",
-              "ph_ref_4": "Ennek a kalibrálóoldatnak a pH-ja a jelenlegi hőmérsékletén: függ a hőmérséklettől, lásd a palackon lévő táblázatot.",
-              "orp_calib": "A nyers ORP-érték (mV), amelyet a szonda a referenciaoldatba merítve ténylegesen mutatott.",
-              "orp_ref": "A referenciaoldat ORP-értéke (mV) a jelenlegi hőmérsékletén: függ a hőmérséklettől, lásd a palackot. Az alkalmazott korrekció ez az érték mínusz a mért érték.",
-              "temp_offset": "°C-ban megadott korrekció, amelyet a rendszer hozzáad a szonda által mért hőmérséklethez. Lehet pozitív vagy negatív."
+              "ph_calib_7": "A(z) „Szonda által kalibrált pH” szenzor (alapértelmezés szerint kikapcsolva) által mutatott érték, miközben a szonda ebben a kalibráló oldatban van (nem az oldat névleges értéke). Hozzáférési kód nélkül ez a kalibráció a szonda saját belső kalibrációjára épül: ha az megváltozik, az integráció pH-ja is megváltozik.",
+              "ph_ref_7": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot.",
+              "ph_calib_4": "A(z) „Szonda által kalibrált pH” szenzor (alapértelmezés szerint kikapcsolva) által mutatott érték, miközben a szonda ebben a kalibráló oldatban van (nem az oldat névleges értéke). Hozzáférési kód nélkül ez a kalibráció a szonda saját belső kalibrációjára épül: ha az megváltozik, az integráció pH-ja is megváltozik.",
+              "ph_ref_4": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ A minimum ORP-nek kisebbnek kell lennie, mint a maximum ORP",
       "temp_threshold_error": "❌ A minimum hőmérsékletnek alacsonyabbnak kell lennie, mint a maximum hőmérséklet",
       "invalid_access_code": "❌ Érvénytelen hozzáférési kód (8 vagy 9 alfanumerikus karakter).",
-      "invalid_access_code_9": "❌ Érvénytelen hozzáférési kód: a Blue Connect hozzáférési kódja 9 alfanumerikus karakterből áll (pl. B93XXXXXX)."
+      "invalid_access_code_9": "❌ Érvénytelen hozzáférési kód: a Blue Connect hozzáférési kódja 9 alfanumerikus karakterből áll (pl. B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ A két mV-értéknek különbözőnek kell lennie",
+      "ph_hr_slope_mismatch": "❌ A pH 4 pufferoldatnak magasabb mV-értéket kell adnia, mint a pH 7 pufferoldatnak",
+      "ph_hr_mv_incomplete": "❌ Töltse ki mindkét mV-értéket, vagy hagyja mindkettőt üresen",
+      "orp_calib_incomplete": "❌ Töltse ki mindkét ORP-értéket, vagy hagyja mindkettőt üresen"
     },
     "abort": {
       "already_configured": "⚠️ Ez az eszköz már konfigurálva van.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Viszonyítási idő az ütemezett elemzések rendszeres időközökre igazításához (pl. 08:00, 10:00, 12:00... 2 órás intervallum esetén).",
               "scan_interval": "Két ütemezett elemzés közötti idő, 5 és 1440 perc között. Csak aktív módban (hozzáférési kód szükséges).",
-              "passive_measures": "A szonda által magától küldött méréseket használja, óránként körülbelül egyet. Hozzáférési kód nélkül is működik.",
-              "ignore_echoes": "Figyelmen kívül hagyja azokat a passzív kereteket, amelyeket a szonda egy elemzés visszhangjaként jelöl, hogy ne írják felül az utolsó mérést."
+              "passive_measures": "A szonda által magától küldött méréseket használja, óránként körülbelül egyet. Hozzáférési kód nélkül ez az egyetlen mérési forrás. Hozzáférési kód esetén hagyja kikapcsolva, hogy megmaradjon a 2 tizedesjegyes pH (7,23). A passzív mérésekben csak egy tizedesjegy van (7,2), és felváltanák azt.",
+              "ignore_echoes": "Figyelmen kívül hagyja azokat a passzív kereteket, amelyeket a szonda egy elemzés visszhangjaként jelöl, hogy ne írják felül az utolsó mérést. Nincs hatása, amíg a passzív elemzések ki vannak kapcsolva."
             }
           },
           "probes_calibration": {
             "name": "🧪 Szondák kalibrálása",
+            "description": "Hozzáférési kóddal ajánlott: olvassa le a(z) „Nyers pH (mV)” szenzort, miközben a szonda az egyes pufferoldatokban van, majd adja meg itt a két értéket. Hozzáférési kód nélkül használja lent a(z) „pH-kalibráció értékkel (hozzáférési kód nélkül)” szakaszt. Az ORP-hez olvassa le a „Nyers ORP (mV)” szenzort, miközben a szonda a referenciaoldatba van merítve (hozzáférési kód szükséges).",
+            "data": {
+              "ph_hr_calib_mv_7": "Mért mV a pH 7 pufferben",
+              "ph_hr_ref_7": "🎯 Célértékű oldat pH 7 (pl. 7.02)",
+              "ph_hr_calib_mv_4": "Mért mV a pH 4 pufferben",
+              "ph_hr_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)",
+              "calib_push": "Kalibrációk elküldése a Blue Connectnek",
+              "orp_calib": "ORP (Redox): a referenciaoldatban mért mV",
+              "orp_ref": "ORP (Redox): referenciaoldat (pl. 468 mV)",
+              "temp_offset": "🌡️ Hőmérséklet-eltolás (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "A(z) „Nyers pH (mV)” (alapértelmezés szerint kikapcsolva) szenzor által mutatott potenciál, miközben a szonda ebben a pufferoldatban van. Töltse ki mindkét mV-értéket, ha a nagy felbontású pH-hoz a saját kalibrációját szeretné használni, vagy hagyja mindkettőt üresen a szondában tárolt kalibrációhoz. A standard pH-t (0,1 felbontás) ez nem érinti.",
+              "ph_hr_ref_7": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot.",
+              "ph_hr_calib_mv_4": "A(z) „Nyers pH (mV)” (alapértelmezés szerint kikapcsolva) szenzor által mutatott potenciál, miközben a szonda ebben a pufferoldatban van. Töltse ki mindkét mV-értéket, ha a nagy felbontású pH-hoz a saját kalibrációját szeretné használni, vagy hagyja mindkettőt üresen a szondában tárolt kalibrációhoz. A standard pH-t (0,1 felbontás) ez nem érinti.",
+              "ph_hr_ref_4": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot.",
+              "calib_push": "Egyszeri művelet, a következő elemzéskor lép életbe (hozzáférési kód szükséges). A fent kitöltött pH-kalibrációt (két pont, pH és mV) és/vagy ORP-kalibrációt (referencia és mért mV) beírja a Blue Connect saját regisztereibe, mint a hivatalos alkalmazás kalibrációja. Csak az íródik be, ami ki van töltve, és az utolsó sikeres küldés óta megváltozott. Ez megváltoztatja a Blue Connect pH- és ORP-értékét, riasztási küszöbeit és a hivatalos alkalmazás kijelzését is. Előbb hasonlítsa össze a „Blue Connect pH-kalibráció” és „Blue Connect ORP-kalibráció” diagnosztikai szenzorokkal (alapértelmezés szerint kikapcsolva).",
+              "orp_calib": "A „Nyers ORP (mV)” szenzor (alapértelmezés szerint kikapcsolva) által mutatott potenciál, miközben a szonda a referenciaoldatba van merítve. Töltse ki mindkét ORP-értéket a saját kalibráció használatához, vagy hagyja mindkettőt üresen a szondában tárolt kalibráció használatához.",
+              "orp_ref": "A referenciaoldat ORP-potenciálja (mV) a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd az üveget. Az alkalmazott korrekció ez az érték mínusz a mért érték.",
+              "temp_offset": "°C-ban megadott korrekció, amelyet a rendszer hozzáad a szonda által mért hőmérséklethez. Lehet pozitív vagy negatív."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-kalibráció értékkel (hozzáférési kód nélkül)",
             "data": {
               "ph_calib_7": "🟢 Mért érték pH 7 (pl. 7.10)",
               "ph_ref_7": "🎯 Célértékű oldat pH 7 (pl. 7.02)",
               "ph_calib_4": "🔴 Mért érték pH 4 (pl. 4.10)",
-              "ph_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)",
-              "orp_calib": "📏 Mért érték ORP (pl. 650)",
-              "orp_ref": "🎯 Célértékű oldat ORP (pl. 650)",
-              "temp_offset": "🌡️ Hőmérséklet-eltolás (°C) (+/-)"
+              "ph_ref_4": "🎯 Célértékű oldat pH 4 (pl. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "A szonda által ténylegesen mért nyers pH-érték, amíg ebben a kalibráló oldatban volt (nem az oldat névleges értéke).",
-              "ph_calib_4": "A szonda által ténylegesen mért nyers pH-érték, amíg ebben a kalibráló oldatban volt (nem az oldat névleges értéke).",
-              "ph_ref_7": "Ennek a kalibrálóoldatnak a pH-ja a jelenlegi hőmérsékletén: függ a hőmérséklettől, lásd a palackon lévő táblázatot.",
-              "ph_ref_4": "Ennek a kalibrálóoldatnak a pH-ja a jelenlegi hőmérsékletén: függ a hőmérséklettől, lásd a palackon lévő táblázatot.",
-              "orp_calib": "A nyers ORP-érték (mV), amelyet a szonda a referenciaoldatba merítve ténylegesen mutatott.",
-              "orp_ref": "A referenciaoldat ORP-értéke (mV) a jelenlegi hőmérsékletén: függ a hőmérséklettől, lásd a palackot. Az alkalmazott korrekció ez az érték mínusz a mért érték.",
-              "temp_offset": "°C-ban megadott korrekció, amelyet a rendszer hozzáad a szonda által mért hőmérséklethez. Lehet pozitív vagy negatív."
+              "ph_calib_7": "A(z) „Szonda által kalibrált pH” szenzor (alapértelmezés szerint kikapcsolva) által mutatott érték, miközben a szonda ebben a kalibráló oldatban van (nem az oldat névleges értéke). Hozzáférési kód nélkül ez a kalibráció a szonda saját belső kalibrációjára épül: ha az megváltozik, az integráció pH-ja is megváltozik. Csak a standard pH-hoz használatos (0,1 felbontás), a nagy felbontású pH-hoz nem.",
+              "ph_ref_7": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot.",
+              "ph_calib_4": "A(z) „Szonda által kalibrált pH” szenzor (alapértelmezés szerint kikapcsolva) által mutatott érték, miközben a szonda ebben a kalibráló oldatban van (nem az oldat névleges értéke). Hozzáférési kód nélkül ez a kalibráció a szonda saját belső kalibrációjára épül: ha az megváltozik, az integráció pH-ja is megváltozik. Csak a standard pH-hoz használatos (0,1 felbontás), a nagy felbontású pH-hoz nem.",
+              "ph_ref_4": "Ennek a pufferoldatnak a pH-ja a jelenlegi hőmérsékletén: a hőmérséklettel változik, lásd a palackot."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Érvénytelen hozzáférési kód: a Blue Connect hozzáférési kódja 9 alfanumerikus karakterből áll (pl. B93XXXXXX).",
       "ph_calibration_equal": "❌ A pH kalibrációs értékeinek különbözniük kell",
       "ph_slope_mismatch": "❌ Logikai hiba: A kalibrációs meredekség nem konzisztens",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Előbb töltse ki a pH-kalibrációt (mindkét mV-értéket) és/vagy az ORP-kalibrációt (mindkét értéket), és adjon meg hozzáférési kódot: egyébként a küldés nem lehetséges (a Blue Connect Plus esetén sem).",
+      "ph_hr_calibration_equal": "❌ A két mV-értéknek különbözőnek kell lennie",
+      "ph_hr_slope_mismatch": "❌ A pH 4 pufferoldatnak magasabb mV-értéket kell adnia, mint a pH 7 pufferoldatnak",
+      "ph_hr_mv_incomplete": "❌ Töltse ki mindkét mV-értéket, vagy hagyja mindkettőt üresen",
+      "orp_calib_incomplete": "❌ Töltse ki mindkét ORP-értéket, vagy hagyja mindkettőt üresen"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Nyers pH"
       },
-      "orp_raw": {
-        "name": "Nyers ORP"
+      "ph_probe_calibrated": {
+        "name": "Szonda által kalibrált pH"
+      },
+      "ph_raw_mv": {
+        "name": "Nyers pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Blue Connect pH-kalibráció"
       },
       "lsi": {
         "name": "Langelier-index"
@@ -345,6 +394,18 @@
           "active": "Aktív",
           "unknown": "Ismeretlen"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Nyers ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "Szonda által kalibrált ORP"
+      },
+      "probe_orp_calibration": {
+        "name": "Blue Connect ORP-kalibráció"
+      },
+      "last_orp_calib": {
+        "name": "Utolsó ORP-kalibráció"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "A Blue Connect nem érhető el",
-      "description": "A Blue Connect szonda ({name}) {days} napja nem válaszol. Ellenőrizze a tápellátást, a hatótávolságot, és hogy egy Bluetooth adapter vagy ESPHome proxy lefedi-e a medence területét."
+      "description": "A(z) {name} szonda {days} napja nem válaszol. Ellenőrizze a tápellátást, a hatótávolságot, és hogy egy Bluetooth adapter vagy ESPHome proxy lefedi-e a medence területét."
+    },
+    "passive_high_resolution": {
+      "title": "A nagy felbontású pH megtartása 2 tizedesjegyen",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "A nagy felbontású pH megtartása 2 tizedesjegyen",
+            "description": "Minden elemzés után a(z) {name} egy 1 tizedesjegyű pH-értéket is küld, amely felülírja a pontos értéket (pl. {ph_hr} → {ph_low}).\n\nA **Küldés** kikapcsolja a „Blue Connect belső elemzései (passzív)” kapcsolót: ezeket a méréseket a rendszer figyelmen kívül hagyja."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Szokatlan ORP-kalibráció",
+      "description": "{name}: szokatlan {source}-eltérés: {ecart} mV a referencia és a mért érték között. Ellenőrizze a referenciaoldatot, és tisztítsa meg az elektródát. Ha a probléma továbbra is fennáll, a szonda talán élettartama végéhez ért."
+    },
+    "ph_calibration_slope": {
+      "title": "Szokatlan pH-kalibráció",
+      "description": "{name}: szokatlan {source}-kalibráció: {slope} mV/pH meredekség, a várt érték {min} és {max} között. Ellenőrizze a pufferoldatokat, és tisztítsa meg az elektródát. Ha a probléma továbbra is fennáll, a szonda talán élettartama végéhez ért."
+    },
+    "ph_calibration_offset": {
+      "title": "Szokatlan pH-kalibráció",
+      "description": "{name}: szokatlan {source}-kalibráció: {ecart} mV eltolás pH 7 mellett, a várt érték −{limit} és +{limit} között. Ellenőrizze a pufferoldatokat, és tisztítsa meg az elektródát. Ha a probléma továbbra is fennáll, a szonda talán élettartama végéhez ért."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "A Blue Connect {mac} Bluetooth hatótávolságon kívül van, és nincs elérhető korábbi adat."
+      "message": "A(z) {name} Bluetooth hatótávolságon kívül van, és nincs elérhető korábbi adat."
     },
     "unreachable_no_history": {
       "message": "A Blue Connect nem érhető el, és nincs elérhető korábbi adat: {error}"

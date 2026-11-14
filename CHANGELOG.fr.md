@@ -1,5 +1,42 @@
 # Blue Connect Local - Journal des modifications
 
+## 1.4.0
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
+pH haute résolution (l'application officielle affiche 0,1), calibration de l'ORP, et calibrations que vous pouvez envoyer à la sonde depuis Home Assistant.
+
+### ⚠️ Avant de mettre à jour
+- **Les options ORP sont vidées.** La calibration ORP de l'intégration s'ajoutait à un ORP déjà corrigé par la sonde. Elle est désormais vide par défaut et appliquée au potentiel brut : **les valeurs enregistrées par une version précédente sont supprimées**, à ressaisir si besoin.
+- **L'ORP brut et le pH brut changent de sens.** `orp_raw` devient **ORP calibré sonde** (`orp_probe_calibrated`, même historique et même entity_id) ; le vrai potentiel de l'électrode est le nouvel **ORP Brut (mV)**. `ph_raw` est maintenant le potentiel de l'électrode lu comme un pH (pH 7 à 0 mV, 59,16 mV par unité de pH) et son ancienne valeur passe dans **pH calibré sonde** : l'historique de `ph_raw` mélange donc les deux sens jusqu'à cette version.
+- **Code d'accès nécessaire pour le potentiel de l'électrode** (ZODIAC, Mode Actif). Sans lui, le pH brut est indisponible (sur un Blue Connect Plus, l'ancienne valeur se trouve dans *pH calibré sonde*) et l'ORP de la sonde est affiché.
+
+### ✨ Nouveautés
+- **pH haute résolution (2 décimales)**, absent de l'application officielle (qui affiche 0,1), sur les sondes ZODIAC en Mode Actif : chaque analyse lit aussi le potentiel de l'électrode et le convertit avec une calibration à deux points (celle de la sonde ou la vôtre), sans l'arrondi à 0,1 de la sonde. Retour au pH à 0,1 quand la dernière trame est passive, inutilisable ou hors de 0-14. Nouveaux attributs `source`, `resolution` et `calibration_source`.
+- **Calibration de l'ORP, comme le pH** (ZODIAC, code d'accès) : l'*ORP* est le potentiel brut plus la calibration utilisée. Nouvel attribut `calibration_source`.
+- **Vos propres calibrations** (*Options > Calibration des Sondes*), vides par défaut et prioritaires sur celles de la sonde : pH à partir des mV lus par **pH Brut (mV)** dans des solutions tampons pH 4 et pH 7 ; ORP à partir des mV lus par **ORP Brut (mV)** dans une solution étalon et des mV de cette solution. Les deux valeurs, ou aucune.
+- **Calibrer la sonde depuis Home Assistant** : la case **Envoyer les calibrations au Blue Connect** (code d'accès, indisponible sur les sondes Blueriiot) écrit vos points pH et/ou ORP et leur date dans la sonde, comme l'application officielle, mais seulement ce qui est renseigné et a changé depuis le dernier envoi réussi. Cela change aussi la référence des seuils d'alerte propres à la sonde.
+- **Avertissement de calibration anormale** (*Paramètres > Réparations*, jamais bloquant) : écart ORP supérieur à 100 mV, pente pH hors de 50-63 mV/pH ou offset à pH 7 au-delà de ±60 mV. Repères génériques, pas une spécification Blue Connect.
+- **Suggestion de réparation** pour ignorer les analyses passives de la sonde, qui remplacent le pH à 2 décimales par un pH à 0,1.
+- **Cinq capteurs de diagnostic**, désactivés par défaut (ZODIAC, code d'accès) : **pH Brut (mV)**, **Calibration pH du Blue Connect**, **ORP Brut (mV)**, **Calibration ORP du Blue Connect**, **Dernière calibration de l'ORP**.
+
+### 🔄 Changements
+- Les capteurs de diagnostic techniques (*Trame Calculée*, *Trame Électrique*, *Batterie ADC*, *Cloud ID / SN*, *Accéléromètre*, *Type de Trame Calculée*) sont désactivés par défaut sur les nouvelles installations.
+- Installation : avec un code d'accès, les analyses passives sont désactivées par défaut (installations existantes inchangées).
+- Options : retirer le code d'accès réactive les analyses passives, comme à l'installation (sans code, ce sont la seule source de mesures).
+- Formulaire Calibration des Sondes réorganisé (calibration en mV d'abord, par valeur de pH dans une section repliée) ; la case devient *Envoyer les calibrations au Blue Connect* (`calib_push`, jamais enregistrée).
+- Avec un code d'accès, chaque analyse ZODIAC lit aussi la date de calibration du pH de la sonde (non appliqué avec votre propre calibration en mV et le capteur *Calibration pH du Blue Connect* désactivé).
+- Le capteur *pH* n'impose plus 2 décimales : 7,20 s'affiche désormais 7,2.
+- Traductions mises à jour dans toutes les langues.
+
+### 📚 Documentation
+- Guide de Calibration (EN/FR) réécrit ; README (EN/FR) : section *pH haute résolution* et installation via le Marketplace de Home Assistant 2026.11 (étapes HACS conservées, repliées). En français, ORP est désormais le seul terme employé (Redox uniquement entre parenthèses).
+
+### 🧰 Maintenance
+- Tests : 775 (565 auparavant), couverture de 100 %, sur Home Assistant 2026.10.4 avec Python 3.14.
+
+🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬
+
 ## 1.3.1
 
 🐬🐬🐬🐬🐬🐬🐬🐬🐬🐬

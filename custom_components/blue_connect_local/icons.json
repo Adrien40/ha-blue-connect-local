@@ -10,8 +10,23 @@
       "ph_raw": {
         "default": "mdi:lightning-bolt"
       },
-      "orp_raw": {
+      "orp_raw_mv": {
         "default": "mdi:lightning-bolt-outline"
+      },
+      "orp_probe_calibrated": {
+        "default": "mdi:lightning-bolt-circle"
+      },
+      "ph_raw_mv": {
+        "default": "mdi:lightning-bolt-outline"
+      },
+      "ph_probe_calibrated": {
+        "default": "mdi:lightning-bolt-circle"
+      },
+      "probe_ph_calibration": {
+        "default": "mdi:tune"
+      },
+      "probe_orp_calibration": {
+        "default": "mdi:tune"
       },
       "battery": {
         "default": "mdi:battery-bluetooth"
@@ -41,6 +56,9 @@
         "default": "mdi:calendar-sync"
       },
       "last_ph_calib": {
+        "default": "mdi:calendar-check"
+      },
+      "last_orp_calib": {
         "default": "mdi:calendar-check"
       },
       "receive_method": {

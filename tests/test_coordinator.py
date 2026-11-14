@@ -49,7 +49,9 @@ from .conftest import make_entry
 from .helpers import (
     ACCESS_CODE,
     MAC,
+    UUID_RAW_SENSORS,
     FakeBlueClient,
+    build_electrical_frame,
     build_frame,
     clean_hex,
 )
@@ -167,7 +169,10 @@ async def test_device_registry_gets_model_and_serial(hass, coordinator):
 # Calibration, offsets, Langelier
 # ---------------------------------------------------------------------------
 async def test_calibration_and_offsets_are_applied(setup_integration, ble):
-    ble.client = FakeBlueClient([build_frame(temp_c=25.0, ph=7.4, orp_mv=700)])
+    ble.client = FakeBlueClient(
+        [build_frame(temp_c=25.0, ph=7.4, orp_mv=700)],
+        reads={UUID_RAW_SENSORS: build_electrical_frame(orp_mv=700)},
+    )
     coord = await setup_integration(
         make_entry(
             **{
@@ -182,10 +187,13 @@ async def test_calibration_and_offsets_are_applied(setup_integration, ble):
     await coord.async_refresh()
     assert coord.data["ph"] == pytest.approx(7.54, abs=0.01)
     assert coord.data["temperature"] == pytest.approx(26.5)
+    # The integration's ORP calibration applies to the raw electrode potential.
     assert coord.data["orp"] == 710
+    assert coord.data["orp_raw_mv"] == 700
     # Raw values stay intact (to recompute without a new measurement).
-    assert coord.data["ph_raw"] == pytest.approx(7.4)
-    assert coord.data["orp_raw"] == 700
+    assert coord.data["ph_probe_calibrated"] == pytest.approx(7.4)
+    assert coord.data["orp_probe_calibrated"] == 700
+    assert "orp_raw" not in coord.data
 
 
 async def test_degenerate_calibration_falls_back_to_raw_ph(setup_integration, ble):
@@ -202,7 +210,7 @@ async def test_degenerate_calibration_falls_back_to_raw_ph(setup_integration, bl
     # Degenerate calibration: falls back to raw pH rather than crashing
     # or silently returning an irrelevant value.
     assert coord.data["ph"] == pytest.approx(7.4)
-    assert coord.data["ph_raw"] == pytest.approx(7.4)
+    assert coord.data["ph_probe_calibrated"] == pytest.approx(7.4)
 
 
 async def test_notification_queue_full_is_logged(setup_integration, ble, caplog):
@@ -690,7 +698,7 @@ async def test_save_strips_transient_state(coordinator, hass_storage):
     assert "bluetooth_status" not in saved
     assert "action_running" not in saved
     assert isinstance(saved["last_received"], str)
-    assert saved["ph_raw"] == pytest.approx(7.4)
+    assert saved["ph_probe_calibrated"] == pytest.approx(7.4)
 
 
 async def test_restore_valid_measurements(setup_integration, hass_storage):
@@ -709,6 +717,10 @@ async def test_restore_valid_measurements(setup_integration, hass_storage):
     assert coord.data["tac"] == 90
     assert coord.data["last_received"].year == 2026
     assert coord.data["sku"] == "WA000099"
+    # Stored before 1.4.0, "ph_raw" was the calculated frame's pH: it moves to
+    # "ph_probe_calibrated", and "ph_raw" (pH from the electrode) is not known yet.
+    assert coord.data["ph_probe_calibrated"] == 7.1
+    assert "ph_raw" not in coord.data
 
 
 async def test_restore_invalid_raw_frame_discards_measurements_but_keeps_preferences(

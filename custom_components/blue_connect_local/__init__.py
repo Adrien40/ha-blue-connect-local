@@ -106,6 +106,40 @@ async def async_migrate_entry(
             )
         hass.config_entries.async_update_entry(entry, minor_version=4)
 
+    if entry.minor_version < 5:
+        # The ORP now follows the pH: "orp_raw" always held the ORP of the
+        # calculated frame (probe calibration applied), so it is renamed
+        # "orp_probe_calibrated" and a real raw one ("orp_raw_mv") is read from
+        # the electrical frame. The entity is migrated in place (same history,
+        # dashboards and entity_id; only its name changes), not dropped.
+        registry = er.async_get(hass)
+        mac = entry.data.get(CONF_MAC_ADDRESS, "")
+        old_unique_id = f"{mac}_orp_raw"
+        new_unique_id = f"{mac}_orp_probe_calibrated"
+        entity_id = registry.async_get_entity_id("sensor", DOMAIN, old_unique_id)
+        if entity_id and not registry.async_get_entity_id(
+            "sensor", DOMAIN, new_unique_id
+        ):
+            registry.async_update_entity(entity_id, new_unique_id=new_unique_id)
+            _LOGGER.info(
+                "Blue Connect entry %s.%s: migrated orp_raw -> orp_probe_calibrated "
+                "unique_id",
+                entry.version,
+                entry.minor_version,
+            )
+        # The integration's ORP calibration used to be applied on top of an ORP
+        # the probe had already corrected, and defaulted to 650/650: it is now
+        # empty by default (empty = use the probe's calibration) and measured
+        # on the raw potential. Values entered before no longer mean the same
+        # thing, so they are cleared rather than silently reinterpreted.
+        orp_keys = ("orp_ref", "orp_calib")
+        hass.config_entries.async_update_entry(
+            entry,
+            data={k: v for k, v in entry.data.items() if k not in orp_keys},
+            options={k: v for k, v in entry.options.items() if k not in orp_keys},
+            minor_version=5,
+        )
+
     _LOGGER.debug(
         "Blue Connect entry %s.%s already up to date, no migration needed",
         entry.version,

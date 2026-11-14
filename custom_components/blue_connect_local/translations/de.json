@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Ankerzeit zur Ausrichtung geplanter Analysen auf regelmäßige Intervalle (z. B. 08:00, 10:00, 12:00... bei einem 2-Stunden-Intervall).",
               "scan_interval": "Zeit zwischen zwei geplanten Analysen, von 5 bis 1440 Minuten. Nur im Aktivmodus (Zugangscode erforderlich).",
-              "passive_measures": "Verwendet die Messwerte, die die Sonde von sich aus sendet, etwa einen pro Stunde. Funktioniert ohne Zugangscode.",
-              "ignore_echoes": "Ignoriert passive Frames, die die Sonde als Echo einer Analyse kennzeichnet, damit sie die letzte Messung nicht überschreiben."
+              "passive_measures": "Verwendet die Messwerte, die die Sonde von sich aus sendet, etwa einen pro Stunde. Ohne Zugangscode ist dies die einzige Quelle für Messwerte. Mit Zugangscode lassen Sie die Option ausgeschaltet, um den pH-Wert mit 2 Nachkommastellen (7,23) zu behalten. Passive Messwerte haben nur eine Nachkommastelle (7,2) und würden ihn ersetzen.",
+              "ignore_echoes": "Ignoriert passive Frames, die die Sonde als Echo einer Analyse kennzeichnet, damit sie die letzte Messung nicht überschreiben. Hat keine Wirkung, solange die passiven Analysen ausgeschaltet sind."
             }
           },
           "probes_calibration": {
             "name": "🧪 Sondenkalibrierung",
+            "description": "Empfohlen mit Zugangscode: Lesen Sie den Sensor „Roh-pH (mV)“ ab, während die Sonde in jeder Pufferlösung eingetaucht ist, und geben Sie die beiden Werte hier ein. Ohne Zugangscode verwenden Sie unten den Bereich „pH-Kalibrierung per Wert (ohne Zugangscode)“. Für den ORP lesen Sie den Sensor „Roh-ORP (mV)“, während die Sonde in der Referenzlösung eintaucht (Zugangscode erforderlich).",
+            "data": {
+              "ph_hr_calib_mv_7": "Gemessene mV im pH-7-Puffer",
+              "ph_hr_ref_7": "🎯 Referenzlösung pH 7 (z. B. 7.02)",
+              "ph_hr_calib_mv_4": "Gemessene mV im pH-4-Puffer",
+              "ph_hr_ref_4": "🎯 Referenzlösung pH 4 (z. B. 4.00)",
+              "orp_calib": "ORP (Redox): in der Referenzlösung gemessene mV",
+              "orp_ref": "ORP (Redox): Referenzlösung (z. B. 468 mV)",
+              "temp_offset": "🌡️ Temperaturabweichung (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Das vom Sensor „Roh-pH (mV)“ (standardmäßig deaktiviert) angezeigte Potenzial, während die Sonde in diese Pufferlösung eingetaucht ist. Geben Sie beide mV-Werte ein, um Ihre eigene Kalibrierung für den hochauflösenden pH-Wert zu verwenden, oder lassen Sie beide leer, um die in der Sonde gespeicherte zu verwenden. Der Standard-pH-Wert (Auflösung 0,1) bleibt unberührt.",
+              "ph_hr_ref_7": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche.",
+              "ph_hr_calib_mv_4": "Das vom Sensor „Roh-pH (mV)“ (standardmäßig deaktiviert) angezeigte Potenzial, während die Sonde in diese Pufferlösung eingetaucht ist. Geben Sie beide mV-Werte ein, um Ihre eigene Kalibrierung für den hochauflösenden pH-Wert zu verwenden, oder lassen Sie beide leer, um die in der Sonde gespeicherte zu verwenden. Der Standard-pH-Wert (Auflösung 0,1) bleibt unberührt.",
+              "ph_hr_ref_4": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche.",
+              "orp_calib": "Das Potenzial, das der Sensor „Roh-ORP (mV)“ (standardmäßig deaktiviert) anzeigt, während die Sonde in der Referenzlösung eintaucht. Füllen Sie beide ORP-Werte aus, um Ihre eigene Kalibrierung zu verwenden, oder lassen Sie beide leer, um die in der Sonde gespeicherte zu verwenden.",
+              "orp_ref": "Das ORP-Potenzial (mV) der Referenzlösung bei ihrer aktuellen Temperatur: Es ändert sich mit der Temperatur, siehe Flasche. Die angewendete Korrektur ist dieser Wert minus der gemessene Wert.",
+              "temp_offset": "Korrektur in °C, die zur von der Sonde gemessenen Temperatur addiert wird. Kann positiv oder negativ sein."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-Kalibrierung per Wert (ohne Zugangscode)",
             "data": {
               "ph_calib_7": "🟢 Gemessener Wert pH 7 (z. B. 7.10)",
               "ph_ref_7": "🎯 Referenzlösung pH 7 (z. B. 7.02)",
               "ph_calib_4": "🔴 Gemessener Wert pH 4 (z. B. 4.10)",
-              "ph_ref_4": "🎯 Referenzlösung pH 4 (z. B. 4.00)",
-              "orp_calib": "📏 Gemessener Wert ORP (z. B. 650)",
-              "orp_ref": "🎯 Referenzlösung ORP (z. B. 650)",
-              "temp_offset": "🌡️ Temperaturabweichung (°C) (+/-)"
+              "ph_ref_4": "🎯 Referenzlösung pH 4 (z. B. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Der rohe pH-Wert, den Ihre Sonde tatsächlich gemessen hat, während sie in diese Kalibrierlösung eingetaucht war (nicht der Nennwert der Lösung).",
-              "ph_calib_4": "Der rohe pH-Wert, den Ihre Sonde tatsächlich gemessen hat, während sie in diese Kalibrierlösung eingetaucht war (nicht der Nennwert der Lösung).",
-              "ph_ref_7": "Der pH-Wert dieser Kalibrierlösung bei ihrer aktuellen Temperatur: Er hängt von der Temperatur ab, siehe Tabelle auf der Flasche.",
-              "ph_ref_4": "Der pH-Wert dieser Kalibrierlösung bei ihrer aktuellen Temperatur: Er hängt von der Temperatur ab, siehe Tabelle auf der Flasche.",
-              "orp_calib": "Der rohe ORP-Wert (mV), den Ihre Sonde in der Referenzlösung tatsächlich angezeigt hat.",
-              "orp_ref": "Der ORP-Wert (mV) der Referenzlösung bei ihrer aktuellen Temperatur: Er hängt von der Temperatur ab, siehe Flasche. Die angewendete Korrektur ist dieser Wert minus der gemessene Wert.",
-              "temp_offset": "Korrektur in °C, die zur von der Sonde gemessenen Temperatur addiert wird. Kann positiv oder negativ sein."
+              "ph_calib_7": "Der vom Sensor „Sonden-kalibrierter pH“ (standardmäßig deaktiviert) angezeigte Wert, während die Sonde in diese Kalibrierlösung eingetaucht ist (nicht der Nennwert der Lösung). Ohne Zugangscode wird diese Kalibrierung zusätzlich auf die interne Kalibrierung der Sonde angewendet: Ändert sich diese, ändert sich auch der pH-Wert der Integration.",
+              "ph_ref_7": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche.",
+              "ph_calib_4": "Der vom Sensor „Sonden-kalibrierter pH“ (standardmäßig deaktiviert) angezeigte Wert, während die Sonde in diese Kalibrierlösung eingetaucht ist (nicht der Nennwert der Lösung). Ohne Zugangscode wird diese Kalibrierung zusätzlich auf die interne Kalibrierung der Sonde angewendet: Ändert sich diese, ändert sich auch der pH-Wert der Integration.",
+              "ph_ref_4": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ Der minimale ORP-Wert muss niedriger sein als der maximale ORP-Wert",
       "temp_threshold_error": "❌ Die Mindesttemperatur muss niedriger sein als die Höchsttemperatur",
       "invalid_access_code": "❌ Ungültiger Zugangscode (8 oder 9 alphanumerische Zeichen).",
-      "invalid_access_code_9": "❌ Ungültiger Zugangscode: Der Zugangscode einer Blue Connect hat 9 alphanumerische Zeichen (z. B. B93XXXXXX)."
+      "invalid_access_code_9": "❌ Ungültiger Zugangscode: Der Zugangscode einer Blue Connect hat 9 alphanumerische Zeichen (z. B. B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ Die beiden mV-Werte müssen verschieden sein",
+      "ph_hr_slope_mismatch": "❌ Die pH-4-Pufferlösung muss einen höheren mV-Wert liefern als die pH-7-Pufferlösung",
+      "ph_hr_mv_incomplete": "❌ Geben Sie beide mV-Werte ein oder lassen Sie beide leer",
+      "orp_calib_incomplete": "❌ Geben Sie beide ORP-Werte ein oder lassen Sie beide leer"
     },
     "abort": {
       "already_configured": "⚠️ Dieses Gerät ist bereits konfiguriert.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Ankerzeit zur Ausrichtung geplanter Analysen auf regelmäßige Intervalle (z. B. 08:00, 10:00, 12:00... bei einem 2-Stunden-Intervall).",
               "scan_interval": "Zeit zwischen zwei geplanten Analysen, von 5 bis 1440 Minuten. Nur im Aktivmodus (Zugangscode erforderlich).",
-              "passive_measures": "Verwendet die Messwerte, die die Sonde von sich aus sendet, etwa einen pro Stunde. Funktioniert ohne Zugangscode.",
-              "ignore_echoes": "Ignoriert passive Frames, die die Sonde als Echo einer Analyse kennzeichnet, damit sie die letzte Messung nicht überschreiben."
+              "passive_measures": "Verwendet die Messwerte, die die Sonde von sich aus sendet, etwa einen pro Stunde. Ohne Zugangscode ist dies die einzige Quelle für Messwerte. Mit Zugangscode lassen Sie die Option ausgeschaltet, um den pH-Wert mit 2 Nachkommastellen (7,23) zu behalten. Passive Messwerte haben nur eine Nachkommastelle (7,2) und würden ihn ersetzen.",
+              "ignore_echoes": "Ignoriert passive Frames, die die Sonde als Echo einer Analyse kennzeichnet, damit sie die letzte Messung nicht überschreiben. Hat keine Wirkung, solange die passiven Analysen ausgeschaltet sind."
             }
           },
           "probes_calibration": {
             "name": "🧪 Sondenkalibrierung",
+            "description": "Empfohlen mit Zugangscode: Lesen Sie den Sensor „Roh-pH (mV)“ ab, während die Sonde in jeder Pufferlösung eingetaucht ist, und geben Sie die beiden Werte hier ein. Ohne Zugangscode verwenden Sie unten den Bereich „pH-Kalibrierung per Wert (ohne Zugangscode)“. Für den ORP lesen Sie den Sensor „Roh-ORP (mV)“, während die Sonde in der Referenzlösung eintaucht (Zugangscode erforderlich).",
+            "data": {
+              "ph_hr_calib_mv_7": "Gemessene mV im pH-7-Puffer",
+              "ph_hr_ref_7": "🎯 Referenzlösung pH 7 (z. B. 7.02)",
+              "ph_hr_calib_mv_4": "Gemessene mV im pH-4-Puffer",
+              "ph_hr_ref_4": "🎯 Referenzlösung pH 4 (z. B. 4.00)",
+              "calib_push": "Kalibrierungen an das Blue Connect senden",
+              "orp_calib": "ORP (Redox): in der Referenzlösung gemessene mV",
+              "orp_ref": "ORP (Redox): Referenzlösung (z. B. 468 mV)",
+              "temp_offset": "🌡️ Temperaturabweichung (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Das vom Sensor „Roh-pH (mV)“ (standardmäßig deaktiviert) angezeigte Potenzial, während die Sonde in diese Pufferlösung eingetaucht ist. Geben Sie beide mV-Werte ein, um Ihre eigene Kalibrierung für den hochauflösenden pH-Wert zu verwenden, oder lassen Sie beide leer, um die in der Sonde gespeicherte zu verwenden. Der Standard-pH-Wert (Auflösung 0,1) bleibt unberührt.",
+              "ph_hr_ref_7": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche.",
+              "ph_hr_calib_mv_4": "Das vom Sensor „Roh-pH (mV)“ (standardmäßig deaktiviert) angezeigte Potenzial, während die Sonde in diese Pufferlösung eingetaucht ist. Geben Sie beide mV-Werte ein, um Ihre eigene Kalibrierung für den hochauflösenden pH-Wert zu verwenden, oder lassen Sie beide leer, um die in der Sonde gespeicherte zu verwenden. Der Standard-pH-Wert (Auflösung 0,1) bleibt unberührt.",
+              "ph_hr_ref_4": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche.",
+              "calib_push": "Einmalige Aktion bei der nächsten Analyse (Zugangscode erforderlich). Schreibt die oben ausgefüllte pH-Kalibrierung (zwei Punkte, pH und mV) und/oder ORP-Kalibrierung (Referenz und gemessene mV) in die eigenen Register des Blue Connect, wie die Kalibrierung der offiziellen App. Geschrieben wird nur, was ausgefüllt ist und sich seit dem letzten erfolgreichen Senden geändert hat. Dadurch ändern sich auch der pH- und der ORP-Wert des Blue Connect, seine Alarmschwellen und die Anzeige der offiziellen App. Vergleichen Sie zuerst mit den Diagnosesensoren „Blue Connect pH-Kalibrierung“ und „Blue Connect ORP-Kalibrierung“ (standardmäßig deaktiviert).",
+              "orp_calib": "Das Potenzial, das der Sensor „Roh-ORP (mV)“ (standardmäßig deaktiviert) anzeigt, während die Sonde in der Referenzlösung eintaucht. Füllen Sie beide ORP-Werte aus, um Ihre eigene Kalibrierung zu verwenden, oder lassen Sie beide leer, um die in der Sonde gespeicherte zu verwenden.",
+              "orp_ref": "Das ORP-Potenzial (mV) der Referenzlösung bei ihrer aktuellen Temperatur: Es ändert sich mit der Temperatur, siehe Flasche. Die angewendete Korrektur ist dieser Wert minus der gemessene Wert.",
+              "temp_offset": "Korrektur in °C, die zur von der Sonde gemessenen Temperatur addiert wird. Kann positiv oder negativ sein."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH-Kalibrierung per Wert (ohne Zugangscode)",
             "data": {
               "ph_calib_7": "🟢 Gemessener Wert pH 7 (z. B. 7.10)",
               "ph_ref_7": "🎯 Referenzlösung pH 7 (z. B. 7.02)",
               "ph_calib_4": "🔴 Gemessener Wert pH 4 (z. B. 4.10)",
-              "ph_ref_4": "🎯 Referenzlösung pH 4 (z. B. 4.00)",
-              "orp_calib": "📏 Gemessener Wert ORP (z. B. 650)",
-              "orp_ref": "🎯 Referenzlösung ORP (z. B. 650)",
-              "temp_offset": "🌡️ Temperaturabweichung (°C) (+/-)"
+              "ph_ref_4": "🎯 Referenzlösung pH 4 (z. B. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Der rohe pH-Wert, den Ihre Sonde tatsächlich gemessen hat, während sie in diese Kalibrierlösung eingetaucht war (nicht der Nennwert der Lösung).",
-              "ph_calib_4": "Der rohe pH-Wert, den Ihre Sonde tatsächlich gemessen hat, während sie in diese Kalibrierlösung eingetaucht war (nicht der Nennwert der Lösung).",
-              "ph_ref_7": "Der pH-Wert dieser Kalibrierlösung bei ihrer aktuellen Temperatur: Er hängt von der Temperatur ab, siehe Tabelle auf der Flasche.",
-              "ph_ref_4": "Der pH-Wert dieser Kalibrierlösung bei ihrer aktuellen Temperatur: Er hängt von der Temperatur ab, siehe Tabelle auf der Flasche.",
-              "orp_calib": "Der rohe ORP-Wert (mV), den Ihre Sonde in der Referenzlösung tatsächlich angezeigt hat.",
-              "orp_ref": "Der ORP-Wert (mV) der Referenzlösung bei ihrer aktuellen Temperatur: Er hängt von der Temperatur ab, siehe Flasche. Die angewendete Korrektur ist dieser Wert minus der gemessene Wert.",
-              "temp_offset": "Korrektur in °C, die zur von der Sonde gemessenen Temperatur addiert wird. Kann positiv oder negativ sein."
+              "ph_calib_7": "Der vom Sensor „Sonden-kalibrierter pH“ (standardmäßig deaktiviert) angezeigte Wert, während die Sonde in diese Kalibrierlösung eingetaucht ist (nicht der Nennwert der Lösung). Ohne Zugangscode wird diese Kalibrierung zusätzlich auf die interne Kalibrierung der Sonde angewendet: Ändert sich diese, ändert sich auch der pH-Wert der Integration. Wird nur für den Standard-pH-Wert (Auflösung 0,1) verwendet, nicht für den hochauflösenden.",
+              "ph_ref_7": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche.",
+              "ph_calib_4": "Der vom Sensor „Sonden-kalibrierter pH“ (standardmäßig deaktiviert) angezeigte Wert, während die Sonde in diese Kalibrierlösung eingetaucht ist (nicht der Nennwert der Lösung). Ohne Zugangscode wird diese Kalibrierung zusätzlich auf die interne Kalibrierung der Sonde angewendet: Ändert sich diese, ändert sich auch der pH-Wert der Integration. Wird nur für den Standard-pH-Wert (Auflösung 0,1) verwendet, nicht für den hochauflösenden.",
+              "ph_ref_4": "Der pH-Wert dieser Pufferlösung bei ihrer aktuellen Temperatur: er hängt von der Temperatur ab, siehe Flasche."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Ungültiger Zugangscode: Der Zugangscode einer Blue Connect hat 9 alphanumerische Zeichen (z. B. B93XXXXXX).",
       "ph_calibration_equal": "❌ Die pH-Kalibrierungswerte müssen unterschiedlich sein",
       "ph_slope_mismatch": "❌ Logikfehler: Die Kalibrierungssteigung ist inkonsistent",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Füllen Sie zuerst die pH-Kalibrierung (beide mV-Werte) und/oder die ORP-Kalibrierung (beide Werte) aus und geben Sie einen Zugangscode ein: sonst ist das Senden nicht möglich (auch nicht beim Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ Die beiden mV-Werte müssen verschieden sein",
+      "ph_hr_slope_mismatch": "❌ Die pH-4-Pufferlösung muss einen höheren mV-Wert liefern als die pH-7-Pufferlösung",
+      "ph_hr_mv_incomplete": "❌ Geben Sie beide mV-Werte ein oder lassen Sie beide leer",
+      "orp_calib_incomplete": "❌ Geben Sie beide ORP-Werte ein oder lassen Sie beide leer"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Roh-pH"
       },
-      "orp_raw": {
-        "name": "Roh-ORP"
+      "ph_probe_calibrated": {
+        "name": "Sonden-kalibrierter pH"
+      },
+      "ph_raw_mv": {
+        "name": "Roh-pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Blue Connect pH-Kalibrierung"
       },
       "lsi": {
         "name": "Langelier-Index"
@@ -345,6 +394,18 @@
           "active": "Aktiv",
           "unknown": "Unbekannt"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Roh-ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "Sonden-kalibrierter ORP"
+      },
+      "probe_orp_calibration": {
+        "name": "Blue Connect ORP-Kalibrierung"
+      },
+      "last_orp_calib": {
+        "name": "Letzte ORP-Kalibrierung"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect nicht erreichbar",
-      "description": "Die Blue Connect-Sonde ({name}) hat seit {days} Tag(en) nicht geantwortet. Prüfen Sie Stromversorgung, Reichweite und ob ein Bluetooth-Adapter oder ESPHome-Proxy den Poolbereich abdeckt."
+      "description": "Die Sonde {name} hat seit {days} Tag(en) nicht geantwortet. Prüfen Sie Stromversorgung, Reichweite und ob ein Bluetooth-Adapter oder ESPHome-Proxy den Poolbereich abdeckt."
+    },
+    "passive_high_resolution": {
+      "title": "Hochauflösenden pH-Wert mit 2 Nachkommastellen behalten",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Hochauflösenden pH-Wert mit 2 Nachkommastellen behalten",
+            "description": "Nach jeder Analyse sendet Ihr {name} zusätzlich einen pH-Wert mit 1 Nachkommastelle, der Ihren genauen Wert ersetzt (z. B. {ph_hr} → {ph_low}).\n\n**Absenden** schaltet den Schalter „Interne Analysen des Blue Connect (passiv)“ aus: Diese Messwerte werden ignoriert."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Auffällige ORP-Kalibrierung",
+      "description": "{name}: Auffällige {source}-Abweichung: {ecart} mV zwischen Referenz und gemessenem Wert. Prüfen Sie die Referenzlösung und reinigen Sie die Elektrode. Wenn das Problem weiterhin besteht, ist die Sonde möglicherweise am Ende ihrer Lebensdauer."
+    },
+    "ph_calibration_slope": {
+      "title": "Auffällige pH-Kalibrierung",
+      "description": "{name}: Auffällige {source}-Kalibrierung: Steilheit von {slope} mV/pH, erwartet zwischen {min} und {max}. Prüfen Sie die Pufferlösungen und reinigen Sie die Elektrode. Wenn das Problem weiterhin besteht, ist die Sonde möglicherweise am Ende ihrer Lebensdauer."
+    },
+    "ph_calibration_offset": {
+      "title": "Auffällige pH-Kalibrierung",
+      "description": "{name}: Auffällige {source}-Kalibrierung: Offset von {ecart} mV bei pH 7, erwartet zwischen −{limit} und +{limit}. Prüfen Sie die Pufferlösungen und reinigen Sie die Elektrode. Wenn das Problem weiterhin besteht, ist die Sonde möglicherweise am Ende ihrer Lebensdauer."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} ist außerhalb der Bluetooth-Reichweite und es sind keine vorherigen Daten verfügbar."
+      "message": "{name} ist außerhalb der Bluetooth-Reichweite und es sind keine vorherigen Daten verfügbar."
     },
     "unreachable_no_history": {
       "message": "Blue Connect ist nicht erreichbar und es sind keine vorherigen Daten verfügbar: {error}"

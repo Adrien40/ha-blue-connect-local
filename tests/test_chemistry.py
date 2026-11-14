@@ -14,6 +14,7 @@ from ._load_pure import load_pure_module
 _chemistry = load_pure_module("chemistry.py")
 compute_lsi = _chemistry.compute_lsi
 compute_ph_equilibrium = _chemistry.compute_ph_equilibrium
+compute_ph_raw_from_mv = _chemistry.compute_ph_raw_from_mv
 
 
 def test_lsi_none_if_missing_data():
@@ -57,3 +58,15 @@ def test_ph_equilibrium_survives_a_math_error(caplog):
     with caplog.at_level(logging.WARNING):
         assert compute_ph_equilibrium(-273.15, 100.0, 250.0, 1000.0) is None
     assert "Math error in compute_ph_equilibrium" in caplog.text
+
+
+def test_raw_ph_from_mv_is_a_fixed_reference():
+    assert compute_ph_raw_from_mv(0.0) == 7.0
+    assert compute_ph_raw_from_mv(177.0) == pytest.approx(4.01)
+    assert compute_ph_raw_from_mv(-177.0) == pytest.approx(9.99)
+
+
+def test_raw_ph_from_mv_none_without_a_usable_potential():
+    assert compute_ph_raw_from_mv(None) is None
+    assert compute_ph_raw_from_mv(float("nan")) is None
+    assert compute_ph_raw_from_mv(5000.0) is None  # outside 0-14

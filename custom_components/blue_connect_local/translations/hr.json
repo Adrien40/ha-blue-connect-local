@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Referentno vrijeme za usklađivanje planiranih analiza s redovitim intervalima (npr. 08:00, 10:00, 12:00... za 2-satni interval).",
               "scan_interval": "Vrijeme između dvije planirane analize, od 5 do 1440 minuta. Samo u aktivnom načinu (potreban je pristupni kod).",
-              "passive_measures": "Koristi očitanja koja sonda sama šalje, otprilike jedno na sat. Radi bez pristupnog koda.",
-              "ignore_echoes": "Zanemaruje pasivne okvire koje sonda označi kao jeku analize kako ne bi prepisali posljednje mjerenje."
+              "passive_measures": "Koristi očitanja koja sonda sama šalje, otprilike jedno na sat. To je jedini izvor mjerenja bez pristupnog koda. S pristupnim kodom ostavite je isključenom kako biste zadržali pH s 2 decimale (7,23). Pasivna mjerenja imaju samo jednu decimalu (7,2) i zamijenila bi ga.",
+              "ignore_echoes": "Zanemaruje pasivne okvire koje sonda označi kao jeku analize kako ne bi prepisali posljednje mjerenje. Nema učinka dok su pasivne analize isključene."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibracija sondi",
+            "description": "Preporučeno s pristupnim kodom: očitajte senzor „Sirovi pH (mV)” dok je sonda uronjena u svaku otopinu pufera, pa ovdje unesite obje vrijednosti. Bez pristupnog koda upotrijebite odjeljak „pH kalibracija prema vrijednosti (bez pristupnog koda)” u nastavku. Za ORP očitajte senzor „Sirovi ORP (mV)“ dok je sonda uronjena u referentnu otopinu (potreban je pristupni kod).",
+            "data": {
+              "ph_hr_calib_mv_7": "Izmjereni mV u puferu pH 7",
+              "ph_hr_ref_7": "🎯 Ciljna otopina pH 7 (npr. 7.02)",
+              "ph_hr_calib_mv_4": "Izmjereni mV u puferu pH 4",
+              "ph_hr_ref_4": "🎯 Ciljna otopina pH 4 (npr. 4.00)",
+              "orp_calib": "ORP (Redox): mV izmjereni u referentnoj otopini",
+              "orp_ref": "ORP (Redox): referentna otopina (npr. 468 mV)",
+              "temp_offset": "🌡️ Odstupanje temperature (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potencijal koji prikazuje senzor „Sirovi pH (mV)” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu otopinu pufera. Ispunite obje vrijednosti u mV za vlastitu kalibraciju pH visoke razlučivosti ili ostavite obje prazne za kalibraciju pohranjenu u sondi. Standardni pH (razlučivost 0,1) ostaje nepromijenjen.",
+              "ph_hr_ref_7": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu.",
+              "ph_hr_calib_mv_4": "Potencijal koji prikazuje senzor „Sirovi pH (mV)” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu otopinu pufera. Ispunite obje vrijednosti u mV za vlastitu kalibraciju pH visoke razlučivosti ili ostavite obje prazne za kalibraciju pohranjenu u sondi. Standardni pH (razlučivost 0,1) ostaje nepromijenjen.",
+              "ph_hr_ref_4": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu.",
+              "orp_calib": "Potencijal koji prikazuje senzor „Sirovi ORP (mV)“ (prema zadanim postavkama isključen) dok je sonda uronjena u referentnu otopinu. Ispunite obje ORP vrijednosti za vlastitu kalibraciju ili ostavite obje prazne da se koristi ona pohranjena u sondi.",
+              "orp_ref": "ORP potencijal (mV) referentne otopine pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bocu. Primijenjena korekcija je ta vrijednost minus izmjerena vrijednost.",
+              "temp_offset": "Korekcija u °C koja se dodaje temperaturi koju je izmjerila sonda. Može biti pozitivna ili negativna."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH kalibracija prema vrijednosti (bez pristupnog koda)",
             "data": {
               "ph_calib_7": "🟢 Izmjerena vrijednost pH 7 (npr. 7.10)",
               "ph_ref_7": "🎯 Ciljna otopina pH 7 (npr. 7.02)",
               "ph_calib_4": "🔴 Izmjerena vrijednost pH 4 (npr. 4.10)",
-              "ph_ref_4": "🎯 Ciljna otopina pH 4 (npr. 4.00)",
-              "orp_calib": "📏 Izmjerena vrijednost ORP (npr. 650)",
-              "orp_ref": "🎯 Ciljna otopina ORP (npr. 650)",
-              "temp_offset": "🌡️ Odstupanje temperature (°C) (+/-)"
+              "ph_ref_4": "🎯 Ciljna otopina pH 4 (npr. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
-              "ph_calib_4": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
-              "ph_ref_7": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
-              "ph_ref_4": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
-              "orp_calib": "Neobrađena ORP vrijednost (mV) koju je vaša sonda stvarno prikazala u referentnoj otopini.",
-              "orp_ref": "ORP vrijednost (mV) referentne otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte bocu. Primijenjena korekcija je ta vrijednost minus izmjerena vrijednost.",
-              "temp_offset": "Korekcija u °C koja se dodaje temperaturi koju je izmjerila sonda. Može biti pozitivna ili negativna."
+              "ph_calib_7": "Vrijednost koju prikazuje senzor „pH kalibriran sondom” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine). Bez pristupnog koda ova se kalibracija primjenjuje povrh interne kalibracije sonde: ako se ona promijeni, promijenit će se i pH integracije.",
+              "ph_ref_7": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu.",
+              "ph_calib_4": "Vrijednost koju prikazuje senzor „pH kalibriran sondom” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine). Bez pristupnog koda ova se kalibracija primjenjuje povrh interne kalibracije sonde: ako se ona promijeni, promijenit će se i pH integracije.",
+              "ph_ref_4": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ Minimalni ORP mora biti manji od maksimalnog ORP",
       "temp_threshold_error": "❌ Minimalna temperatura mora biti niža od maksimalne temperature",
       "invalid_access_code": "❌ Nevažeći pristupni kod (8 ili 9 alfanumeričkih znakova).",
-      "invalid_access_code_9": "❌ Nevažeći pristupni kod: pristupni kod uređaja Blue Connect ima 9 alfanumeričkih znakova (npr. B93XXXXXX)."
+      "invalid_access_code_9": "❌ Nevažeći pristupni kod: pristupni kod uređaja Blue Connect ima 9 alfanumeričkih znakova (npr. B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ Dvije vrijednosti u mV moraju biti različite",
+      "ph_hr_slope_mismatch": "❌ Pufer pH 4 mora davati veći mV od pufera pH 7",
+      "ph_hr_mv_incomplete": "❌ Ispunite obje vrijednosti u mV ili ostavite obje prazne",
+      "orp_calib_incomplete": "❌ Ispunite obje ORP vrijednosti ili ostavite obje prazne"
     },
     "abort": {
       "already_configured": "⚠️ Ovaj uređaj je već konfiguriran.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Referentno vrijeme za usklađivanje planiranih analiza s redovitim intervalima (npr. 08:00, 10:00, 12:00... za 2-satni interval).",
               "scan_interval": "Vrijeme između dvije planirane analize, od 5 do 1440 minuta. Samo u aktivnom načinu (potreban je pristupni kod).",
-              "passive_measures": "Koristi očitanja koja sonda sama šalje, otprilike jedno na sat. Radi bez pristupnog koda.",
-              "ignore_echoes": "Zanemaruje pasivne okvire koje sonda označi kao jeku analize kako ne bi prepisali posljednje mjerenje."
+              "passive_measures": "Koristi očitanja koja sonda sama šalje, otprilike jedno na sat. To je jedini izvor mjerenja bez pristupnog koda. S pristupnim kodom ostavite je isključenom kako biste zadržali pH s 2 decimale (7,23). Pasivna mjerenja imaju samo jednu decimalu (7,2) i zamijenila bi ga.",
+              "ignore_echoes": "Zanemaruje pasivne okvire koje sonda označi kao jeku analize kako ne bi prepisali posljednje mjerenje. Nema učinka dok su pasivne analize isključene."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibracija sondi",
+            "description": "Preporučeno s pristupnim kodom: očitajte senzor „Sirovi pH (mV)” dok je sonda uronjena u svaku otopinu pufera, pa ovdje unesite obje vrijednosti. Bez pristupnog koda upotrijebite odjeljak „pH kalibracija prema vrijednosti (bez pristupnog koda)” u nastavku. Za ORP očitajte senzor „Sirovi ORP (mV)“ dok je sonda uronjena u referentnu otopinu (potreban je pristupni kod).",
+            "data": {
+              "ph_hr_calib_mv_7": "Izmjereni mV u puferu pH 7",
+              "ph_hr_ref_7": "🎯 Ciljna otopina pH 7 (npr. 7.02)",
+              "ph_hr_calib_mv_4": "Izmjereni mV u puferu pH 4",
+              "ph_hr_ref_4": "🎯 Ciljna otopina pH 4 (npr. 4.00)",
+              "calib_push": "Pošalji kalibracije na Blue Connect",
+              "orp_calib": "ORP (Redox): mV izmjereni u referentnoj otopini",
+              "orp_ref": "ORP (Redox): referentna otopina (npr. 468 mV)",
+              "temp_offset": "🌡️ Odstupanje temperature (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potencijal koji prikazuje senzor „Sirovi pH (mV)” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu otopinu pufera. Ispunite obje vrijednosti u mV za vlastitu kalibraciju pH visoke razlučivosti ili ostavite obje prazne za kalibraciju pohranjenu u sondi. Standardni pH (razlučivost 0,1) ostaje nepromijenjen.",
+              "ph_hr_ref_7": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu.",
+              "ph_hr_calib_mv_4": "Potencijal koji prikazuje senzor „Sirovi pH (mV)” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu otopinu pufera. Ispunite obje vrijednosti u mV za vlastitu kalibraciju pH visoke razlučivosti ili ostavite obje prazne za kalibraciju pohranjenu u sondi. Standardni pH (razlučivost 0,1) ostaje nepromijenjen.",
+              "ph_hr_ref_4": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu.",
+              "calib_push": "Jednokratna radnja, primjenjuje se pri sljedećoj analizi (potreban je pristupni kod). Upisuje u vlastite registre uređaja Blue Connect pH kalibraciju (dvije točke, pH i mV) i/ili ORP kalibraciju (referenca i izmjereni mV) ispunjene gore, kao kalibracija u službenoj aplikaciji. Upisuje se samo ono što je ispunjeno i promijenjeno od posljednjeg uspješnog slanja. To mijenja i pH i ORP uređaja Blue Connect, njegove granice upozorenja i ono što prikazuje službena aplikacija. Prvo usporedite s dijagnostičkim senzorima „pH kalibracija uređaja Blue Connect“ i „ORP kalibracija uređaja Blue Connect“ (prema zadanim postavkama isključeni).",
+              "orp_calib": "Potencijal koji prikazuje senzor „Sirovi ORP (mV)“ (prema zadanim postavkama isključen) dok je sonda uronjena u referentnu otopinu. Ispunite obje ORP vrijednosti za vlastitu kalibraciju ili ostavite obje prazne da se koristi ona pohranjena u sondi.",
+              "orp_ref": "ORP potencijal (mV) referentne otopine pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bocu. Primijenjena korekcija je ta vrijednost minus izmjerena vrijednost.",
+              "temp_offset": "Korekcija u °C koja se dodaje temperaturi koju je izmjerila sonda. Može biti pozitivna ili negativna."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 pH kalibracija prema vrijednosti (bez pristupnog koda)",
             "data": {
               "ph_calib_7": "🟢 Izmjerena vrijednost pH 7 (npr. 7.10)",
               "ph_ref_7": "🎯 Ciljna otopina pH 7 (npr. 7.02)",
               "ph_calib_4": "🔴 Izmjerena vrijednost pH 4 (npr. 4.10)",
-              "ph_ref_4": "🎯 Ciljna otopina pH 4 (npr. 4.00)",
-              "orp_calib": "📏 Izmjerena vrijednost ORP (npr. 650)",
-              "orp_ref": "🎯 Ciljna otopina ORP (npr. 650)",
-              "temp_offset": "🌡️ Odstupanje temperature (°C) (+/-)"
+              "ph_ref_4": "🎯 Ciljna otopina pH 4 (npr. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
-              "ph_calib_4": "Sirova vrijednost pH koju je sonda stvarno izmjerila dok je bila uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine).",
-              "ph_ref_7": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
-              "ph_ref_4": "pH ove kalibracijske otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte tablicu na boci.",
-              "orp_calib": "Neobrađena ORP vrijednost (mV) koju je vaša sonda stvarno prikazala u referentnoj otopini.",
-              "orp_ref": "ORP vrijednost (mV) referentne otopine pri njezinoj trenutnoj temperaturi: ovisi o temperaturi, pogledajte bocu. Primijenjena korekcija je ta vrijednost minus izmjerena vrijednost.",
-              "temp_offset": "Korekcija u °C koja se dodaje temperaturi koju je izmjerila sonda. Može biti pozitivna ili negativna."
+              "ph_calib_7": "Vrijednost koju prikazuje senzor „pH kalibriran sondom” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine). Bez pristupnog koda ova se kalibracija primjenjuje povrh interne kalibracije sonde: ako se ona promijeni, promijenit će se i pH integracije. Koristi se samo za standardni pH (razlučivost 0,1), ne za pH visoke razlučivosti.",
+              "ph_ref_7": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu.",
+              "ph_calib_4": "Vrijednost koju prikazuje senzor „pH kalibriran sondom” (prema zadanim postavkama isključen) dok je sonda uronjena u ovu kalibracijsku otopinu (ne nazivna vrijednost otopine). Bez pristupnog koda ova se kalibracija primjenjuje povrh interne kalibracije sonde: ako se ona promijeni, promijenit će se i pH integracije. Koristi se samo za standardni pH (razlučivost 0,1), ne za pH visoke razlučivosti.",
+              "ph_ref_4": "pH ove otopine pufera pri njezinoj trenutnoj temperaturi: mijenja se s temperaturom, pogledajte bočicu."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Nevažeći pristupni kod: pristupni kod uređaja Blue Connect ima 9 alfanumeričkih znakova (npr. B93XXXXXX).",
       "ph_calibration_equal": "❌ Vrijednosti kalibracije pH moraju biti različite",
       "ph_slope_mismatch": "❌ Logička pogreška: Nagib kalibracije je nedosljedan",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Prvo ispunite pH kalibraciju (obje vrijednosti u mV) i/ili ORP kalibraciju (obje vrijednosti) te unesite pristupni kod: inače slanje nije moguće (ni na Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ Dvije vrijednosti u mV moraju biti različite",
+      "ph_hr_slope_mismatch": "❌ Pufer pH 4 mora davati veći mV od pufera pH 7",
+      "ph_hr_mv_incomplete": "❌ Ispunite obje vrijednosti u mV ili ostavite obje prazne",
+      "orp_calib_incomplete": "❌ Ispunite obje ORP vrijednosti ili ostavite obje prazne"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Sirovi pH"
       },
-      "orp_raw": {
-        "name": "Sirovi ORP"
+      "ph_probe_calibrated": {
+        "name": "pH kalibriran sondom"
+      },
+      "ph_raw_mv": {
+        "name": "Sirovi pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "pH kalibracija uređaja Blue Connect"
       },
       "lsi": {
         "name": "Langelierov indeks"
@@ -345,6 +394,18 @@
           "active": "Aktivno",
           "unknown": "Nepoznato"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Sirovi ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "ORP kalibriran sondom"
+      },
+      "probe_orp_calibration": {
+        "name": "ORP kalibracija uređaja Blue Connect"
+      },
+      "last_orp_calib": {
+        "name": "Zadnja kalibracija ORP"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect nedostupan",
-      "description": "Blue Connect sonda ({name}) nije odgovorila {days} dan(a). Provjerite napajanje, domet i pokriva li Bluetooth adapter ili ESPHome proxy područje bazena."
+      "description": "Sonda {name} nije odgovorila {days} dan(a). Provjerite napajanje, domet i pokriva li Bluetooth adapter ili ESPHome proxy područje bazena."
+    },
+    "passive_high_resolution": {
+      "title": "Zadržite pH visoke razlučivosti na 2 decimale",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Zadržite pH visoke razlučivosti na 2 decimale",
+            "description": "Nakon svake analize vaš {name} šalje i pH s 1 decimalom, koji zamjenjuje vašu preciznu vrijednost (npr. {ph_hr} → {ph_low}).\n\n**Pošalji** isključuje prekidač „Interne analize Blue Connect uređaja (pasivne)“: ta će se mjerenja zanemariti."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Neobična ORP kalibracija",
+      "description": "{name}: neobično odstupanje {source}: {ecart} mV između reference i izmjerene vrijednosti. Provjerite referentnu otopinu i očistite elektrodu. Ako problem potraje, sonda je možda pri kraju vijeka trajanja."
+    },
+    "ph_calibration_slope": {
+      "title": "Neobična pH kalibracija",
+      "description": "{name}: neobična {source} kalibracija: nagib od {slope} mV/pH, očekivan između {min} i {max}. Provjerite puferske otopine i očistite elektrodu. Ako problem potraje, sonda je možda pri kraju vijeka trajanja."
+    },
+    "ph_calibration_offset": {
+      "title": "Neobična pH kalibracija",
+      "description": "{name}: neobična {source} kalibracija: pomak od {ecart} mV pri pH 7, očekivan između −{limit} i +{limit}. Provjerite puferske otopine i očistite elektrodu. Ako problem potraje, sonda je možda pri kraju vijeka trajanja."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} je izvan Bluetooth dometa i nema dostupnih prethodnih podataka."
+      "message": "{name} je izvan Bluetooth dometa i nema dostupnih prethodnih podataka."
     },
     "unreachable_no_history": {
       "message": "Blue Connect je nedostupan i nema dostupnih prethodnih podataka: {error}"

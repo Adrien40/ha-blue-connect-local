@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -117,6 +118,9 @@ def test_every_validation_error_is_translated_in_both_flows(path):
         # initial config flow.
         if flow == "options":
             missing -= {"mac_conflict", "no_mac_provided", "invalid_mac"}
+        else:
+            # Only raised by the options flow (one-shot calibration push).
+            missing -= {"calib_push_unavailable"}
         assert not missing, f"{path.name}: {flow}.error lacks {sorted(missing)}"
 
 
@@ -134,7 +138,7 @@ def test_no_empty_strings(path):
 
 @pytest.mark.parametrize("path", ALL_FILES, ids=lambda p: p.name)
 def test_raw_orp_sensor_is_translated(path):
-    assert _load(path)["entity"]["sensor"]["orp_raw"]["name"].strip()
+    assert _load(path)["entity"]["sensor"]["orp_raw_mv"]["name"].strip()
 
 
 def test_manifest_and_hacs_are_consistent():
@@ -142,7 +146,8 @@ def test_manifest_and_hacs_are_consistent():
     hacs = json.loads((ROOT / "hacs.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == COMPONENT.name
     assert "bluetooth" in manifest["dependencies"]
-    assert all(p.isdigit() for p in manifest["version"].split("."))
+    # x.y.z, optionally followed by a pre-release tag such as -beta.1
+    assert re.fullmatch(r"\d+\.\d+\.\d+(-[0-9A-Za-z.]+)?", manifest["version"])
     assert hacs["homeassistant"] == "2026.3.0"
     assert hacs["render_readme"] is True
 

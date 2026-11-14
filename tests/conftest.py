@@ -34,6 +34,18 @@ def _enable_custom_integrations(enable_custom_integrations: None) -> None:
     """Allow HA to load custom_components/ during the tests."""
 
 
+@pytest.fixture
+def all_sensors_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Enable sensors that are disabled by default (raw/diagnostic ones)."""
+    from custom_components.blue_connect_local.sensor import BlueConnectSensor
+
+    monkeypatch.setattr(
+        BlueConnectSensor,
+        "entity_registry_enabled_default",
+        property(lambda self: True),
+    )
+
+
 @dataclass
 class BleEnv:
     """Controllable state of simulated Bluetooth."""
@@ -102,10 +114,10 @@ def make_entry(
     *,
     access_code: str | None = ACCESS_CODE,
     version: int = 1,
-    minor_version: int = 4,
+    minor_version: int = 5,
     **options,
 ) -> MockConfigEntry:
-    """Blue Connect entry (version 1.4). Without `access_code`: passive mode only."""
+    """Blue Connect entry (version 1.5). Without `access_code`: passive mode only."""
     data = {CONF_MAC_ADDRESS: MAC}
     if access_code:
         data[CONF_ACCESS_CODE] = access_code

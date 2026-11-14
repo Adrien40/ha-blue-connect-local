@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Heure de référence utilisée pour aligner les analyses planifiées sur des créneaux réguliers (ex. 08:00, 10:00, 12:00... pour un intervalle de 2 heures).",
               "scan_interval": "Durée entre deux analyses planifiées, de 5 à 1440 minutes. Mode Actif uniquement (nécessite le code d'accès).",
-              "passive_measures": "Utilise les mesures que la sonde diffuse d'elle-même, environ une par heure. Fonctionne sans code d'accès.",
-              "ignore_echoes": "Ignore les trames passives que la sonde signale comme des échos d'une analyse, afin qu'elles n'écrasent pas la dernière mesure."
+              "passive_measures": "Utilise les mesures que la sonde envoie d'elle-même, environ une par heure. C'est la seule source de mesures sans code d'accès. Avec un code d'accès, laissez-la désactivée pour garder le pH à 2 décimales (7,23). Les mesures passives n'en ont qu'une (7,2) et le remplaceraient.",
+              "ignore_echoes": "Ignore les trames passives que la sonde signale comme des échos d'une analyse, afin qu'elles n'écrasent pas la dernière mesure. Sans effet tant que les analyses passives sont désactivées."
             }
           },
           "probes_calibration": {
             "name": "🧪 Calibration des Sondes",
+            "description": "Recommandé avec un code d'accès : relevez le capteur « pH Brut (mV) » avec la sonde plongée dans chaque solution tampon, puis saisissez les deux valeurs ici. Sans code d'accès, utilisez la section « Calibration par valeur de pH (sans code d'accès) » plus bas. Pour l'ORP, lisez le capteur « ORP Brut (mV) » avec la sonde plongée dans la solution étalon (un code d'accès est requis).",
+            "data": {
+              "ph_hr_calib_mv_7": "mV mesurés dans la solution tampon pH 7",
+              "ph_hr_ref_7": "🎯 Cible de la solution pH 7 (ex : 7.02)",
+              "ph_hr_calib_mv_4": "mV mesurés dans la solution tampon pH 4",
+              "ph_hr_ref_4": "🎯 Cible de la solution pH 4 (ex : 4.00)",
+              "orp_calib": "ORP (Redox) : mV mesurés dans la solution étalon",
+              "orp_ref": "ORP (Redox) : solution étalon (ex. 468 mV)",
+              "temp_offset": "🌡️ Décalage Température (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Le potentiel affiché par le capteur « pH Brut (mV) » (désactivé par défaut) avec la sonde plongée dans cette solution tampon. Renseignez les deux valeurs en mV pour utiliser votre propre calibration pour le pH haute résolution, ou laissez les deux vides pour utiliser celle enregistrée dans la sonde. Le pH standard (résolution 0,1) n'est pas affecté.",
+              "ph_hr_ref_7": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon.",
+              "ph_hr_calib_mv_4": "Le potentiel affiché par le capteur « pH Brut (mV) » (désactivé par défaut) avec la sonde plongée dans cette solution tampon. Renseignez les deux valeurs en mV pour utiliser votre propre calibration pour le pH haute résolution, ou laissez les deux vides pour utiliser celle enregistrée dans la sonde. Le pH standard (résolution 0,1) n'est pas affecté.",
+              "ph_hr_ref_4": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon.",
+              "orp_calib": "Le potentiel affiché par le capteur « ORP Brut (mV) » (désactivé par défaut) avec la sonde plongée dans la solution étalon. Renseignez les deux valeurs ORP pour utiliser votre propre calibration, ou laissez-les vides pour utiliser celle de la sonde.",
+              "orp_ref": "Le potentiel ORP (mV) de la solution étalon à sa température actuelle : il varie avec la température, voir le flacon. La correction appliquée est cette valeur moins la valeur mesurée.",
+              "temp_offset": "Correction en °C ajoutée à la température mesurée par la sonde. Peut être positive ou négative."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Calibration par valeur de pH (sans code d'accès)",
             "data": {
               "ph_calib_7": "🟢 Valeur mesurée pH 7 (ex : 7.10)",
               "ph_ref_7": "🎯 Cible de la solution pH 7 (ex : 7.02)",
               "ph_calib_4": "🔴 Valeur mesurée pH 4 (ex : 4.10)",
-              "ph_ref_4": "🎯 Cible de la solution pH 4 (ex : 4.00)",
-              "orp_calib": "📏 Valeur ORP mesurée (ex : 650)",
-              "orp_ref": "🎯 Cible de la solution ORP (ex : 650)",
-              "temp_offset": "🌡️ Décalage Température (°C) (+/-)"
+              "ph_ref_4": "🎯 Cible de la solution pH 4 (ex : 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "La valeur de pH brute réellement mesurée par votre sonde une fois plongée dans cette solution de calibration (pas la valeur nominale de la solution).",
-              "ph_calib_4": "La valeur de pH brute réellement mesurée par votre sonde une fois plongée dans cette solution de calibration (pas la valeur nominale de la solution).",
-              "ph_ref_7": "Le pH de cette solution de calibration à sa température actuelle : il varie avec la température, voir le tableau sur le flacon.",
-              "ph_ref_4": "Le pH de cette solution de calibration à sa température actuelle : il varie avec la température, voir le tableau sur le flacon.",
-              "orp_calib": "La valeur ORP brute (mV) réellement affichée par votre sonde plongée dans la solution de référence.",
-              "orp_ref": "La valeur ORP (mV) de la solution de référence à sa température actuelle : elle varie avec la température, voir le flacon. La correction appliquée est cette valeur moins la valeur mesurée.",
-              "temp_offset": "Correction en °C ajoutée à la température mesurée par la sonde. Peut être positive ou négative."
+              "ph_calib_7": "La valeur affichée par le capteur « pH calibré sonde » (désactivé par défaut) pendant que la sonde est plongée dans cette solution de calibration (pas la valeur nominale de la solution). Sans code d'accès, cette calibration s'applique par-dessus la calibration interne de la sonde : si celle-ci change, le pH de l'intégration change aussi.",
+              "ph_ref_7": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon.",
+              "ph_calib_4": "La valeur affichée par le capteur « pH calibré sonde » (désactivé par défaut) pendant que la sonde est plongée dans cette solution de calibration (pas la valeur nominale de la solution). Sans code d'accès, cette calibration s'applique par-dessus la calibration interne de la sonde : si celle-ci change, le pH de l'intégration change aussi.",
+              "ph_ref_4": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon."
             }
           }
         },
@@ -93,7 +109,7 @@
       "unknown": "❓ Erreur inconnue",
       "invalid_mac": "❌ L'adresse MAC est invalide. Elle doit être au format AA:BB:CC:DD:EE:FF.",
       "no_mac_provided": "❌ Aucun appareil sélectionné et aucune adresse MAC saisie.",
-      "mac_conflict": "❌ L'appareil sélectionné et l'adresse saisie manuellement sont différents. Ne remplis qu'un des deux.",
+      "mac_conflict": "❌ L'appareil sélectionné et l'adresse saisie manuellement sont différents. Ne remplissez qu'un des deux.",
       "ph_calibration_equal": "❌ Les valeurs de calibration pH doivent être différentes",
       "ph_slope_mismatch": "❌ Erreur logique : La pente de calibration est incohérente",
       "ph_ref_out_of_range": "❌ pH 4 : 2.5-5.5, pH 7 : 6.5-7.5",
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ L'ORP (Redox) minimum doit être inférieur à l'ORP (Redox) maximum",
       "temp_threshold_error": "❌ La Température minimum doit être inférieure à la Température maximum",
       "invalid_access_code": "❌ Le Code d'Accès est invalide (8 ou 9 caractères alphanumériques).",
-      "invalid_access_code_9": "❌ Le Code d'Accès est invalide : le code d'accès d'un Blue Connect compte 9 caractères alphanumériques (ex : B93XXXXXX)."
+      "invalid_access_code_9": "❌ Le Code d'Accès est invalide : le code d'accès d'un Blue Connect compte 9 caractères alphanumériques (ex : B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ Les deux valeurs en mV doivent être différentes",
+      "ph_hr_slope_mismatch": "❌ La solution tampon pH 4 doit donner un potentiel en mV plus élevé que la solution pH 7",
+      "ph_hr_mv_incomplete": "❌ Renseignez les deux valeurs en mV, ou laissez les deux vides",
+      "orp_calib_incomplete": "❌ Renseignez les deux valeurs ORP, ou laissez les deux vides"
     },
     "abort": {
       "already_configured": "⚠️ Cet appareil est déjà configuré.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Heure de référence utilisée pour aligner les analyses planifiées sur des créneaux réguliers (ex. 08:00, 10:00, 12:00... pour un intervalle de 2 heures).",
               "scan_interval": "Durée entre deux analyses planifiées, de 5 à 1440 minutes. Mode Actif uniquement (nécessite le code d'accès).",
-              "passive_measures": "Utilise les mesures que la sonde diffuse d'elle-même, environ une par heure. Fonctionne sans code d'accès.",
-              "ignore_echoes": "Ignore les trames passives que la sonde signale comme des échos d'une analyse, afin qu'elles n'écrasent pas la dernière mesure."
+              "passive_measures": "Utilise les mesures que la sonde envoie d'elle-même, environ une par heure. C'est la seule source de mesures sans code d'accès. Avec un code d'accès, laissez-la désactivée pour garder le pH à 2 décimales (7,23). Les mesures passives n'en ont qu'une (7,2) et le remplaceraient.",
+              "ignore_echoes": "Ignore les trames passives que la sonde signale comme des échos d'une analyse, afin qu'elles n'écrasent pas la dernière mesure. Sans effet tant que les analyses passives sont désactivées."
             }
           },
           "probes_calibration": {
             "name": "🧪 Calibration des Sondes",
+            "description": "Recommandé avec un code d'accès : relevez le capteur « pH Brut (mV) » avec la sonde plongée dans chaque solution tampon, puis saisissez les deux valeurs ici. Sans code d'accès, utilisez la section « Calibration par valeur de pH (sans code d'accès) » plus bas. Pour l'ORP, lisez le capteur « ORP Brut (mV) » avec la sonde plongée dans la solution étalon (un code d'accès est requis).",
+            "data": {
+              "ph_hr_calib_mv_7": "mV mesurés dans la solution tampon pH 7",
+              "ph_hr_ref_7": "🎯 Cible de la solution pH 7 (ex : 7.02)",
+              "ph_hr_calib_mv_4": "mV mesurés dans la solution tampon pH 4",
+              "ph_hr_ref_4": "🎯 Cible de la solution pH 4 (ex : 4.00)",
+              "calib_push": "Envoyer les calibrations au Blue Connect",
+              "orp_calib": "ORP (Redox) : mV mesurés dans la solution étalon",
+              "orp_ref": "ORP (Redox) : solution étalon (ex. 468 mV)",
+              "temp_offset": "🌡️ Décalage Température (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Le potentiel affiché par le capteur « pH Brut (mV) » (désactivé par défaut) avec la sonde plongée dans cette solution tampon. Renseignez les deux valeurs en mV pour utiliser votre propre calibration pour le pH haute résolution, ou laissez les deux vides pour utiliser celle enregistrée dans la sonde. Le pH standard (résolution 0,1) n'est pas affecté.",
+              "ph_hr_ref_7": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon.",
+              "ph_hr_calib_mv_4": "Le potentiel affiché par le capteur « pH Brut (mV) » (désactivé par défaut) avec la sonde plongée dans cette solution tampon. Renseignez les deux valeurs en mV pour utiliser votre propre calibration pour le pH haute résolution, ou laissez les deux vides pour utiliser celle enregistrée dans la sonde. Le pH standard (résolution 0,1) n'est pas affecté.",
+              "ph_hr_ref_4": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon.",
+              "calib_push": "Action ponctuelle, appliquée à la prochaine analyse (un code d'accès est requis). Écrit dans les registres du Blue Connect la calibration pH (deux points, pH et mV) et/ou la calibration ORP (référence et mV mesurés) renseignées ci-dessus, comme la calibration de l'application officielle. Seul ce qui est renseigné et a changé depuis le dernier envoi réussi est écrit. Cela change aussi le pH et l'ORP du Blue Connect, ses seuils d'alerte et ce que montre l'application officielle. Comparez d'abord avec les capteurs de diagnostic « Calibration pH du Blue Connect » et « Calibration ORP du Blue Connect » (désactivés par défaut).",
+              "orp_calib": "Le potentiel affiché par le capteur « ORP Brut (mV) » (désactivé par défaut) avec la sonde plongée dans la solution étalon. Renseignez les deux valeurs ORP pour utiliser votre propre calibration, ou laissez-les vides pour utiliser celle de la sonde.",
+              "orp_ref": "Le potentiel ORP (mV) de la solution étalon à sa température actuelle : il varie avec la température, voir le flacon. La correction appliquée est cette valeur moins la valeur mesurée.",
+              "temp_offset": "Correction en °C ajoutée à la température mesurée par la sonde. Peut être positive ou négative."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Calibration par valeur de pH (sans code d'accès)",
             "data": {
               "ph_calib_7": "🟢 Valeur mesurée pH 7 (ex : 7.10)",
               "ph_ref_7": "🎯 Cible de la solution pH 7 (ex : 7.02)",
               "ph_calib_4": "🔴 Valeur mesurée pH 4 (ex : 4.10)",
-              "ph_ref_4": "🎯 Cible de la solution pH 4 (ex : 4.00)",
-              "orp_calib": "📏 Valeur ORP mesurée (ex : 650)",
-              "orp_ref": "🎯 Cible de la solution ORP (ex : 650)",
-              "temp_offset": "🌡️ Décalage Température (°C) (+/-)"
+              "ph_ref_4": "🎯 Cible de la solution pH 4 (ex : 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "La valeur de pH brute réellement mesurée par votre sonde une fois plongée dans cette solution de calibration (pas la valeur nominale de la solution).",
-              "ph_calib_4": "La valeur de pH brute réellement mesurée par votre sonde une fois plongée dans cette solution de calibration (pas la valeur nominale de la solution).",
-              "ph_ref_7": "Le pH de cette solution de calibration à sa température actuelle : il varie avec la température, voir le tableau sur le flacon.",
-              "ph_ref_4": "Le pH de cette solution de calibration à sa température actuelle : il varie avec la température, voir le tableau sur le flacon.",
-              "orp_calib": "La valeur ORP brute (mV) réellement affichée par votre sonde plongée dans la solution de référence.",
-              "orp_ref": "La valeur ORP (mV) de la solution de référence à sa température actuelle : elle varie avec la température, voir le flacon. La correction appliquée est cette valeur moins la valeur mesurée.",
-              "temp_offset": "Correction en °C ajoutée à la température mesurée par la sonde. Peut être positive ou négative."
+              "ph_calib_7": "La valeur affichée par le capteur « pH calibré sonde » (désactivé par défaut) pendant que la sonde est plongée dans cette solution de calibration (pas la valeur nominale de la solution). Sans code d'accès, cette calibration s'applique par-dessus la calibration interne de la sonde : si celle-ci change, le pH de l'intégration change aussi. Ne sert qu'au pH standard (résolution 0,1), pas au pH haute résolution.",
+              "ph_ref_7": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon.",
+              "ph_calib_4": "La valeur affichée par le capteur « pH calibré sonde » (désactivé par défaut) pendant que la sonde est plongée dans cette solution de calibration (pas la valeur nominale de la solution). Sans code d'accès, cette calibration s'applique par-dessus la calibration interne de la sonde : si celle-ci change, le pH de l'intégration change aussi. Ne sert qu'au pH standard (résolution 0,1), pas au pH haute résolution.",
+              "ph_ref_4": "Le pH de cette solution tampon à sa température actuelle : il varie avec la température, voir sur le flacon."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Le Code d'Accès est invalide : le code d'accès d'un Blue Connect compte 9 caractères alphanumériques (ex : B93XXXXXX).",
       "ph_calibration_equal": "❌ Les valeurs de calibration pH doivent être différentes",
       "ph_slope_mismatch": "❌ Erreur logique : La pente de calibration est incohérente",
-      "ph_ref_out_of_range": "❌ pH 4 : 2.5-5.5, pH 7 : 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4 : 2.5-5.5, pH 7 : 6.5-7.5",
+      "calib_push_unavailable": "Renseignez d'abord la calibration pH (les deux valeurs en mV) et/ou la calibration ORP (les deux valeurs), ainsi qu'un code d'accès : l'envoi n'est pas possible sinon (ni sur le Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ Les deux valeurs en mV doivent être différentes",
+      "ph_hr_slope_mismatch": "❌ La solution tampon pH 4 doit donner un potentiel en mV plus élevé que la solution pH 7",
+      "ph_hr_mv_incomplete": "❌ Renseignez les deux valeurs en mV, ou laissez les deux vides",
+      "orp_calib_incomplete": "❌ Renseignez les deux valeurs ORP, ou laissez les deux vides"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "pH Brut"
       },
-      "orp_raw": {
-        "name": "Redox Brut"
+      "ph_probe_calibrated": {
+        "name": "pH calibré sonde"
+      },
+      "ph_raw_mv": {
+        "name": "pH Brut (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Calibration pH du Blue Connect"
       },
       "lsi": {
         "name": "Indice de Langelier"
@@ -345,6 +394,18 @@
           "active": "Active",
           "unknown": "Inconnue"
         }
+      },
+      "orp_raw_mv": {
+        "name": "ORP Brut (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "ORP calibré sonde"
+      },
+      "probe_orp_calibration": {
+        "name": "Calibration ORP du Blue Connect"
+      },
+      "last_orp_calib": {
+        "name": "Dernière calibration de l'ORP"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect injoignable",
-      "description": "La sonde Blue Connect ({name}) n'a pas répondu depuis {days} jour(s). Vérifiez l'alimentation, la portée, et qu'un adaptateur Bluetooth ou un proxy ESPHome couvre la zone de la piscine."
+      "description": "La sonde {name} n'a pas répondu depuis {days} jour(s). Vérifiez l'alimentation, la portée, et qu'un adaptateur Bluetooth ou un proxy ESPHome couvre la zone de la piscine."
+    },
+    "passive_high_resolution": {
+      "title": "Conserver pH haute résolution à 2 décimales",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Conserver pH haute résolution à 2 décimales",
+            "description": "Après chaque analyse, votre {name} diffuse aussi un pH à 1 décimale, qui remplace votre valeur précise (ex. {ph_hr} → {ph_low}).\n\n**Valider** désactive l’interrupteur « Analyses Internes du Blue Connect (Passives) » : ces mesures seront ignorées."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Calibration ORP anormale",
+      "description": "{name} : écart {source} anormal : {ecart} mV entre la référence et la valeur mesurée. Vérifiez la solution étalon et nettoyez l'électrode. Si le problème persiste, la sonde est peut-être en fin de vie."
+    },
+    "ph_calibration_slope": {
+      "title": "Calibration pH anormale",
+      "description": "{name} : étalonnage {source} anormal : pente de {slope} mV/pH, attendue entre {min} et {max}. Vérifiez les solutions tampons et nettoyez l'électrode. Si le problème persiste, la sonde est peut-être en fin de vie."
+    },
+    "ph_calibration_offset": {
+      "title": "Calibration pH anormale",
+      "description": "{name} : étalonnage {source} anormal : offset de {ecart} mV à pH 7, attendu entre −{limit} et +{limit}. Vérifiez les solutions tampons et nettoyez l'électrode. Si le problème persiste, la sonde est peut-être en fin de vie."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Le Blue Connect {mac} est hors de portée Bluetooth et aucune donnée précédente n'est disponible."
+      "message": "{name} est hors de portée Bluetooth et aucune donnée précédente n'est disponible."
     },
     "unreachable_no_history": {
       "message": "Le Blue Connect est injoignable et aucune donnée précédente n'est disponible : {error}"

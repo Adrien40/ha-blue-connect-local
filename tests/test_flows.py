@@ -30,10 +30,8 @@ from custom_components.blue_connect_local.const import (
     CONF_CYA,
     CONF_IGNORE_ECHOES,
     CONF_MAC_ADDRESS,
-    CONF_ORP_CALIB,
     CONF_ORP_MAX,
     CONF_ORP_MIN,
-    CONF_ORP_REF,
     CONF_PASSIVE_MEASURES,
     CONF_PH_CALIB_4,
     CONF_PH_CALIB_7,
@@ -105,14 +103,15 @@ def _sections(**over) -> dict:
             **over.pop("synchronization", {}),
         },
         "probes_calibration": {
+            CONF_TEMP_OFFSET: 0.0,
+            **over.pop("probes_calibration", {}),
+        },
+        "ph_value_calibration": {
             CONF_PH_CALIB_7: 7.0,
             CONF_PH_REF_7: 7.0,
             CONF_PH_CALIB_4: 4.0,
             CONF_PH_REF_4: 4.0,
-            CONF_ORP_CALIB: 650,
-            CONF_ORP_REF: 650,
-            CONF_TEMP_OFFSET: 0.0,
-            **over.pop("probes_calibration", {}),
+            **over.pop("ph_value_calibration", {}),
         },
         **over,
     }
@@ -229,7 +228,7 @@ async def test_invalid_calibration_shows_error(hass):
             {
                 CONF_MAC_ADDRESS: _default_of(result, CONF_MAC_ADDRESS),
                 **_sections(
-                    probes_calibration={CONF_PH_CALIB_4: 7.5, CONF_PH_CALIB_7: 4.5}
+                    ph_value_calibration={CONF_PH_CALIB_4: 7.5, CONF_PH_CALIB_7: 4.5}
                 ),
             },
         )
@@ -392,6 +391,33 @@ async def test_options_saved_and_pushed_to_coordinator(hass, entry, coordinator)
     assert coordinator.data[CONF_TEMP_OFFSET] == 1.5
 
 
+async def test_removing_the_access_code_turns_the_passive_frames_back_on(
+    hass, entry, coordinator
+):
+    """No code and no passive frames would leave the probe without any data."""
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        _options_input(access_code="", synchronization={CONF_PASSIVE_MEASURES: False}),
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_ACCESS_CODE] == ""
+    assert entry.options[CONF_PASSIVE_MEASURES] is True
+    assert coordinator.data[CONF_PASSIVE_MEASURES] is True
+
+
+async def test_passive_frames_choice_is_kept_with_an_access_code(
+    hass, entry, coordinator
+):
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        _options_input(synchronization={CONF_PASSIVE_MEASURES: False}),
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert entry.options[CONF_PASSIVE_MEASURES] is False
+
+
 async def test_changing_access_code_triggers_analysis(hass, entry, coordinator):
     coordinator._force_one_shot = False
     coordinator.async_request_refresh = AsyncMock()
@@ -447,7 +473,7 @@ async def test_options_reject_invalid_access_code(hass, entry, coordinator):
             "orp_threshold_error",
         ),
         (
-            {"probes_calibration": {CONF_PH_CALIB_4: 7.5, CONF_PH_CALIB_7: 4.5}},
+            {"ph_value_calibration": {CONF_PH_CALIB_4: 7.5, CONF_PH_CALIB_7: 4.5}},
             CONF_PH_CALIB_7,
             "ph_slope_mismatch",
         ),

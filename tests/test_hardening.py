@@ -90,8 +90,6 @@ def test_parse_raw_frame_never_raises(data):
 @pytest.mark.parametrize(
     ("key", "value"),
     [
-        ("orp_ref", "abc"),
-        ("orp_calib", "nan"),
         ("temp_offset", "x"),
         ("cya", "x"),
         ("scan_interval", "soon"),

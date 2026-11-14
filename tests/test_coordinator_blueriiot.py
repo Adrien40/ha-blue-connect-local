@@ -406,6 +406,7 @@ async def test_entry_without_device_type_stays_unseeded(coordinator):
     assert "device_type" not in coordinator.data
 
 
+@pytest.mark.usefixtures("all_sensors_enabled")
 async def test_blueriiot_hides_the_zodiac_only_sensors(hass, coordinator, probe):
     await coordinator.async_refresh()
     await hass.async_block_till_done()
@@ -413,6 +414,7 @@ async def test_blueriiot_hides_the_zodiac_only_sensors(hass, coordinator, probe)
         assert _sensor_state(hass, key) == "unavailable", key
 
 
+@pytest.mark.usefixtures("all_sensors_enabled")
 async def test_zodiac_keeps_its_diagnostic_sensors_available(hass, coordinator):
     await coordinator.async_refresh()
     await hass.async_block_till_done()

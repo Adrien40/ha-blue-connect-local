@@ -33,29 +33,45 @@
             "data_description": {
               "reference_time": "Czas odniesienia używany do dopasowania zaplanowanych analiz do regularnych interwałów (np. 08:00, 10:00, 12:00... dla interwału 2-godzinnego).",
               "scan_interval": "Czas między dwiema zaplanowanymi analizami, od 5 do 1440 minut. Tylko w trybie aktywnym (wymaga kodu dostępu).",
-              "passive_measures": "Używa odczytów, które sonda wysyła samodzielnie, około jednego na godzinę. Działa bez kodu dostępu.",
-              "ignore_echoes": "Ignoruje ramki pasywne oznaczone przez sondę jako echo analizy, aby nie nadpisywały ostatniego pomiaru."
+              "passive_measures": "Używa odczytów, które sonda wysyła samodzielnie, około jednego na godzinę. Bez kodu dostępu jest to jedyne źródło pomiarów. Przy kodzie dostępu pozostaw ją wyłączoną, aby zachować pH z 2 miejscami po przecinku (7,23). Pomiary pasywne mają tylko jedno miejsce po przecinku (7,2) i by je zastąpiły.",
+              "ignore_echoes": "Ignoruje ramki pasywne oznaczone przez sondę jako echo analizy, aby nie nadpisywały ostatniego pomiaru. Nie ma wpływu, gdy analizy pasywne są wyłączone."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibracja sond",
+            "description": "Zalecane z kodem dostępu: odczytaj czujnik „Surowe pH (mV)” przy sondzie zanurzonej w każdym roztworze buforowym i wpisz tutaj obie wartości. Bez kodu dostępu użyj poniżej sekcji „Kalibracja pH według wartości (bez kodu dostępu)”. Dla ORP odczytaj czujnik „Surowe ORP (mV)” przy sondzie zanurzonej w roztworze wzorcowym (wymagany kod dostępu).",
+            "data": {
+              "ph_hr_calib_mv_7": "Zmierzone mV w buforze pH 7",
+              "ph_hr_ref_7": "🎯 Roztwór wzorcowy pH 7 (np. 7.02)",
+              "ph_hr_calib_mv_4": "Zmierzone mV w buforze pH 4",
+              "ph_hr_ref_4": "🎯 Roztwór wzorcowy pH 4 (np. 4.00)",
+              "orp_calib": "ORP (Redoks): mV zmierzone w roztworze wzorcowym",
+              "orp_ref": "ORP (Redoks): roztwór wzorcowy (np. 468 mV)",
+              "temp_offset": "🌡️ Przesunięcie temperatury (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potencjał pokazywany przez czujnik „Surowe pH (mV)” (domyślnie wyłączony) przy sondzie zanurzonej w tym roztworze buforowym. Wypełnij obie wartości w mV, aby użyć własnej kalibracji dla pH o wysokiej rozdzielczości, albo zostaw obie puste, aby użyć kalibracji zapisanej w sondzie. Standardowe pH (rozdzielczość 0,1) pozostaje bez zmian.",
+              "ph_hr_ref_7": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę.",
+              "ph_hr_calib_mv_4": "Potencjał pokazywany przez czujnik „Surowe pH (mV)” (domyślnie wyłączony) przy sondzie zanurzonej w tym roztworze buforowym. Wypełnij obie wartości w mV, aby użyć własnej kalibracji dla pH o wysokiej rozdzielczości, albo zostaw obie puste, aby użyć kalibracji zapisanej w sondzie. Standardowe pH (rozdzielczość 0,1) pozostaje bez zmian.",
+              "ph_hr_ref_4": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę.",
+              "orp_calib": "Potencjał pokazywany przez czujnik „Surowe ORP (mV)” (domyślnie wyłączony), gdy sonda jest zanurzona w roztworze wzorcowym. Wypełnij obie wartości ORP, aby użyć własnej kalibracji, albo zostaw obie puste, aby użyć kalibracji zapisanej w sondzie.",
+              "orp_ref": "Potencjał ORP (mV) roztworu wzorcowego w jego bieżącej temperaturze: zmienia się z temperaturą, zobacz butelkę. Zastosowana korekta to ta wartość minus wartość zmierzona.",
+              "temp_offset": "Korekta w °C dodawana do temperatury zmierzonej przez sondę. Może być dodatnia lub ujemna."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Kalibracja pH według wartości (bez kodu dostępu)",
             "data": {
               "ph_calib_7": "🟢 Zmierzona wartość pH 7 (np. 7.10)",
               "ph_ref_7": "🎯 Roztwór wzorcowy pH 7 (np. 7.02)",
               "ph_calib_4": "🔴 Zmierzona wartość pH 4 (np. 4.10)",
-              "ph_ref_4": "🎯 Roztwór wzorcowy pH 4 (np. 4.00)",
-              "orp_calib": "📏 Zmierzona wartość ORP (np. 650)",
-              "orp_ref": "🎯 Roztwór wzorcowy ORP (np. 650)",
-              "temp_offset": "🌡️ Przesunięcie temperatury (°C) (+/-)"
+              "ph_ref_4": "🎯 Roztwór wzorcowy pH 4 (np. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
-              "ph_calib_4": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
-              "ph_ref_7": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
-              "ph_ref_4": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
-              "orp_calib": "Surowa wartość ORP (mV), którą Twoja sonda faktycznie pokazała w roztworze wzorcowym.",
-              "orp_ref": "Wartość ORP (mV) roztworu wzorcowego w jego aktualnej temperaturze: zależy od temperatury, zobacz butelkę. Stosowana korekta to ta wartość minus wartość zmierzona.",
-              "temp_offset": "Korekta w °C dodawana do temperatury zmierzonej przez sondę. Może być dodatnia lub ujemna."
+              "ph_calib_7": "Wartość pokazywana przez czujnik „pH skalibrowane przez sondę” (domyślnie wyłączony), gdy sonda jest zanurzona w tym roztworze kalibracyjnym (nie wartość nominalna roztworu). Bez kodu dostępu ta kalibracja jest stosowana na wierzch wewnętrznej kalibracji sondy: jeśli ta się zmieni, zmieni się też pH integracji.",
+              "ph_ref_7": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę.",
+              "ph_calib_4": "Wartość pokazywana przez czujnik „pH skalibrowane przez sondę” (domyślnie wyłączony), gdy sonda jest zanurzona w tym roztworze kalibracyjnym (nie wartość nominalna roztworu). Bez kodu dostępu ta kalibracja jest stosowana na wierzch wewnętrznej kalibracji sondy: jeśli ta się zmieni, zmieni się też pH integracji.",
+              "ph_ref_4": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę."
             }
           }
         },
@@ -101,7 +117,11 @@
       "orp_threshold_error": "❌ Minimalne ORP musi być niższe niż maksymalne ORP",
       "temp_threshold_error": "❌ Minimalna temperatura musi być niższa niż maksymalna temperatura",
       "invalid_access_code": "❌ Nieprawidłowy kod dostępu (8 lub 9 znaków alfanumerycznych).",
-      "invalid_access_code_9": "❌ Nieprawidłowy kod dostępu: kod dostępu Blue Connect ma 9 znaków alfanumerycznych (np. B93XXXXXX)."
+      "invalid_access_code_9": "❌ Nieprawidłowy kod dostępu: kod dostępu Blue Connect ma 9 znaków alfanumerycznych (np. B93XXXXXX).",
+      "ph_hr_calibration_equal": "❌ Obie wartości w mV muszą się różnić",
+      "ph_hr_slope_mismatch": "❌ Bufor pH 4 musi dawać więcej mV niż bufor pH 7",
+      "ph_hr_mv_incomplete": "❌ Wypełnij obie wartości w mV albo zostaw obie puste",
+      "orp_calib_incomplete": "❌ Wypełnij obie wartości ORP albo zostaw obie puste"
     },
     "abort": {
       "already_configured": "⚠️ To urządzenie jest już skonfigurowane.",
@@ -139,29 +159,47 @@
             "data_description": {
               "reference_time": "Czas odniesienia używany do dopasowania zaplanowanych analiz do regularnych interwałów (np. 08:00, 10:00, 12:00... dla interwału 2-godzinnego).",
               "scan_interval": "Czas między dwiema zaplanowanymi analizami, od 5 do 1440 minut. Tylko w trybie aktywnym (wymaga kodu dostępu).",
-              "passive_measures": "Używa odczytów, które sonda wysyła samodzielnie, około jednego na godzinę. Działa bez kodu dostępu.",
-              "ignore_echoes": "Ignoruje ramki pasywne oznaczone przez sondę jako echo analizy, aby nie nadpisywały ostatniego pomiaru."
+              "passive_measures": "Używa odczytów, które sonda wysyła samodzielnie, około jednego na godzinę. Bez kodu dostępu jest to jedyne źródło pomiarów. Przy kodzie dostępu pozostaw ją wyłączoną, aby zachować pH z 2 miejscami po przecinku (7,23). Pomiary pasywne mają tylko jedno miejsce po przecinku (7,2) i by je zastąpiły.",
+              "ignore_echoes": "Ignoruje ramki pasywne oznaczone przez sondę jako echo analizy, aby nie nadpisywały ostatniego pomiaru. Nie ma wpływu, gdy analizy pasywne są wyłączone."
             }
           },
           "probes_calibration": {
             "name": "🧪 Kalibracja sond",
+            "description": "Zalecane z kodem dostępu: odczytaj czujnik „Surowe pH (mV)” przy sondzie zanurzonej w każdym roztworze buforowym i wpisz tutaj obie wartości. Bez kodu dostępu użyj poniżej sekcji „Kalibracja pH według wartości (bez kodu dostępu)”. Dla ORP odczytaj czujnik „Surowe ORP (mV)” przy sondzie zanurzonej w roztworze wzorcowym (wymagany kod dostępu).",
+            "data": {
+              "ph_hr_calib_mv_7": "Zmierzone mV w buforze pH 7",
+              "ph_hr_ref_7": "🎯 Roztwór wzorcowy pH 7 (np. 7.02)",
+              "ph_hr_calib_mv_4": "Zmierzone mV w buforze pH 4",
+              "ph_hr_ref_4": "🎯 Roztwór wzorcowy pH 4 (np. 4.00)",
+              "calib_push": "Wyślij kalibracje do Blue Connect",
+              "orp_calib": "ORP (Redoks): mV zmierzone w roztworze wzorcowym",
+              "orp_ref": "ORP (Redoks): roztwór wzorcowy (np. 468 mV)",
+              "temp_offset": "🌡️ Przesunięcie temperatury (°C) (+/-)"
+            },
+            "data_description": {
+              "ph_hr_calib_mv_7": "Potencjał pokazywany przez czujnik „Surowe pH (mV)” (domyślnie wyłączony) przy sondzie zanurzonej w tym roztworze buforowym. Wypełnij obie wartości w mV, aby użyć własnej kalibracji dla pH o wysokiej rozdzielczości, albo zostaw obie puste, aby użyć kalibracji zapisanej w sondzie. Standardowe pH (rozdzielczość 0,1) pozostaje bez zmian.",
+              "ph_hr_ref_7": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę.",
+              "ph_hr_calib_mv_4": "Potencjał pokazywany przez czujnik „Surowe pH (mV)” (domyślnie wyłączony) przy sondzie zanurzonej w tym roztworze buforowym. Wypełnij obie wartości w mV, aby użyć własnej kalibracji dla pH o wysokiej rozdzielczości, albo zostaw obie puste, aby użyć kalibracji zapisanej w sondzie. Standardowe pH (rozdzielczość 0,1) pozostaje bez zmian.",
+              "ph_hr_ref_4": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę.",
+              "calib_push": "Jednorazowa czynność, wykonywana przy następnej analizie (wymaga kodu dostępu). Zapisuje we własnych rejestrach Blue Connect kalibrację pH (dwa punkty, pH i mV) i/lub kalibrację ORP (wartość wzorcowa i zmierzone mV) wypełnione powyżej, tak jak kalibracja w oficjalnej aplikacji. Zapisywane jest tylko to, co jest wypełnione i zmieniło się od ostatniego udanego wysłania. Zmienia to także pH i ORP Blue Connect, jego progi alarmowe i to, co pokazuje oficjalna aplikacja. Najpierw porównaj z czujnikami diagnostycznymi „Kalibracja pH Blue Connect” i „Kalibracja ORP Blue Connect” (domyślnie wyłączone).",
+              "orp_calib": "Potencjał pokazywany przez czujnik „Surowe ORP (mV)” (domyślnie wyłączony), gdy sonda jest zanurzona w roztworze wzorcowym. Wypełnij obie wartości ORP, aby użyć własnej kalibracji, albo zostaw obie puste, aby użyć kalibracji zapisanej w sondzie.",
+              "orp_ref": "Potencjał ORP (mV) roztworu wzorcowego w jego bieżącej temperaturze: zmienia się z temperaturą, zobacz butelkę. Zastosowana korekta to ta wartość minus wartość zmierzona.",
+              "temp_offset": "Korekta w °C dodawana do temperatury zmierzonej przez sondę. Może być dodatnia lub ujemna."
+            }
+          },
+          "ph_value_calibration": {
+            "name": "🧪 Kalibracja pH według wartości (bez kodu dostępu)",
             "data": {
               "ph_calib_7": "🟢 Zmierzona wartość pH 7 (np. 7.10)",
               "ph_ref_7": "🎯 Roztwór wzorcowy pH 7 (np. 7.02)",
               "ph_calib_4": "🔴 Zmierzona wartość pH 4 (np. 4.10)",
-              "ph_ref_4": "🎯 Roztwór wzorcowy pH 4 (np. 4.00)",
-              "orp_calib": "📏 Zmierzona wartość ORP (np. 650)",
-              "orp_ref": "🎯 Roztwór wzorcowy ORP (np. 650)",
-              "temp_offset": "🌡️ Przesunięcie temperatury (°C) (+/-)"
+              "ph_ref_4": "🎯 Roztwór wzorcowy pH 4 (np. 4.00)"
             },
             "data_description": {
-              "ph_calib_7": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
-              "ph_calib_4": "Surowa wartość pH rzeczywiście zmierzona przez sondę podczas zanurzenia w tym roztworze kalibracyjnym (nie wartość nominalna roztworu).",
-              "ph_ref_7": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
-              "ph_ref_4": "pH tego roztworu kalibracyjnego w jego aktualnej temperaturze: zależy od temperatury, zobacz tabelę na butelce.",
-              "orp_calib": "Surowa wartość ORP (mV), którą Twoja sonda faktycznie pokazała w roztworze wzorcowym.",
-              "orp_ref": "Wartość ORP (mV) roztworu wzorcowego w jego aktualnej temperaturze: zależy od temperatury, zobacz butelkę. Stosowana korekta to ta wartość minus wartość zmierzona.",
-              "temp_offset": "Korekta w °C dodawana do temperatury zmierzonej przez sondę. Może być dodatnia lub ujemna."
+              "ph_calib_7": "Wartość pokazywana przez czujnik „pH skalibrowane przez sondę” (domyślnie wyłączony), gdy sonda jest zanurzona w tym roztworze kalibracyjnym (nie wartość nominalna roztworu). Bez kodu dostępu ta kalibracja jest stosowana na wierzch wewnętrznej kalibracji sondy: jeśli ta się zmieni, zmieni się też pH integracji. Używane tylko dla standardowego pH (rozdzielczość 0,1), nie dla pH o wysokiej rozdzielczości.",
+              "ph_ref_7": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę.",
+              "ph_calib_4": "Wartość pokazywana przez czujnik „pH skalibrowane przez sondę” (domyślnie wyłączony), gdy sonda jest zanurzona w tym roztworze kalibracyjnym (nie wartość nominalna roztworu). Bez kodu dostępu ta kalibracja jest stosowana na wierzch wewnętrznej kalibracji sondy: jeśli ta się zmieni, zmieni się też pH integracji. Używane tylko dla standardowego pH (rozdzielczość 0,1), nie dla pH o wysokiej rozdzielczości.",
+              "ph_ref_4": "pH tego roztworu buforowego w jego aktualnej temperaturze: zmienia się z temperaturą, zobacz butelkę."
             }
           },
           "alert_thresholds": {
@@ -187,7 +225,12 @@
       "invalid_access_code_9": "❌ Nieprawidłowy kod dostępu: kod dostępu Blue Connect ma 9 znaków alfanumerycznych (np. B93XXXXXX).",
       "ph_calibration_equal": "❌ Wartości kalibracji pH muszą się różnić",
       "ph_slope_mismatch": "❌ Błąd logiczny: Nachylenie kalibracji jest niespójne",
-      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5"
+      "ph_ref_out_of_range": "❌ pH 4: 2.5-5.5, pH 7: 6.5-7.5",
+      "calib_push_unavailable": "Najpierw wypełnij kalibrację pH (obie wartości w mV) i/lub kalibrację ORP (obie wartości) oraz podaj kod dostępu: w przeciwnym razie wysyłanie nie jest możliwe (także w Blue Connect Plus).",
+      "ph_hr_calibration_equal": "❌ Obie wartości w mV muszą się różnić",
+      "ph_hr_slope_mismatch": "❌ Bufor pH 4 musi dawać więcej mV niż bufor pH 7",
+      "ph_hr_mv_incomplete": "❌ Wypełnij obie wartości w mV albo zostaw obie puste",
+      "orp_calib_incomplete": "❌ Wypełnij obie wartości ORP albo zostaw obie puste"
     }
   },
   "selector": {
@@ -281,8 +324,14 @@
       "ph_raw": {
         "name": "Surowe pH"
       },
-      "orp_raw": {
-        "name": "Surowe ORP"
+      "ph_probe_calibrated": {
+        "name": "pH skalibrowane przez sondę"
+      },
+      "ph_raw_mv": {
+        "name": "Surowe pH (mV)"
+      },
+      "probe_ph_calibration": {
+        "name": "Kalibracja pH Blue Connect"
       },
       "lsi": {
         "name": "Indeks Langeliera"
@@ -345,6 +394,18 @@
           "active": "Aktywna",
           "unknown": "Nieznany"
         }
+      },
+      "orp_raw_mv": {
+        "name": "Surowe ORP (mV)"
+      },
+      "orp_probe_calibrated": {
+        "name": "ORP skalibrowane przez sondę"
+      },
+      "probe_orp_calibration": {
+        "name": "Kalibracja ORP Blue Connect"
+      },
+      "last_orp_calib": {
+        "name": "Ostatnia kalibracja ORP"
       }
     },
     "switch": {
@@ -364,12 +425,35 @@
   "issues": {
     "device_unreachable": {
       "title": "Blue Connect niedostępny",
-      "description": "Sonda Blue Connect ({name}) nie odpowiada od {days} dni. Sprawdź zasilanie, zasięg oraz czy adapter Bluetooth lub proxy ESPHome obejmuje obszar basenu."
+      "description": "Sonda {name} nie odpowiada od {days} dni. Sprawdź zasilanie, zasięg oraz czy adapter Bluetooth lub proxy ESPHome obejmuje obszar basenu."
+    },
+    "passive_high_resolution": {
+      "title": "Zachowaj pH o wysokiej rozdzielczości z 2 miejscami po przecinku",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Zachowaj pH o wysokiej rozdzielczości z 2 miejscami po przecinku",
+            "description": "Po każdej analizie Twój {name} wysyła także pH z 1 miejscem po przecinku, które zastępuje Twoją dokładną wartość (np. {ph_hr} → {ph_low}).\n\n**Prześlij** wyłącza przełącznik „Wewnętrzne analizy Blue Connect (pasywne)”: te pomiary będą ignorowane."
+          }
+        }
+      }
+    },
+    "orp_calibration_offset": {
+      "title": "Nietypowa kalibracja ORP",
+      "description": "{name}: nietypowe odchylenie {source}: {ecart} mV między wartością wzorcową a zmierzoną. Sprawdź roztwór wzorcowy i wyczyść elektrodę. Jeśli problem nie ustąpi, sonda może być na końcu żywotności."
+    },
+    "ph_calibration_slope": {
+      "title": "Nietypowa kalibracja pH",
+      "description": "{name}: nietypowa kalibracja {source}: nachylenie {slope} mV/pH, oczekiwane między {min} a {max}. Sprawdź roztwory buforowe i wyczyść elektrodę. Jeśli problem nie ustąpi, sonda może być na końcu żywotności."
+    },
+    "ph_calibration_offset": {
+      "title": "Nietypowa kalibracja pH",
+      "description": "{name}: nietypowa kalibracja {source}: offset {ecart} mV przy pH 7, oczekiwany między −{limit} a +{limit}. Sprawdź roztwory buforowe i wyczyść elektrodę. Jeśli problem nie ustąpi, sonda może być na końcu żywotności."
     }
   },
   "exceptions": {
     "out_of_range_no_history": {
-      "message": "Blue Connect {mac} jest poza zasięgiem Bluetooth i brak wcześniejszych danych."
+      "message": "{name} jest poza zasięgiem Bluetooth i brak wcześniejszych danych."
     },
     "unreachable_no_history": {
       "message": "Blue Connect jest niedostępny i brak wcześniejszych danych: {error}"

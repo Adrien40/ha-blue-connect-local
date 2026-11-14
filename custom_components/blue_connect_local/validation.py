@@ -92,15 +92,82 @@ def validate_calibration(
     if c4_meas > c7_meas:
         return ("ph_calib_7", "ph_slope_mismatch")
 
+    # The integration's own mV calibration is only checked when the person
+    # filled it in (both potentials empty means "use the probe's calibration"):
+    # both must be given, they must differ, and the pH 4 solution reads a
+    # higher potential than the pH 7 one (the formula divides by their gap).
+    mv_4_raw: Any = data.get("ph_hr_calib_mv_4")
+    mv_7_raw: Any = data.get("ph_hr_calib_mv_7")
+    has_mv_4 = mv_4_raw not in (None, "")
+    has_mv_7 = mv_7_raw not in (None, "")
+    normalized_hr: dict[str, float] = {}
+    if has_mv_4 or has_mv_7:
+        if not has_mv_4:
+            return ("ph_hr_calib_mv_4", "ph_hr_mv_incomplete")
+        if not has_mv_7:
+            return ("ph_hr_calib_mv_7", "ph_hr_mv_incomplete")
+        try:
+            mv_4 = _to_float(mv_4_raw)
+            mv_7 = _to_float(mv_7_raw)
+        # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+        except ValueError, TypeError:
+            return ("ph_hr_calib_mv_4", "unknown")
+        try:
+            hr_ref_4 = _to_float(data.get("ph_hr_ref_4", 4.00))
+            hr_ref_7 = _to_float(data.get("ph_hr_ref_7", 7.00))
+        # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+        except ValueError, TypeError:
+            return ("ph_hr_ref_4", "unknown")
+        if hr_ref_4 < 2.5 or hr_ref_4 > 5.5 or hr_ref_7 < 6.5 or hr_ref_7 > 7.5:
+            return ("ph_hr_ref_4", "ph_ref_out_of_range")
+        if abs(mv_4 - mv_7) < 1.0:
+            return ("ph_hr_calib_mv_7", "ph_hr_calibration_equal")
+        if mv_4 < mv_7:
+            return ("ph_hr_calib_mv_7", "ph_hr_slope_mismatch")
+        normalized_hr = {
+            "ph_hr_calib_mv_4": mv_4,
+            "ph_hr_calib_mv_7": mv_7,
+            "ph_hr_ref_4": hr_ref_4,
+            "ph_hr_ref_7": hr_ref_7,
+        }
+
+    # The integration's own ORP calibration works the same way: both values
+    # empty means "use the probe's calibration"; otherwise both are needed.
+    # Unlike the pH, a gap between them is only a warning raised afterwards
+    # (a repair): the person keeps the last word.
+    orp_ref_raw: Any = data.get("orp_ref")
+    orp_calib_raw: Any = data.get("orp_calib")
+    has_orp_ref = orp_ref_raw not in (None, "")
+    has_orp_calib = orp_calib_raw not in (None, "")
+    normalized_orp: dict[str, int] = {}
+    if has_orp_ref or has_orp_calib:
+        if not has_orp_calib:
+            return ("orp_calib", "orp_calib_incomplete")
+        if not has_orp_ref:
+            return ("orp_ref", "orp_calib_incomplete")
+        try:
+            normalized_orp = {
+                "orp_ref": int(_to_float(orp_ref_raw)),
+                "orp_calib": int(_to_float(orp_calib_raw)),
+            }
+        # PEP 758 (Python 3.14): parentheses are optional when there is no `as` clause. Intentional.
+        except ValueError, TypeError:
+            return ("orp_calib", "unknown")
+
     normalized = dict(data)
+    normalized.update(normalized_hr)
+    # Empty is stored as None, not left out: the options replace the whole
+    # set of values, and an absent key would let a value entered when the
+    # entry was created (kept in the entry's data) come back.
+    normalized["orp_ref"] = None
+    normalized["orp_calib"] = None
+    normalized.update(normalized_orp)
     normalized["ph_calib_4"] = c4_meas
     normalized["ph_calib_7"] = c7_meas
     normalized["ph_ref_4"] = ref4
     normalized["ph_ref_7"] = ref7
 
     for key, cast in (
-        ("orp_ref", int),
-        ("orp_calib", int),
         ("temp_offset", float),
         ("cya", int),
         ("scan_interval", int),
