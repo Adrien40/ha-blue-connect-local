@@ -110,11 +110,11 @@ Blue Connect Local replaces the cloud with a **local control** solution, while o
 ### 🚀 Installation
 
 #### Via the Marketplace (Home Assistant 2026.11 and later)
-Since 2026.11, HACS is built into Home Assistant as the **Marketplace**. This repository isn't (yet) in its catalog, so add it from its link. Click this button, then continue at step 4:
+Since 2026.11, HACS is built into Home Assistant as the **Marketplace**. This repository isn't (yet) in its catalog, so add it from its link. Click this button to open the Marketplace, then continue at step 2:
 
-[![Open your Home Assistant instance and open a repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=Adrien40&repository=ha-blue-connect-local)
+[![Open your Home Assistant instance and show the custom repositories you added to the Marketplace.](https://my.home-assistant.io/badges/marketplace_repositories.svg)](https://my.home-assistant.io/redirect/marketplace_repositories/)
 
-Or add it by hand (steps 1 to 3):
+Or open it by hand (step 1):
 
 1. Go to **Settings** > **Marketplace** (administrators only). The first time, read the notice and accept it.
 2. Click **Add from link** in the top-right corner.
